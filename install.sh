@@ -137,6 +137,33 @@ if [ ! -x /usr/local/bin/backhaul ]; then
   tar -xzf /tmp/bh.tgz -C /usr/local/bin backhaul && chmod +x /usr/local/bin/backhaul
 fi
 
+# Xray core (inbounds and clients on the foreign server). Skipped when it is already installed.
+# The panel writes /usr/local/etc/xray/config.json and manages the "xray" service (see below).
+if [ ! -x /usr/local/bin/xray ]; then
+  case "$(uname -m)" in
+    x86_64|amd64)  XA=Xray-linux-64.zip ;;
+    aarch64|arm64) XA=Xray-linux-arm64-v8a.zip ;;
+    *) XA="" ;;
+  esac
+  if [ -z "$XA" ]; then
+    echo "!!! Xray has no release for $(uname -m); install it manually at /usr/local/bin/xray" >&2
+  else
+    step "Downloading Xray core..."
+    XBASE="https://github.com/XTLS/Xray-core/releases/latest/download"
+    rm -rf /tmp/xray-dl && mkdir -p /tmp/xray-dl
+    dl "$XBASE/$XA" /tmp/xray-dl/xray.zip
+    dl "$XBASE/$XA.dgst" /tmp/xray-dl/xray.dgst
+    WANT=$(grep -m1 '^SHA2-256=' /tmp/xray-dl/xray.dgst | sed 's/^SHA2-256= *//' | tr -d '[:space:]')
+    GOT=$(sha256sum /tmp/xray-dl/xray.zip | cut -d' ' -f1)
+    [ -n "$WANT" ] && [ "$WANT" = "$GOT" ] || { echo "Xray checksum mismatch; install aborted"; exit 1; }
+    command -v unzip >/dev/null || { apt-get update -y >/dev/null && apt-get install -y unzip; }
+    unzip -o -q /tmp/xray-dl/xray.zip xray -d /tmp/xray-dl
+    install -m 755 /tmp/xray-dl/xray /usr/local/bin/xray
+    rm -rf /tmp/xray-dl
+    echo "Xray installed: $(/usr/local/bin/xray version | head -1)"
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 # Certificate for the panel (HTTPS). Asked only on a fresh install / reinstall.
 #   1) Domain  -> trusted Let's Encrypt certificate for your domain
@@ -274,6 +301,27 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 systemctl daemon-reload && systemctl enable --now tunnelpanel
+
+# Xray service unit (only if none exists, so an existing setup is never overwritten).
+# It is enabled but not started here: the panel starts it when it writes the first config.
+if [ -x /usr/local/bin/xray ] && [ ! -f /etc/systemd/system/xray.service ]; then
+  mkdir -p /usr/local/etc/xray
+  cat > /etc/systemd/system/xray.service <<'XRAYUNIT'
+[Unit]
+Description=Xray Service
+After=network.target nss-lookup.target
+
+[Service]
+ExecStart=/usr/local/bin/xray run -config /usr/local/etc/xray/config.json
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+XRAYUNIT
+  systemctl daemon-reload && systemctl enable xray >/dev/null 2>&1 || true
+fi
 
 # Local installer copy (used for updates) and the nahang command
 mkdir -p "$MENU_SHARE"
