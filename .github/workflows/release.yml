@@ -1,0 +1,30 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Build binaries
+        run: |
+          for a in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=$a go build -ldflags "-s -w -X main.version=${{ github.ref_name }}" -o tunnelpanel-linux-$a .
+          done
+          sha256sum tunnelpanel-linux-* > SHA256SUMS
+      - name: Publish release (create, or upload if it already exists)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" tunnelpanel-linux-* SHA256SUMS --clobber
+          else
+            gh release create "$TAG" tunnelpanel-linux-* SHA256SUMS --generate-notes
+          fi
