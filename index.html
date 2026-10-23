@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nahang · پنل تانل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300..800&display=swap" media="print" onload="this.media='all'">
+<style>
+:root{--bg:#0B0F14;--ink8:#111823;--ink9:#0B0F14;--ink95:#070A0F;--neon:#22D3EE;--vio:#8B5CF6;--ok:#34D399;--warn:#FBBF24;--bad:#F87171;--t1:#E6EDF5;--t2:rgba(255,255,255,.62);--t3:rgba(255,255,255,.4);--ln:rgba(255,255,255,.09);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--t1);font:14px/1.7 Vazirmatn,Tahoma,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.mono,.ltr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;direction:ltr;unicode-bidi:embed}
+.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.45}
+.o1{width:480px;height:480px;background:var(--neon);top:-140px;inset-inline-end:-120px;animation:f1 18s ease-in-out infinite}
+.o2{width:420px;height:420px;background:var(--vio);bottom:-160px;inset-inline-start:-100px;animation:f2 22s ease-in-out infinite}
+.o3{width:280px;height:280px;background:var(--ok);top:45%;inset-inline-start:40%;opacity:.18;animation:f1 26s ease-in-out infinite reverse}
+@keyframes f1{50%{transform:translate(-60px,70px) scale(1.15)}}
+@keyframes f2{50%{transform:translate(70px,-50px) scale(1.2)}}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(70% 70% at 50% 30%,#000 40%,transparent 100%);mask-image:radial-gradient(70% 70% at 50% 30%,#000 40%,transparent 100%)}
+.glass{background:rgba(17,24,35,.72);border:1px solid var(--ln);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
+/* boot */
+#boot{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--ink95);text-align:center;transition:opacity .5s,visibility .5s}
+#boot.gone{opacity:0;visibility:hidden}
+.logo{display:grid;place-items:center;font-weight:900;color:var(--ink95);background:linear-gradient(135deg,var(--neon),var(--vio))}
+#boot .logo{width:72px;height:72px;border-radius:20px;font-size:32px;margin:auto;animation:pop .7s cubic-bezier(.2,1.4,.3,1) both,glow 2s ease-in-out infinite 1s}
+@keyframes pop{from{transform:scale(.4) rotate(-12deg);opacity:0}}
+@keyframes glow{0%,100%{box-shadow:0 0 30px rgba(34,211,238,.35)}50%{box-shadow:0 0 70px rgba(139,92,246,.55)}}
+.bbar{width:170px;height:3px;border-radius:9px;background:var(--ln);overflow:hidden;margin:20px auto 0}
+.bbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon),var(--vio));animation:ld 1s ease forwards}
+@keyframes ld{to{width:100%}}
+/* sidebar */
+aside{width:250px;flex:none;position:fixed;inset-block:0;inset-inline-start:0;height:100vh;z-index:40;border-block:0;border-inline-start:0;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s}
+aside.open{transform:none}
+.brand{display:flex;align-items:center;gap:11px;height:64px;padding:0 18px;border-bottom:1px solid var(--ln)}
+.brand .logo{width:36px;height:36px;border-radius:12px;box-shadow:0 0 24px rgba(34,211,238,.22)}
+.brand b{display:block;font-size:15px;line-height:1.3}.brand small{font-size:10.5px;color:var(--t3)}
+nav{position:relative;padding:12px;display:grid;gap:4px}
+nav a{position:relative;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;color:var(--t2);font-size:13px;text-decoration:none;cursor:pointer;transition:.18s}
+nav a:hover{background:rgba(255,255,255,.05)}
+nav a.on{background:rgba(34,211,238,.13);color:var(--neon)}
+nav a.on::before{content:"";position:absolute;inset-inline-start:0;top:9px;bottom:9px;width:3px;border-radius:9px;background:var(--neon);box-shadow:0 0 12px var(--neon)}
+nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.side-foot{margin-top:auto;padding:12px;border-top:1px solid var(--ln);font-size:11px;color:var(--t3)}
+.me{display:flex;align-items:center;gap:9px;background:rgba(11,15,20,.6);border-radius:12px;padding:8px 10px}
+.me i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--neon),var(--vio))}
+.me b{display:block;font-size:12px;color:var(--t1)}
+/* header */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-width:0 0 1px}
+header h1{margin:0;font-size:15px;line-height:1.3}header p{margin:0;font-size:11px;color:var(--t3)}
+.sx{display:block;margin-inline-start:auto;background:0;border:0;color:var(--t2);cursor:pointer;padding:4px}
+.menu{display:block;background:0;border:0;color:var(--t2);cursor:pointer;padding:4px}
+.live{margin-inline-start:auto;display:flex;align-items:center;gap:7px;border:1px solid rgba(52,211,153,.3);background:rgba(52,211,153,.1);color:var(--ok);border-radius:99px;padding:4px 13px;font-size:11px;transition:.3s}
+.live.off{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.1);color:var(--bad)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block;flex:none}
+.live .dot,.pulse{animation:pl 2.2s ease-in-out infinite}
+@keyframes pl{50%{opacity:.35;transform:scale(.8)}}
+main{flex:1;padding:22px;max-width:1100px;width:100%;margin:auto}
+footer{padding:12px 24px;font-size:11px;color:rgba(255,255,255,.25);border-top:1px solid var(--ln)}
+/* cards */
+.card{border-radius:18px;padding:18px;transition:.24s cubic-bezier(.2,.8,.2,1)}
+.hov:hover{border-color:rgba(34,211,238,.35);transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.rise{animation:rise .46s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.stats{display:grid;gap:14px;grid-template-columns:repeat(4,1fr)}
+.stat small{color:var(--t3);font-size:12px}.stat b{display:block;font-size:26px;font-weight:800;line-height:1.3;margin-top:2px}
+.c-n{color:var(--neon)}.c-o{color:var(--ok)}.c-b{color:var(--bad)}.c-v{color:var(--vio)}.c-w{color:var(--warn)}
+h2{margin:0;font-size:14.5px}.sub{font-size:11.5px;color:var(--t3);margin:2px 0 0}
+.sec{margin-top:16px}
+.tl{display:grid;gap:12px;margin-top:16px}
+.tun{padding:14px 18px;display:grid;gap:8px}
+.tun .l3{flex-wrap:wrap;gap:10px}.tun .l3 .chips{margin:0}.tun .l3 .acts{margin:0}
+.path svg{width:100%;height:84px;display:block}
+.path text{font-family:inherit}
+.tag{display:inline-block;font-size:10.5px;padding:1px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.14);white-space:nowrap;color:var(--t2)}
+.tag.w{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.n{border-color:rgba(34,211,238,.4);color:var(--neon)}.tag.v{border-color:rgba(139,92,246,.5);color:#A78BFA}
+.tag.ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.1);color:var(--ok)}.tag.bad{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.1);color:var(--bad)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tn{font-size:15px;font-weight:700}
+.addr{font-size:11.5px;color:var(--t3);margin:2px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 0}
+.chips .tag{font-size:10.5px}
+.acts{display:flex;gap:7px;margin-top:14px}
+.btn{position:relative;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.13);background:transparent;border-radius:10px;padding:6px 13px;font-size:12px;color:var(--t1);transition:.18s}
+.btn:hover{border-color:rgba(34,211,238,.5);color:var(--neon)}
+.btn.d:hover{border-color:rgba(248,113,113,.55);color:var(--bad)}
+.btn.f{flex:1}
+.btn.p{background:var(--neon);border-color:var(--neon);color:var(--ink95);font-weight:700;padding:9px 20px;font-size:13px}
+.btn.p:hover{filter:brightness(1.1);color:var(--ink95)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:rp .6s ease-out;pointer-events:none}
+@keyframes rp{to{transform:scale(4);opacity:0}}
+.empty{text-align:center;padding:34px 10px;color:var(--t3)}
+.empty .btn{margin-top:10px}
+/* topology */
+.pkt{filter:drop-shadow(0 0 5px currentColor)}
+.ring{animation:gr 3s ease-out infinite}@keyframes gr{0%{r:16;opacity:.7}100%{r:36;opacity:0}}
+/* guide */
+details{border:1px solid var(--ln);border-radius:14px;background:rgba(11,15,20,.45);padding:0 16px;margin-top:10px;transition:.2s}
+details[open]{border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.04)}
+summary{cursor:pointer;list-style:none;padding:13px 0;font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary i{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-size:12px;background:rgba(34,211,238,.14);color:var(--neon);flex:none}
+summary::after{content:"+";margin-inline-start:auto;color:var(--t3);font-size:18px;transition:.2s}
+details[open] summary::after{transform:rotate(45deg)}
+.gb{padding:0 0 14px;color:var(--t2);font-size:13px;line-height:2}
+.gb ul{margin:4px 0;padding-inline-start:20px}.gb b{color:var(--t1)}
+.gt{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+.gt td{padding:6px 8px;border-bottom:1px solid var(--ln)}.gt td:first-child{width:90px;color:var(--neon)}
+/* close button for expandable lists */
+.dx{margin-top:12px}
+/* home page */
+#p-home .hero{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:14px;animation:rise .5s both}
+.hero .ver{font-size:13px;color:var(--t3)}
+.hero .ver b{color:var(--neon);font-size:18px;margin-inline-start:4px}
+.hero .host{font-size:17px;font-weight:800;margin-top:4px}
+.hero small{color:var(--t3);font-size:12px}
+.upd{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t2);padding:8px 12px;border-radius:12px;border:1px solid var(--ln)}
+.upd.has{border-color:var(--ok);color:var(--ok);animation:glow 2.4s ease-in-out infinite}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:12px}
+.cc{padding:14px;animation:rise .5s var(--d,0s) both}
+.cch{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;font-size:13px;color:var(--t2)}
+.cch b{font-size:18px;color:var(--t1);direction:ltr;font-variant-numeric:tabular-nums}
+.chart{width:100%;height:110px;display:block;overflow:visible}
+.cc small{display:block;margin-top:6px;font-size:11px;color:var(--t3)}
+.disk{padding:14px;margin-bottom:14px;animation:rise .5s .25s both}
+.drow{display:flex;align-items:center;gap:18px}
+.rwrap{position:relative;width:104px;height:104px;flex:none}
+.rwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.rbg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:9}
+.rfg{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1),stroke .4s}
+.rv{position:absolute;inset:0;display:grid;place-items:center;font-size:20px;font-weight:800;direction:ltr}
+.dinfo .dt{font-size:15px;font-weight:700;margin-bottom:6px}
+.dinfo small{font-size:12px;color:var(--t3)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.hstat{padding:14px;animation:rise .5s both}
+.hstat small{display:block;color:var(--t3);font-size:12px}
+.hstat b{display:block;margin-top:6px;font-size:16px;direction:ltr;text-align:start}
+.legend{font-size:12px;color:var(--t3);margin:0 0 10px}
+@media(max-width:520px){.chart{height:90px}.rwrap{width:86px;height:86px}.rv{font-size:17px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* transport maps */
+.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0 4px}
+.map{border:1px solid var(--ln);border-radius:12px;padding:10px 12px;background:rgba(7,10,15,.5)}
+.mh{display:flex;flex-direction:column;gap:1px;margin-bottom:6px;font-size:12px}
+.mh span{color:var(--t3);font-size:11px}
+.maps svg{width:100%;height:auto;display:block}
+/* form */
+.form{display:grid;gap:16px;grid-template-columns:1.4fr 1fr}
+label{display:block;font-size:12px;color:var(--t3);margin:14px 0 5px}
+label:first-child{margin-top:0}
+input{width:100%;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(11,15,20,.7);outline:0;font-size:13px;transition:.2s}
+input:focus{border-color:rgba(34,211,238,.6);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:12px;background:rgba(11,15,20,.7);border:1px solid var(--ln)}
+.seg button{border:0;background:0;border-radius:9px;padding:8px;cursor:pointer;font-size:12.5px;color:var(--t2);transition:.2s}
+.seg button.on{background:rgba(34,211,238,.14);color:var(--neon);font-weight:700}
+.trs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tr{position:relative;text-align:start;cursor:pointer;border:1px solid var(--ln);background:rgba(17,24,35,.5);border-radius:12px;padding:9px 11px;transition:.25s}
+.tr:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.28)}
+.tr b{display:block;font-size:12.5px;font-family:ui-monospace,Menlo,monospace}.tr small{font-size:10px;color:var(--t3);line-height:1.5;display:block}
+.tr.on{border-color:var(--neon);background:rgba(34,211,238,.08);box-shadow:0 0 26px rgba(34,211,238,.2)}
+.tr.on b{color:var(--neon)}
+.tk{display:flex;gap:8px}.tk input{flex:1}
+.err{margin-top:12px;font-size:12.5px;color:var(--bad);min-height:20px}
+.hint{border:1px solid rgba(255,255,255,.08);background:rgba(11,15,20,.5);border-radius:12px;padding:12px;font-size:12px;color:var(--t2);line-height:1.9}
+.hint b{color:var(--t1)}
+/* logs */
+pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);border-radius:12px;padding:12px;max-height:480px;overflow:auto;direction:ltr;text-align:left;font-size:11.5px;line-height:1.8;color:rgba(255,255,255,.7);white-space:pre-wrap;word-break:break-all}
+.sel{display:flex;flex-wrap:wrap;gap:8px}
+.sel .btn.on{border-color:var(--neon);color:var(--neon);background:rgba(34,211,238,.08)}
+/* toasts */
+#toasts{position:fixed;bottom:20px;inset-inline-end:20px;z-index:90;display:grid;gap:8px}
+.toast{padding:11px 16px;border-radius:12px;font-size:12.5px;display:flex;gap:9px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.45);animation:ti .35s cubic-bezier(.2,1.3,.3,1) both}
+.toast.out{animation:to .3s ease both}
+@keyframes ti{from{opacity:0;transform:translateY(14px) scale(.95)}}@keyframes to{to{opacity:0;transform:translateX(-30px)}}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#222E42;border-radius:8px}
+:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
+@media(max-width:900px){
+ .stats{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}main{padding:14px}
+}
+@media(max-width:520px){.two,.trs{grid-template-columns:1fr 1fr}.tl{grid-template-columns:1fr}.live{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="orbs"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div><div class="grid"></div>
+<div id="boot"><div><div class="logo">N</div><div style="margin-top:14px;font-weight:700;letter-spacing:.2em;font-size:13px;color:rgba(255,255,255,.7)">NAHANG</div><div style="font-size:11px;color:var(--t3)">پنل تانل</div><div class="bbar"><i></i></div></div></div>
+<div id="toasts"></div>
+
+<div class="app">
+<aside id="side" class="glass">
+ <div class="brand"><div class="logo">N</div><div><b>Nahang</b><small>پنل تانل</small></div><button class="sx" id="sx" type="button" aria-label="بستن منو"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+ <nav id="nav">
+  <a data-p="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>نمای کلی</a>
+  <a data-p="tunnels" class="on"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 21h8v-6H3z"/></svg>تانل‌ها</a>
+  <a data-p="create"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>ساخت تانل</a>
+  <a data-p="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>تنظیمات</a>
+  <a data-p="guide"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h4"/></svg>آموزش</a>
+  <a data-p="logs"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>لاگ‌ها</a>
+ </nav>
+ <div class="side-foot"><div class="me"><i></i><div><b>admin</b><span class="c-o">● آنلاین</span></div></div></div>
+</aside>
+
+<div class="main">
+ <header class="glass">
+  <button class="menu" id="menu" aria-label="منو"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  <div><h1 id="pt"></h1><p id="ps"></p></div>
+  <div class="live" id="live"><span class="dot"></span><span id="livet">نسخه __VERSION__</span></div>
+ </header>
+
+ <main>
+  <!-- نمای کلی -->
+  <section id="p-home" hidden>
+   <div class="hero card glass">
+    <div>
+     <div class="ver">نسخه‌ی پنل <b id="hv">—</b></div>
+     <div class="host" id="hh">—</div>
+     <small id="hos">—</small>
+    </div>
+    <div class="upd" id="upd">
+     <span id="updt">در حال بررسی…</span>
+     <button class="btn" id="updb" hidden>به‌روزرسانی</button>
+    </div>
+   </div>
+   <p class="legend">رنگ‌ها: <b style="color:#34D399">سبز</b> عادی · <b style="color:#FBBF24">زرد</b> بیشتر از ۶۵٪ · <b style="color:#F87171">قرمز</b> بیشتر از ۸۵٪</p>
+   <div class="charts">
+    <div class="card glass cc" style="--d:.05s"><div class="cch"><span>پردازنده</span><b id="vcpu">—</b></div><svg class="chart" id="cpuc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small id="vcpus">—</small></div>
+    <div class="card glass cc" style="--d:.12s"><div class="cch"><span>حافظه</span><b id="vmem">—</b></div><svg class="chart" id="memc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small id="vmems">—</small></div>
+    <div class="card glass cc" style="--d:.19s"><div class="cch"><span>شبکه (لحظه‌ای)</span><b id="vnet">—</b></div><svg class="chart" id="netc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small>آبی: دریافت · بنفش: ارسال</small></div>
+   </div>
+   <div class="card glass disk">
+    <div class="drow">
+     <div class="rwrap"><svg viewBox="0 0 120 120"><circle class="rbg" cx="60" cy="60" r="44"/><circle class="rfg" id="drf" cx="60" cy="60" r="44"/></svg><div class="rv" id="vdisk">—</div></div>
+     <div class="dinfo"><div class="dt">دیسک (/)</div><small id="vdisks">—</small></div>
+    </div>
+   </div>
+   <div class="hgrid" id="hstats"></div>
+  </section>
+
+  <!-- تانل‌ها -->
+  <section id="p-tunnels" hidden>
+   <div class="stats" id="stats"></div>
+   <div class="tl" id="list"></div>
+  </section>
+
+  <!-- ساخت تانل -->
+  <section id="p-create" hidden>
+   <div class="form">
+    <div class="card glass">
+     <label>نام تانل (انگلیسی، کوتاه)</label><input id="name" dir="ltr" class="mono" placeholder="t1" autocomplete="off">
+     <label>نقش این سرور</label>
+     <div class="seg" id="role"><button type="button" data-v="server" class="on">ایران (سرور)</button><button type="button" data-v="client">خارج (کلاینت)</button></div>
+     <label>ترنسپورت</label>
+     <div class="trs" id="trs"></div>
+     <div class="two">
+      <div><label id="al"></label><input id="addr" dir="ltr" class="mono" autocomplete="off"></div>
+      <div><label>پورت تانل</label><input id="tp" dir="ltr" class="mono" inputmode="numeric" placeholder="3080" autocomplete="off"></div>
+     </div>
+     <label>توکن مشترک (در هر دو سرور یکسان)</label>
+     <div class="tk"><input id="tok" dir="ltr" class="mono"><button class="btn" id="gen" type="button">تولید توکن</button></div>
+     <label id="la"></label><input id="allow" dir="ltr" class="mono" placeholder="1.2.3.4">
+     <label id="lp"></label><input id="ports" dir="ltr" class="mono">
+     <div class="row" style="margin-top:18px;justify-content:flex-start;gap:14px"><button class="btn p" id="add">ساخت و اجرا</button><button class="btn" id="cancel" hidden>انصراف</button><span class="err" id="e" style="margin:0"></span></div>
+    </div>
+    <div class="card glass" style="align-self:start">
+     <h2>راهنمای سریع</h2>
+     <div class="hint" style="margin-top:12px">
+      ۱. اول روی <b>سرور ایران</b> تانل را بساز.<br>
+      ۲. همان نام، ترنسپورت و <b>توکن</b> را روی <b>سرور خارج</b> هم بساز.<br>
+      ۳. آدرس سرور خارج، IP و پورت سرور ایران است.<br>
+      ۴. IP مجاز را حتماً پر کن تا پورت تانل برای بقیه بسته بماند.
+     </div>
+     <label>وارد کردن کد از سرور مقابل</label>
+     <div class="tk"><input id="imp" dir="ltr" class="mono" placeholder="TP1:..."><button class="btn" id="impb" type="button">اعمال</button></div>
+     <p class="sub" style="margin-top:8px">در پنل سرور اول روی «کد مقابل» بزن و کدش را اینجا بچسبان؛ نام، توکن و ترنسپورت خودکار پر می‌شوند.</p>
+    </div>
+   </div>
+  </section>
+
+  <!-- لاگ -->
+  <section id="p-logs" hidden>
+   <div class="card glass">
+    <div class="row"><div class="row" style="gap:10px"><h2>لاگ تانل</h2><span class="tag ok" id="lgn" hidden></span></div><button class="btn on" id="livebtn" type="button">● زنده</button></div>
+    <div class="sel" id="lsel" style="margin-top:12px"></div>
+    <pre id="log" hidden></pre>
+   </div>
+  </section>
+  <!-- تنظیمات -->
+  <section id="p-settings" hidden>
+   <div class="form" style="grid-template-columns:1fr 1fr">
+    <div class="card glass">
+     <div class="row"><h2>هشدار تلگرام</h2><span class="tag bad" id="tgs">غیرفعال</span></div>
+     <p class="sub">وقتی تانلی قطع شد یا مدام ری‌استارت شد، پیام می‌گیری.</p>
+     <label>توکن ربات (از BotFather)</label><input id="tgt" dir="ltr" class="mono" autocomplete="off">
+     <label>شناسه‌ی چت (Chat ID)</label><input id="tgc" dir="ltr" class="mono" autocomplete="off">
+     <div class="acts"><button class="btn p" id="tgsave">ذخیره</button><button class="btn" id="tgtest">پیام آزمایشی</button><button class="btn d" id="tgdel">حذف</button></div>
+     <div class="hint" style="margin-top:14px">سرور ایران معمولاً به تلگرام دسترسی ندارد؛ هشدار را روی <b>پنل سرور خارج</b> تنظیم کن.</div>
+    </div>
+    <div class="card glass" style="align-self:start">
+     <h2>پشتیبان‌گیری</h2>
+     <p class="sub">فایل پشتیبان شامل توکن‌هاست؛ آن را امن نگه دار.</p>
+     <div class="acts"><button class="btn p" id="bk">دانلود پشتیبان</button><button class="btn" id="rsb">بازیابی از فایل</button></div>
+     <input type="file" id="rs" accept=".json,application/json" hidden>
+    </div>
+   </div>
+  </section>
+
+  <!-- آموزش -->
+  <section id="p-guide" hidden>
+   <div class="card glass">
+    <h2>راه‌اندازی تانل، قدم‌به‌قدم</h2><p class="sub">از ساخت تانل تا عیب‌یابی، در یک جا</p>
+    <details open><summary><i>۱</i>ساخت تانل روی سرور ایران</summary><div class="gb">
+     <ul><li>در صفحه‌ی «ساخت تانل» نقش را <b>ایران (سرور)</b> بگذار.</li>
+     <li>یک نام انگلیسی کوتاه بده (مثل <span class="ltr">t1</span>) و ترنسپورت را انتخاب کن.</li>
+     <li>«IP گوش‌دادن» را <span class="ltr">0.0.0.0</span> بگذار و در فیلد «پورت تانل» مقدار <span class="ltr">3080</span> را بنویس.</li>
+     <li>«تولید توکن» را بزن و توکن را کپی کن.</li>
+     <li>IP سرور خارج را در «IP مجاز» بگذار تا فقط همان به پورت تانل برسد.</li>
+     <li>پورت‌ها را بنویس (فرمت در بخش ۳) و «ساخت و اجرا» را بزن.</li></ul>
+    </div></details>
+    <details><summary><i>۲</i>ساخت تانل روی سرور خارج</summary><div class="gb">
+     <ul><li>در پنل سرور خارج نقش را <b>خارج (کلاینت)</b> بگذار.</li>
+     <li><b>نام، ترنسپورت و توکن</b> باید دقیقاً مثل سرور ایران باشد.</li>
+     <li>در «IP سرور ایران» آدرس را بنویس و پورت تانل را همان <span class="ltr">3080</span> بگذار.</li>
+     <li>اگر پورت قفل‌شونده گذاشتی، IP سرور ایران خودکار همان آدرس بالا قرار می‌گیرد؛ پورت ۲۲ مجاز نیست.</li></ul>
+     وقتی هر دو طرف ساخته شوند، وضعیت هر دو تانل <b class="c-o">فعال</b> می‌شود.
+    </div></details>
+    <details><summary><i>۳</i>فرمت پورت‌ها</summary><div class="gb">
+     <table class="gt">
+      <tr><td class="ltr">443</td><td>پورت ۴۴۳ روی ایران به پورت ۴۴۳ سرور خارج می‌رسد</td></tr>
+      <tr><td class="ltr">443=8443</td><td>ورودی ۴۴۳ در ایران به پورت ۸۴۴۳ سرور خارج می‌رود</td></tr>
+      <tr><td class="ltr">2000-2100</td><td>یک بازه‌ی کامل از پورت‌ها</td></tr>
+      <tr><td class="ltr">443, 8443</td><td>چند پورت، با کاما جدا شوند</td></tr>
+     </table>
+     پورت‌ها فقط روی <b>سرور ایران</b> لازم هستند.
+    </div></details>
+    <details><summary><i>۴</i>کدام ترنسپورت را انتخاب کنم؟</summary><div class="gb">
+     <table class="gt">
+      <tr><td class="ltr">nahang</td><td>روش اختصاصی همین پنل (بدون نیاز به Backhaul)؛ رمزنگاری کامل و بایت‌های تصادفی</td></tr>
+      <tr><td class="ltr">nahangx</td><td>جدید و توصیه‌شده برای امنیت بالا؛ سریع و ضد replay. هر دو سرور باید ساعتشان با NTP همگام باشد (اختلاف بیشتر از ۲ دقیقه قبول نمی‌شود)</td></tr>
+      <tr><td class="ltr">tcpmux</td><td>پیشنهاد پیش‌فرض: چندکاناله و پایدار</td></tr>
+      <tr><td class="ltr">tcp</td><td>ساده و سریع؛ ظاهرش مخفی نیست</td></tr>
+      <tr><td class="ltr">ws / wsmux</td><td>شبیه ترافیک وب‌سوکت</td></tr>
+      <tr><td class="ltr">wss / wssmux</td><td>وب‌سوکت رمزنگاری‌شده؛ برای فیلترینگ شدید</td></tr>
+     </table>
+     <b>mux</b> یعنی چند اتصال داخل یک اتصال. هر دو سرور باید ترنسپورت یکسان داشته باشند.
+    </div></details>
+    <details><summary><i>۵</i>نقشه‌ی لایه‌ای هر ترنسپورت</summary><div class="gb">
+     هر کارت از بالا (داده‌ی v2ray) تا پایین (اینترنت) نشان می‌دهد داده چطور بسته‌بندی می‌شود؛ لایه‌ی بالاتر داخل لایه‌ی پایین‌تر است.
+     <div class="maps" id="maps"></div>
+    </div></details>
+    <details><summary><i>۶</i>اگر تانل غیرفعال ماند</summary><div class="gb">
+     <ul><li>روی کارت تانل «لاگ» را بزن و پیام آخر را بخوان.</li>
+     <li>توکن، نام و ترنسپورت دو طرف باید یکی باشد.</li>
+     <li>پورت تانل (مثلاً ۳۰۸۰) در فایروال سرور ایران نباید بسته باشد و «IP مجاز» باید درست باشد.</li>
+     <li>با «ری‌استارت» دوباره امتحان کن؛ تانل‌های متوقف‌نشده هر ۳۰ ثانیه خودکار بالا می‌آیند.</li></ul>
+    </div></details>
+    <details><summary><i>۷</i>دکمه‌ها چه کار می‌کنند؟</summary><div class="gb">
+     <b>ری‌استارت</b> سرویس را دوباره اجرا می‌کند. <b>توقف</b> آن را خاموش نگه می‌دارد و نگهبان هم بالایش نمی‌آورد. <b>اجرا</b> تانل متوقف را روشن می‌کند. <b>حذف</b> تانل، سرویس و قوانین فایروالش را پاک می‌کند.
+    </div></details>
+    <details><summary><i>۸</i>هشدار، ویرایش و پشتیبان</summary><div class="gb">
+     <ul><li><b>وصل / منتظر اتصال / قطع:</b> «وصل» یعنی اتصال واقعی برقرار است؛ «منتظر» یعنی سرویس بالاست ولی سمت مقابل هنوز وصل نشده.</li>
+     <li><b>کد مقابل:</b> تنظیمات تانل را برای سرور دیگر کپی می‌کند تا دوباره تایپ نکنی.</li>
+     <li><b>ویرایش:</b> تانل را در فرم باز می‌کند و با ذخیره، جایگزین می‌شود.</li>
+     <li><b>تلگرام و پشتیبان:</b> در صفحه‌ی «تنظیمات».</li></ul>
+    </div></details>
+   </div>
+  </section>
+ </main>
+ <footer id="ft">© Nahang · تمامی حقوق این پنل محفوظ است · کپی و بازانتشار بدون اجازه مجاز نیست</footer>
+</div>
+</div>
+
+<script>setTimeout(function(){var b=document.getElementById("boot");if(b)b.classList.add("gone")},3000)</script>
+<script>
+const $=i=>document.getElementById(i);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PAGES={home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
+const TR=[['nahang','اختصاصی: رمزنگاری کامل، بدون امضای ثابت'],['nahangx','جدید: سریع و سخت‌شده؛ TLS ۱.۳ + ضد replay + کلید چرخشی'],['tcpmux','چندکاناله، پایدار'],['tcp','ساده و سریع'],['wssmux','رمزنگاری‌شده، چندکاناله'],['wss','رمزنگاری‌شده'],['wsmux','وب‌سوکت چندکاناله'],['ws','وب‌سوکت']];
+let tr='tcpmux',role='server',data=[],page='home',logName='';
+
+/* toast + ripple */
+function toast(m,k='ok'){const c={ok:'#34D399',bad:'#F87171'}[k],e=document.createElement('div');e.className='toast glass';e.style.borderColor=c+'55';e.innerHTML=`<span style="color:${c}">●</span><span>${esc(m)}</span>`;$('toasts').appendChild(e);setTimeout(()=>{e.classList.add('out');setTimeout(()=>e.remove(),300)},2800)}
+document.addEventListener('click',e=>{const b=e.target.closest('.btn');if(!b)return;const r=b.getBoundingClientRect(),s=document.createElement('span'),z=Math.max(r.width,r.height);s.className='rip';s.style.cssText=`width:${z}px;height:${z}px;left:${e.clientX-r.left-z/2}px;top:${e.clientY-r.top-z/2}px`;b.appendChild(s);setTimeout(()=>s.remove(),600)});
+
+/* navigation */
+function go(p){page=p;['home','tunnels','create','logs','settings','guide'].forEach(x=>$('p-'+x).hidden=x!==p);
+ document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
+ $('pt').textContent=PAGES[p][0];$('ps').textContent=PAGES[p][1];$('side').classList.remove('open');
+ if(p==='logs')logList();if(p==='settings')loadSet();if(p==='home')loadHome();window.scrollTo({top:0})}
+$('nav').onclick=e=>{const a=e.target.closest('a');if(a)go(a.dataset.p)};
+$('menu').onclick=()=>$('side').classList.toggle('open');
+$('sx').onclick=()=>$('side').classList.remove('open');
+document.addEventListener('click',e=>{
+ const side=$('side');
+ if(side.classList.contains('open')&&!side.contains(e.target)&&!$('menu').contains(e.target))side.classList.remove('open');
+});
+
+/* per-tunnel path */
+const st=t=>t.stopped?'stop':t.on!=t.total?'down':t.conns===0?'wait':'up';
+const ST={up:['ok','وصل'],wait:['w','منتظر اتصال'],down:['bad','قطع'],stop:['bad','متوقف']};
+function path(t,i){
+ const sv=t.role=='server',P=t.ports||[],addr=t.addr||'',tp=addr.split(':').pop(),ip=addr.replace(/:\d+$/,'');
+ const S=st(t),on=!t.stopped&&t.on===t.total;
+ /* هر بخش مسیر از وضعیت واقعی سرویس و اتصال برقرارشده‌ی سیستم گرفته می‌شود:
+    B = لینک تانل بین دو سرور (اتصال واقعی ss)، A = بخش کاربر تا سرور ایران */
+ const B=t.stopped||!on?'off':t.conns<0?'on':t.conns>0?'live':'wait';
+ const A=sv?(t.stopped||!on?'off':'on'):B;
+ const flow=B==='live';
+ const sc=c=>c==='live'?`url(#g${i})`:c==='off'?'rgba(255,255,255,.22)':c==='wait'?'rgba(251,191,36,.6)':'rgba(52,211,153,.6)';
+ const dash=c=>c==='off'||c==='wait'?'stroke-dasharray="6 6"':'';
+ /* برچسب پورت‌ها: فقط روی سرور ایران، با نگاشت واقعی (۴۴۳→۸۴۴۳) */
+ const al=sv?P.slice(0,2).map(p=>esc(p.replace('=','→'))).join('  ')+(P.length>2?' +'+(P.length-2):''):'';
+ const pk=(id,c,r,d,b)=>flow?`<circle r="${r}" fill="${c}" class="pkt"><animateMotion dur="${d}s" begin="${b}s" repeatCount="indefinite"><mpath href="#${id}"/></animateMotion></circle>`:'';
+ const n=(x,c,l,sub,me)=>{const k=S==='down'||S==='stop'?'#64748B':c;return `<g transform="translate(${x},28)"><circle r="21" fill="none" stroke="${k}" opacity="${me?.45:.2}"/><circle r="15" fill="${k}${me?'33':'18'}" stroke="${k}" stroke-width="${me?2.2:1.3}"/><text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="${k}">${l[0]}</text><text y="${sub?47:50}" text-anchor="middle" font-size="11" fill="rgba(255,255,255,${me?.85:.55})">${l[1]}</text>${sub?`<text y="60" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.35)" class="mono">${sub}</text>`:''}</g>`};
+ const exSub=sv?(t.allow?esc(t.allow):'IP آزاد'):(P.length?'قفل: '+esc(P.join(' ')):'بدون قفل');
+ return `<svg viewBox="0 0 600 84" role="img" aria-label="مسیر تانل ${esc(t.name)}"><defs><linearGradient id="g${i}"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+ <path id="p${i}a" d="M81 28H279" fill="none" stroke="${sc(A)}" stroke-width="2.2" ${dash(A)}/><path id="p${i}b" d="M321 28H519" fill="none" stroke="${sc(B)}" stroke-width="2.2" ${dash(B)}/>
+ ${al?`<text x="180" y="20" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.5)" class="mono">${al}</text>`:''}
+ <text x="420" y="20" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.5)" class="mono">${esc(t.transport)} · ${esc(tp)}</text>
+ ${pk('p'+i+'a','#22D3EE',3.5,1.6,0)}${pk('p'+i+'a','#8B5CF6',2.6,1.6,.8)}${pk('p'+i+'b','#34D399',3.5,2,0)}${pk('p'+i+'b','#FBBF24',2.6,2,1)}
+ ${n(60,'#22D3EE',['U','کاربر'],'',0)}${n(300,'#FBBF24',['IR',sv?'این سرور · ایران':'سرور ایران'],sv?':'+esc(tp):esc(ip),sv)}${n(540,'#34D399',['EX',sv?'سرور خارج':'این سرور · خارج'],exSub,!sv)}</svg>`}
+
+/* list */
+function count(el,to){let c=0;const s=Math.max(1,to/24),f=()=>{c=Math.min(to,c+s);el.textContent=Math.round(c);if(c<to)requestAnimationFrame(f)};f()}
+let sig='',first=true;
+function render(){
+ const up=data.filter(t=>st(t)==='up').length,pc=data.reduce((a,t)=>a+(t.ports||[]).length,0);
+ const S=[['کل تانل‌ها',data.length,'c-n'],['وصل',up,'c-o'],['نیازمند توجه',data.length-up,data.length-up?'c-w':'c-n'],['پورت‌های فوروارد',pc,'c-v']];
+ if(!$('stats').children.length)$('stats').innerHTML=S.map((s,i)=>`<div class="card glass hov stat rise" style="animation-delay:${i*70}ms"><small>${s[0]}</small><b class="${s[2]}">0</b></div>`).join('');
+ [...$('stats').children].forEach((c,i)=>{const b=c.querySelector('b');b.className=S[i][2];if(+b.dataset.v!==S[i][1]){b.dataset.v=S[i][1];count(b,S[i][1])}});
+ const sg=JSON.stringify(data);if(sg===sig)return;sig=sg;const rc=first?'rise':'';first=false;
+ $('list').innerHTML=data.length?data.map((t,i)=>{const s=st(t),n=esc(t.name);
+  return `<div class="card glass hov tun ${rc}" style="animation-delay:${i*55}ms">
+  <div class="row"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tn">${n}</span><span class="addr mono" style="margin:0">${esc(t.addr)}</span></div><span class="tag ${ST[s][0]}"><span class="dot ${s=='up'?'pulse':''}" style="width:6px;height:6px"></span> ${ST[s][1]}${t.conns>0?' · '+t.conns:''}</span></div>
+  <div class="path">${path(t,i)}</div>
+  <div class="row l3"><div class="chips"><span class="tag ${t.role=='server'?'n':'v'}">${t.role=='server'?'ایران (سرور)':'خارج (کلاینت)'}</span><span class="tag mono">${esc(t.transport)}</span>${(t.ports||[]).map(p=>`<span class="tag mono">${esc(p)}</span>`).join('')}</div>
+  <div class="acts"><button class="btn" data-a="restart" data-n="${n}">ری‌استارت</button><button class="btn" data-a="${s=='up'||s=='wait'?'stop':'start'}" data-n="${n}">${s=='up'||s=='wait'?'توقف':'اجرا'}</button><button class="btn" data-a="logs" data-n="${n}">لاگ</button><button class="btn" data-a="edit" data-n="${n}">ویرایش</button><button class="btn" data-a="code" data-n="${n}">کد مقابل</button><button class="btn d" data-a="delete" data-n="${n}">حذف</button></div></div></div>`}).join('')
+ :`<div class="card glass empty rise">هنوز تانلی نساخته‌ای.<br><button class="btn p" data-a="new">ساخت اولین تانل</button></div>`}
+$('list').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,n=b.dataset.n;
+ if(a==='new')go('create');else if(a==='logs'){logName=n;go('logs');showLog(n)}else if(a==='edit')edit(n);else if(a==='code')code(n);else if(a==='delete'){if(confirm('تانل «'+n+'» حذف شود؟'))act(n,'delete')}else act(n,a)};
+
+/* api */
+const H={'X-Requested-With':'tunnelpanel','Content-Type':'application/json'};
+const post=(u,b)=>fetch(u,{method:'POST',headers:H,body:b===undefined?undefined:JSON.stringify(b)});
+async function load(){try{const r=await fetch('/api/tunnels');if(r.status==401){location.href='/login';return}if(!r.ok)throw 0;data=(await r.json()).sort((a,b)=>a.name.localeCompare(b.name));setLive(1)}catch(e){setLive(0)}render()}
+function setLive(ok){$('live').classList.toggle('off',!ok)}
+async function act(n,a){const L={restart:'ری‌استارت شد',stop:'متوقف شد',start:'اجرا شد',delete:'حذف شد'};
+ try{const r=await post(`/api/tunnels/${encodeURIComponent(n)}/${a}`);if(!r.ok)throw 0;toast(`${n} ${L[a]}`)}catch(e){toast('خطا در انجام عملیات','bad')}setTimeout(load,800)}
+async function full(n){const r=await fetch('/api/tunnels/'+encodeURIComponent(n));if(!r.ok)throw 0;return r.json()}
+let editing='';
+async function edit(n){try{const t=await full(n);editing=n;setRole(t.role);setTr(t.transport);$('name').value=n;$('name').readOnly=true;const [ip,pt]=splitAddr(t.addr);$('addr').value=ip;$('tp').value=pt;$('tok').value=t.token||'';$('allow').value=t.allow||'';$('ports').value=(t.ports||[]).join(', ');$('add').textContent='ذخیره تغییرات';$('cancel').hidden=false;go('create')}catch(e){toast('خواندن تانل ممکن نشد','bad')}}
+function resetForm(){editing='';$('name').readOnly=false;$('name').value='';$('add').textContent='ساخت و اجرا';$('cancel').hidden=true;$('imp').value='';$('e').textContent='';$('tp').value='';setRole('server');setTr('tcpmux');gen();$('allow').value='';$('ports').value=''}
+$('cancel').onclick=()=>{resetForm();go('tunnels')};
+function splitAddr(a){const i=(a||'').lastIndexOf(':');return i<0?[a||'',''] :[a.slice(0,i),a.slice(i+1)]}
+function buildAddr(){
+ const ip=$('addr').value.trim(),pt=$('tp').value.trim();
+ if(ip.includes(':'))throw new Error('پورت را در فیلد «پورت تانل» بنویس، نه داخل IP');
+ if(!/^\d+$/.test(pt)||+pt<1||+pt>65535)throw new Error('پورت تانل باید عددی بین ۱ تا ۶۵۵۳۵ باشد');
+ if(role=='client'&&!ip)throw new Error('IP سرور ایران را وارد کن');
+ return (role=='server'?(ip||'0.0.0.0'):ip)+':'+pt;
+}
+async function add(){
+ let addr;try{addr=buildAddr()}catch(e){$('e').textContent=e.message;toast(e.message,'bad');return}
+ const ports=$('ports').value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean),ipOnly=$('addr').value.trim();
+ const b={name:$('name').value,role,transport:tr,addr,token:$('tok').value,allow:role=='client'?(ports.length?ipOnly:''):$('allow').value.trim(),ports};
+ $('e').textContent='';
+ try{const r=await post('/api/tunnels',b);const d=await r.json();
+  if(d.error){$('e').textContent=d.error;toast(d.error,'bad');return}
+  toast(editing?'تغییرات ذخیره شد':'تانل ساخته و اجرا شد');resetForm();go('tunnels');load()}catch(e){$('e').textContent='خطا در ارتباط با پنل';toast('خطا در ارتباط با پنل','bad')}}
+$('add').onclick=add;
+$('tp').oninput=()=>{$('tp').value=$('tp').value.replace(/\D/g,'')};
+
+/* share code */
+async function code(n){try{const t=await full(n),c='TP1:'+btoa(JSON.stringify({n:t.name,t:t.transport,k:t.token,r:t.role=='server'?'client':'server',p:t.addr.split(':').pop()}));
+ try{await navigator.clipboard.writeText(c);toast('کد کپی شد؛ در پنل سرور مقابل «وارد کردن کد» را بزن')}catch(e){prompt('این کد را کپی کن:',c)}}catch(e){toast('ساخت کد ممکن نشد','bad')}}
+$('impb').onclick=()=>{try{const o=JSON.parse(atob($('imp').value.trim().replace(/^TP1:/,'')));if(!o.n||!o.k)throw 0;
+ setRole(o.r=='client'?'client':'server');setTr(TR.some(x=>x[0]==o.t)?o.t:'tcpmux');$('name').value=o.n;$('tok').value=o.k;
+ const p=String(o.p).replace(/\D/g,'')||'3080';$('tp').value=p;if(role=='client'){$('addr').value='';$('addr').placeholder='IP سرور ایران';toast('IP سرور ایران را وارد کن')}else{$('addr').value='0.0.0.0';toast('کد اعمال شد')}$('imp').value=''}catch(e){toast('کد نامعتبر است','bad')}};
+
+/* logs */
+let live=true;
+function logList(){$('lsel').innerHTML=data.length?data.map(t=>`<button class="btn ${t.name===logName?'on':''}" data-n="${esc(t.name)}">${esc(t.name)}</button>`).join(''):'<span class="sub">تانلی وجود ندارد</span>'}
+$('lsel').onclick=e=>{const b=e.target.closest('[data-n]');if(b)showLog(b.dataset.n)};
+async function showLog(n,q){if(!q){logName=n;logList();$('lgn').hidden=false;$('lgn').textContent=n;$('log').hidden=false;$('log').textContent='...'}
+ try{const r=await fetch(`/api/tunnels/${encodeURIComponent(n)}/logs`);$('log').textContent=(await r.text())||'لاگی ثبت نشده';if(q)$('log').scrollTop=$('log').scrollHeight}catch(e){$('log').textContent='خطا در دریافت لاگ'}}
+$('livebtn').onclick=()=>{live=!live;$('livebtn').classList.toggle('on',live);$('livebtn').textContent=live?'● زنده':'○ متوقف'};
+setInterval(()=>{if(page==='logs'&&live&&logName)showLog(logName,true)},3000);
+
+/* settings */
+async function loadSet(){try{const d=await(await fetch('/api/settings')).json();$('tgc').value=d.chat||'';$('tgt').placeholder=d.tg?'ذخیره شده؛ برای تغییر دوباره وارد کن':'123456:ABC...';$('tgs').textContent=d.tg?'فعال':'غیرفعال';$('tgs').className='tag '+(d.tg?'ok':'bad')}catch(e){}}
+async function saveTg(b,m){try{const d=await(await post('/api/settings',b)).json();if(d.error)return toast(d.error,'bad');toast(m);$('tgt').value='';loadSet()}catch(e){toast('خطا در ارتباط','bad')}}
+$('tgsave').onclick=()=>saveTg({tg_token:$('tgt').value.trim(),tg_chat:$('tgc').value.trim()},'ذخیره شد');
+$('tgdel').onclick=()=>{$('tgc').value='';saveTg({tg_token:'',tg_chat:''},'هشدار تلگرام حذف شد')};
+$('tgtest').onclick=async()=>{try{const d=await(await post('/api/settings/test')).json();d.error?toast(d.error,'bad'):toast('پیام آزمایشی ارسال شد')}catch(e){toast('خطا در ارتباط','bad')}};
+$('bk').onclick=async()=>{try{const r=await fetch('/api/backup');const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='tunnels-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast('دانلود ممکن نشد','bad')}};
+$('rsb').onclick=()=>$('rs').click();
+$('rs').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const d=await(await post('/api/restore',JSON.parse(await f.text()))).json(),er=(d.errors||[]).length;toast(d.error||`${d.ok} تانل بازیابی شد`+(er?` · ${er} خطا`:''),d.error||er?'bad':'ok');load()}catch(x){toast('فایل پشتیبان نامعتبر است','bad')}};
+
+/* form */
+function gen(){const a=new Uint8Array(16);crypto.getRandomValues(a);$('tok').value=[...a].map(x=>x.toString(16).padStart(2,'0')).join('')}
+$('gen').onclick=gen;
+$('trs').innerHTML=TR.map(([v,d])=>`<button type="button" class="tr ${v===tr?'on':''}" data-v="${v}"><b>${v}</b><small>${d}</small></button>`).join('');
+function setTr(v){tr=v;document.querySelectorAll('.tr').forEach(x=>x.classList.toggle('on',x.dataset.v===v))}
+$('trs').onclick=e=>{const b=e.target.closest('.tr');if(b)setTr(b.dataset.v)};
+function rl(){const s=role=='server';
+ $('la').textContent=s?'IP سرور خارج (فقط همین IP به پورت تانل دسترسی دارد؛ پیشنهاد می‌شود حتماً پر شود)':'IP سرور ایران (پورت‌های زیر فقط برای این IP باز می‌شوند)';
+ $('la').hidden=!s;$('allow').hidden=!s;$('lp').textContent=s?'پورت‌ها (مثال: 443=443, 2000-2100)':'پورت‌های قفل‌شونده روی این سرور (مثلاً 443 برای Reality؛ اختیاری، پورت 22 مجاز نیست)';
+ $('ports').placeholder=s?'443=443, 8443=8443':'443';$('al').textContent=s?'IP گوش‌دادن (0.0.0.0 یعنی همه‌ی IPها)':'IP سرور ایران';$('addr').placeholder=s?'':'مثلاً 1.2.3.4';if(!$('tp').value)$('tp').value='3080';$('addr').value=s?'0.0.0.0':''}
+function setRole(v){role=v;document.querySelectorAll('#role button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));rl()}
+$('role').onclick=e=>{const b=e.target.closest('button');if(b&&!editing)setRole(b.dataset.v)};
+
+/* transport maps */
+const MC={gray:'#94A3B8',purple:'#8B5CF6',blue:'#22D3EE',teal:'#34D399',amber:'#FBBF24',coral:'#F87171'};
+const V2=['داده‌ی v2ray','VLESS، VMess، Trojan','gray'],NET=['اینترنت','مسیر ایران ↔ خارج','gray'],TCP=['TCP','اتصال پایه','amber'],TCPR=['TCP خام','بدون پوشش امنیتی','amber'],
+ MUX=['مالتی‌پلکس (mux)','چند جریان روی یک اتصال','purple'],WS=['WebSocket','شبیه ترافیک وب','blue'],TLS=['رمزنگاری TLS','پوشش امنیتی لایه‌ی انتقال','teal'],
+ NH=['نهنگ','X25519 + AES-GCM','coral'],NHX=['نهنگ نسخه‌ی ۲','ضد replay و چرخش کلید','coral'],TLS13=['TLS 1.3','لایه‌ی بیرونی رمزشده','teal'];
+const MAPS=[
+ ['tcp','بدون رمزنگاری',[V2,TCPR,NET]],
+ ['tcpmux','چندجریانه روی یک اتصال',[V2,MUX,TCP,NET]],
+ ['ws','شبیه ترافیک وب',[V2,WS,TCP,NET]],
+ ['wss','وب‌سوکت داخل TLS',[V2,WS,TLS,TCP,NET]],
+ ['wsmux','وب‌سوکت چندجریانه',[V2,MUX,WS,TCP,NET]],
+ ['wssmux','وب‌سوکت چندجریانه داخل TLS',[V2,MUX,WS,TLS,TCP,NET]],
+ ['nahang','پروتکل اختصاصی',[V2,NH,TCP,NET]],
+  ['nahangx','نهنگ سخت‌شده و سریع',[V2,NHX,TLS13,TCP,NET]]
+];
+function renderMaps(){
+ $('maps').innerHTML=MAPS.map(([n,d,L],k)=>{
+  const H=(L.length-1)*62+44+10,id='ma'+k;
+  const boxes=L.map(([t,s,c],i)=>{const y=i*62,col=MC[c];
+   return `<rect x="20" y="${y}" width="220" height="44" rx="8" fill="${col}22" stroke="${col}" stroke-width="1"/><text x="130" y="${y+18}" text-anchor="middle" font-size="12" font-weight="600" fill="#E6EDF5">${esc(t)}</text><text x="130" y="${y+34}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.6)">${esc(s)}</text>`+
+   (i<L.length-1?`<line x1="130" y1="${y+44}" x2="130" y2="${y+62}" stroke="rgba(255,255,255,.35)" stroke-width="1.5" marker-end="url(#${id})"/>`:'')}).join('');
+  return `<div class="map"><div class="mh"><b class="mono">${esc(n)}</b><span>${esc(d)}</span></div><svg viewBox="0 0 260 ${H}" role="img" aria-label="نقشه‌ی ترنسپورت ${esc(n)}"><defs><marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/></marker></defs>${boxes}</svg></div>`;
+ }).join('');
+}
+renderMaps();
+/* لیست‌های آموزش: دکمه‌ی بستن داخل هر بخش و بستن با کلیک بیرون */
+document.querySelectorAll('details').forEach(d=>{
+ const b=document.createElement('button');
+ b.type='button';b.className='btn dx';b.textContent='بستن';
+ b.onclick=()=>d.removeAttribute('open');
+ d.querySelector('.gb').appendChild(b);
+});
+document.addEventListener('click',e=>{
+ document.querySelectorAll('details[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open')});
+});
+/* متن کپی‌رایت: اگر از داخل مرورگر تغییر کند، دوباره برمی‌گردد */
+const FT='© Nahang · تمامی حقوق این پنل محفوظ است · کپی و بازانتشار بدون اجازه مجاز نیست';
+const ftEl=$('ft');ftEl.textContent=FT;
+new MutationObserver(()=>{if(ftEl.textContent!==FT)ftEl.textContent=FT}).observe(ftEl,{childList:true,characterData:true,subtree:true});
+/* home: server status, charts and update */
+const fmtB=b=>{const u=['B','KB','MB','GB','TB'];let i=0;b=+b||0;while(b>=1024&&i<4){b/=1024;i++}return b.toFixed(i?1:0)+' '+u[i]};
+const fmtUp=x=>{x=Math.floor(+x||0);const d=Math.floor(x/86400),h=Math.floor(x%86400/3600),m=Math.floor(x%3600/60);return (d?d+' روز ':'')+(h?h+' ساعت ':'')+m+' دقیقه'};
+const HN=60,CW=300,CH=100;
+const HIST={cpu:[],mem:[],rx:[],tx:[]};
+const lvl=p=>p>85?'#F87171':p>65?'#FBBF24':'#34D399';
+let lastNet=null,homeBusy=false;
+function pushH(k,v){const a=HIST[k];a.push(v);if(a.length>HN)a.shift()}
+function plot(id,series,max){
+ const svg=$(id); if(!svg)return;
+ if(!svg.dataset.ready){
+  svg.innerHTML='<defs>'+series.map((s,i)=>`<linearGradient id="${id}g${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${typeof s.c==='function'?s.c(0):s.c}" stop-opacity=".35"/><stop offset="1" stop-color="${typeof s.c==='function'?s.c(0):s.c}" stop-opacity="0"/></linearGradient>`).join('')+'</defs>'
+   +series.map((s,i)=>`<path class="s${i}a" fill="${s.area?'url(#'+id+'g'+i+')':'none'}"/><path class="s${i}l" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>`).join('');
+  svg.dataset.ready=1;
+ }
+ const step=CW/(HN-1);
+ series.forEach((s,i)=>{
+  const v=s.v,k=v.length,col=typeof s.c==='function'?s.c(k?v[k-1]:0):s.c;
+  svg.querySelectorAll('#'+id+'g'+i+' stop').forEach(st=>st.setAttribute('stop-color',col));
+  const pts=v.map((x,j)=>(CW-(k-1-j)*step).toFixed(1)+' '+(CH-4-Math.min(x,max)/max*(CH-8)).toFixed(1));
+  const d=k>1?'M'+pts.join(' L'):'';
+  const ln=svg.querySelector('.s'+i+'l'), ar=svg.querySelector('.s'+i+'a');
+  ln.setAttribute('d',d); ln.setAttribute('stroke',col);
+  ar.setAttribute('d',s.area&&k>1?d+` L${CW} ${CH} L${(CW-(k-1)*step).toFixed(1)} ${CH} Z`:'');
+ });
+}
+async function loadHome(){
+ if(homeBusy)return;homeBusy=true;
+ try{
+  const [s,u,t]=await Promise.all(['/api/system','/api/update','/api/tunnels'].map(x=>fetch(x).then(r=>{if(r.status==401){location.href='/login';throw 0}return r.json()})));
+  renderHome(s,u,t);
+ }catch(e){}finally{homeBusy=false}
+}
+function renderHome(s,u,t){
+ $('hv').textContent=u.current||'—';
+ $('hh').textContent=s.hostname||'—';
+ $('hos').textContent=[s.os,s.kernel].filter(Boolean).join(' · ');
+ const cpu=s.cpu_percent||0, mp=s.mem_total?100*s.mem_used/s.mem_total:0, dp=s.disk_total?100*(s.disk_total-s.disk_free)/s.disk_total:0;
+ const now=Date.now(); let rxr=0,txr=0;
+ if(lastNet){const dt=(now-lastNet.t)/1000; if(dt>0){rxr=Math.max(0,(s.net_rx-lastNet.rx)/dt); txr=Math.max(0,(s.net_tx-lastNet.tx)/dt)}}
+ lastNet={t:now,rx:s.net_rx,tx:s.net_tx};
+ pushH('cpu',cpu); pushH('mem',mp); pushH('rx',rxr); pushH('tx',txr);
+ $('vcpu').textContent=Math.round(cpu)+'%'; $('vcpu').style.color=lvl(cpu); $('vcpus').textContent=(s.cpus||0)+' هسته';
+ plot('cpuc',[{c:lvl,area:true,v:HIST.cpu}],100);
+ $('vmem').textContent=Math.round(mp)+'%'; $('vmem').style.color=lvl(mp); $('vmems').textContent=fmtB(s.mem_used)+' از '+fmtB(s.mem_total);
+ plot('memc',[{c:lvl,area:true,v:HIST.mem}],100);
+ const nmax=Math.max(1024,...HIST.rx,...HIST.tx)*1.2;
+ $('vnet').textContent=fmtB(rxr)+'/s ↓ · '+fmtB(txr)+'/s ↑';
+ plot('netc',[{c:'#22D3EE',area:true,v:HIST.rx},{c:'#8B5CF6',area:false,v:HIST.tx}],nmax);
+ const dl=2*Math.PI*44, df=$('drf'); df.style.strokeDasharray=dl; df.style.strokeDashoffset=dl*(1-Math.min(100,dp)/100); df.style.stroke=lvl(dp); $('vdisk').style.color=lvl(dp); $('vdisk').textContent=Math.round(dp)+'%';
+ $('vdisks').textContent=fmtB(s.disk_total-s.disk_free)+' از '+fmtB(s.disk_total)+' استفاده شده';
+ const list=Array.isArray(t)?t:[], act=list.filter(x=>!x.stopped&&x.on===x.total).length;
+ const cards=[
+  ['مدت روشن بودن',fmtUp(s.uptime_sec)],
+  ['بار سیستم (۱ / ۵ / ۱۵ دقیقه)',(s.load||[]).map(v=>(+v).toFixed(2)).join(' · ')],
+  ['ترافیک کل (دریافت / ارسال)',fmtB(s.net_rx)+' / '+fmtB(s.net_tx)],
+  ['تانل‌های فعال',act+' از '+list.length],
+  ['حافظه‌ی swap',s.swap_total?fmtB(s.swap_used)+' از '+fmtB(s.swap_total):'ندارد']
+ ];
+ $('hstats').innerHTML=cards.map(([l,v])=>`<div class="card glass hstat"><small>${esc(l)}</small><b>${esc(v)}</b></div>`).join('');
+ $('upd').classList.toggle('has',!!u.available);
+ $('updb').hidden=!u.available;
+ $('updt').textContent=u.error?'بررسی به‌روزرسانی ممکن نشد':u.available?'نسخه‌ی جدید: '+u.latest:(u.latest?'پنل به‌روز است':'در حال بررسی…');
+}
+$('updb').onclick=async()=>{
+ if(!confirm('پنل به‌روزرسانی می‌شود و چند ثانیه قطع می‌شود. ادامه می‌دهی؟'))return;
+ try{const r=await post('/api/update');const d=await r.json();
+  if(d.error){toast(d.error,'bad');return}
+  toast('به‌روزرسانی شروع شد؛ چند ثانیه بعد صفحه را تازه کن')
+ }catch(e){toast('خطا در شروع به‌روزرسانی','bad')}
+};
+setInterval(()=>{if(page==='home')loadHome()},4000);
+gen();rl();go('home');load();setInterval(load,10000);
+window.addEventListener('load',()=>setTimeout(()=>$('boot').classList.add('gone'),900));setTimeout(()=>$('boot').classList.add('gone'),2000);
+</script>
+</body>
+</html>
