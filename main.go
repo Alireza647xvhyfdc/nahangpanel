@@ -436,6 +436,9 @@ func main() {
 	for _, t := range tunnels {
 		fw(t, true)
 	}
+	if err := ensureAccessLogDir(); err != nil {
+		fmt.Println("هشدار: پوشهٔ لاگ Xray ساخته نشد:", err)
+	}
 	go guardian()
 	startXrayMonitor()
 

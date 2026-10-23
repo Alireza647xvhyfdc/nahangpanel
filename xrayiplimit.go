@@ -13,8 +13,11 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -205,7 +208,45 @@ func startXrayMonitor() {
 	}()
 }
 
-// ensureAccessLogDir پوشهٔ access log را می‌سازد تا Xray بتواند فایل را بنویسد.
+// ensureAccessLogDir پوشه و فایل access log را می‌سازد و مالکیتشان را به کاربری می‌دهد
+// که سرویس xray با آن اجرا می‌شود. بدون این کار Xray با خطای no such file or directory استارت نمی‌شود.
 func ensureAccessLogDir() error {
-	return os.MkdirAll(filepath.Dir(accessLogPath), 0o755)
+	dir := filepath.Dir(accessLogPath)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("ساخت پوشهٔ لاگ Xray: %w", err)
+	}
+	f, err := os.OpenFile(accessLogPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("ساخت فایل لاگ Xray: %w", err)
+	}
+	f.Close()
+	if err := chownForXray(dir, accessLogPath); err != nil {
+		return err
+	}
+	return nil
+}
+
+// chownForXray پوشه و فایل را به کاربر سرویس xray می‌دهد (اگر غیر از root باشد).
+func chownForXray(dir, file string) error {
+	out, err := exec.Command("systemctl", "show", "xray", "-p", "User", "--value").Output()
+	if err != nil {
+		return nil // systemd یا سرویس xray نیست؛ مالکیت دست نمی‌خورد
+	}
+	name := strings.TrimSpace(string(out))
+	if name == "" || name == "root" {
+		return nil
+	}
+	u, err := user.Lookup(name)
+	if err != nil {
+		return fmt.Errorf("کاربر %q که xray با آن اجرا می‌شود پیدا نشد: %w", name, err)
+	}
+	uid, _ := strconv.Atoi(u.Uid)
+	gid, _ := strconv.Atoi(u.Gid)
+	if err := os.Chown(dir, uid, gid); err != nil {
+		return fmt.Errorf("تغییر مالکیت پوشهٔ لاگ: %w", err)
+	}
+	if err := os.Chown(file, uid, gid); err != nil {
+		return fmt.Errorf("تغییر مالکیت فایل لاگ: %w", err)
+	}
+	return nil
 }
