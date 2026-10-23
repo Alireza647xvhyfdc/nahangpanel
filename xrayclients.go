@@ -1,8 +1,8 @@
 package main
 
 // xrayclients.go: ساخت کلاینت با اتصال به چند inbound، UUID دلخواه و تنظیمات تکمیلی.
-// نکته: حجم، IP Limit، HWID Limit، Traffic Reset، Auto renewal و Start After First Use
-// فعلاً ذخیره می‌شوند و اعمال نمی‌شوند؛ اعمال آن‌ها نیاز به شمارش ترافیک دارد.
+// نکته: HWID Limit در /sub و IP Limit از access log اعمال می‌شوند (xrayshare.go، xrayiplimit.go).
+// حجم، Traffic Reset، Auto renewal و Start After First Use هنوز اعمال نمی‌شوند.
 
 import (
 	"encoding/json"
@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // ClientReq ورودی ساخت کلاینت است.
@@ -62,6 +63,15 @@ func addClientFull(req ClientReq) (Client, error) {
 	}
 	if !trafficResets[req.TrafficReset] {
 		return Client{}, errors.New("Traffic Reset نامعتبر است")
+	}
+	// Auto renewal و Start after first use به یک دوره نیاز دارند؛ دوره = تاریخ انقضا منهای امروز.
+	now := time.Now()
+	var period int64
+	if req.Expire > 0 {
+		period = req.Expire - now.Unix()
+	}
+	if (req.AutoRenew || req.StartAfterFirstUse) && period <= 0 {
+		return Client{}, errors.New("برای Auto renewal و Start after first use تاریخ انقضا (به‌عنوان دوره) باید در آینده باشد")
 	}
 	if len(req.Comment) > 200 {
 		return Client{}, errors.New("توضیح بیش از ۲۰۰ کاراکتر است")
@@ -127,11 +137,23 @@ func addClientFull(req ClientReq) (Client, error) {
 		}
 	}
 
+	subToken, err := newSubToken()
+	if err != nil {
+		return Client{}, err
+	}
 	c := Client{
-		Name: req.Name, ID: id, Enabled: enabled, Expire: req.Expire, LimitGB: req.LimitGB,
+		SubToken: subToken,
+		Name:     req.Name, ID: id, Enabled: enabled, Expire: req.Expire, LimitGB: req.LimitGB,
 		Inbounds: attach, IPLimit: req.IPLimit, HWIDLimit: req.HWIDLimit, TrafficReset: req.TrafficReset,
 		AutoRenew: req.AutoRenew, StartAfterFirstUse: req.StartAfterFirstUse,
 		Comment: req.Comment, Group: req.Group,
+		NextReset: nextResetAfter(now, req.TrafficReset),
+	}
+	if req.StartAfterFirstUse {
+		c.Expire = 0 // شروع انقضا از اولین استفاده؛ تا آن موقع منقضی نمی‌شود
+		c.Period = period
+	} else if req.AutoRenew {
+		c.Period = period
 	}
 	st.Clients = append(st.Clients, c)
 	if err := writeXrayConfig(st); err != nil {
@@ -188,7 +210,7 @@ func registerXrayClientRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http
 		}
 		out := []item{}
 		for _, in := range st.Inbounds {
-			if !c.attachedTo(in.Port) || in.ExcludeSub {
+			if !c.attachedTo(in.Port) || in.ExcludeSub || in.Disabled {
 				continue
 			}
 			link := buildLink(c, in, server)

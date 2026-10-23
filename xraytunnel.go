@@ -17,7 +17,7 @@ func bindInbound(t *Tunnel) string {
 		return ""
 	}
 	if t.Role != "client" {
-		return "اتصال به اینباند فقط روی سرور خارج ممکن است"
+		return "اتصال تانل‌ها به اینباند ها فقط روی سرور خارج ممکن است"
 	}
 	st, err := loadStore()
 	if err != nil {

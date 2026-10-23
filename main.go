@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -436,6 +437,7 @@ func main() {
 		fw(t, true)
 	}
 	go guardian()
+	startXrayMonitor()
 
 	auth := func(h http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -627,22 +629,39 @@ func main() {
 	}))
 	m.HandleFunc("GET /api/backup", auth(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
-		b, _ := json.MarshalIndent(tunnels, "", " ")
+		tn := make(map[string]Tunnel, len(tunnels))
+		for k, v := range tunnels {
+			tn[k] = v
+		}
 		mu.Unlock()
+		xs, err := loadStore() // تانل‌ها و کلاینت/اینباند Xray هر دو داخل پشتیبان می‌روند
+		if err != nil {
+			bad(w, "خواندن اطلاعات Xray ناموفق بود: "+err.Error())
+			return
+		}
+		b, _ := json.MarshalIndent(backupFile{Format: "tunnelpanel-backup", Version: 2, Tunnels: tn, Xray: xs}, "", " ")
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", `attachment; filename="tunnels-backup.json"`)
 		w.Write(b)
 	}))
 	m.HandleFunc("POST /api/restore", auth(func(w http.ResponseWriter, r *http.Request) {
-		in := map[string]Tunnel{}
-		if json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&in) != nil {
+		body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 8<<20))
+		if err != nil {
+			bad(w, "فایل پشتیبان نامعتبر است")
+			return
+		}
+		var bf backupFile
+		tunnelsIn := map[string]Tunnel{}
+		if json.Unmarshal(body, &bf) == nil && bf.Format == "tunnelpanel-backup" {
+			tunnelsIn = bf.Tunnels
+		} else if json.Unmarshal(body, &tunnelsIn) != nil { // فرمت قدیمی: فقط نقشهٔ تانل‌ها
 			bad(w, "فایل پشتیبان نامعتبر است")
 			return
 		}
 		mu.Lock()
 		defer mu.Unlock()
 		okN, errs := 0, []string{}
-		for n, t := range in {
+		for n, t := range tunnelsIn {
 			t.Name = n
 			if e := validate(&t); e != "" {
 				errs = append(errs, n+": "+e)
@@ -652,7 +671,15 @@ func main() {
 				okN++
 			}
 		}
-		reply(w, 200, map[string]any{"ok": okN, "errors": errs})
+		xrayN := 0
+		if bf.Xray != nil {
+			n, e := restoreXrayStore(bf.Xray)
+			xrayN = n
+			if e != nil {
+				errs = append(errs, "Xray: "+e.Error())
+			}
+		}
+		reply(w, 200, map[string]any{"ok": okN, "xray_clients": xrayN, "errors": errs})
 	}))
 	registerSys(m, auth)
 	m.HandleFunc("GET /api/settings", auth(func(w http.ResponseWriter, r *http.Request) {

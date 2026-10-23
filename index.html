@@ -278,7 +278,7 @@ select option{background:var(--ink8);color:var(--t1)}
   <a data-p="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>نمای کلی</a>
   <a data-p="tunnels" class="on"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 21h8v-6H3z"/></svg>تانل‌ها</a>
   <a data-p="create"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>ساخت تانل</a>
-  <a data-p="bind"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>اتصال به اینباند</a>
+  <a data-p="bind"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>اتصال تانل‌ها به اینباند ها</a>
   <a data-p="xray"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>اینباندها</a>
 <a data-p="clients"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>کلاینت‌ها</a>
 <a data-p="admins"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>مدیران</a>
@@ -406,6 +406,15 @@ select option{background:var(--ink8);color:var(--t1)}
   </section>
   <!-- تنظیمات -->
   <section id="p-xray" hidden>
+  <div class="card glass" role="alert" style="border:1px solid #F59E0B;margin-bottom:14px">
+   <b style="color:#F59E0B">⚠️ هنوز تست زنده نشده</b>
+   <ul style="margin:8px 0 0;padding-right:18px;font-size:13px;line-height:1.9">
+    <li>قبل از استفاده‌ی واقعی، روی یک سرور تست با یک کلاینت واقعی امتحان کن.</li>
+    <li>IP Limit برای کاربرانی که از تانل وصل می‌شوند کار نمی‌کند؛ Xray فقط 127.0.0.1 را می‌بیند.</li>
+    <li>لینک اشتراک روی گواهی خودامضای پنل ممکن است توسط بعضی اپ‌ها رد شود.</li>
+    <li>Reality فقط با RAW (tcp)، gRPC و XHTTP کار می‌کند.</li>
+   </ul>
+  </div>
  <div class="row" style="justify-content:space-between;margin-bottom:14px">
   <h2>اینباندها</h2>
   <button class="btn p" id="ix-new" aria-label="ساخت اینباند" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
@@ -552,6 +561,15 @@ select option{background:var(--ink8);color:var(--t1)}
 </div>
 </section>
 <section id="p-clients" hidden>
+  <div class="card glass" role="alert" style="border:1px solid #F59E0B;margin-bottom:14px">
+   <b style="color:#F59E0B">⚠️ هنوز تست زنده نشده</b>
+   <ul style="margin:8px 0 0;padding-right:18px;font-size:13px;line-height:1.9">
+    <li>قبل از استفاده‌ی واقعی، روی یک سرور تست با یک کلاینت واقعی امتحان کن.</li>
+    <li>IP Limit برای کاربرانی که از تانل وصل می‌شوند کار نمی‌کند؛ Xray فقط 127.0.0.1 را می‌بیند.</li>
+    <li>لینک اشتراک روی گواهی خودامضای پنل ممکن است توسط بعضی اپ‌ها رد شود.</li>
+    <li>Reality فقط با RAW (tcp)، gRPC و XHTTP کار می‌کند.</li>
+   </ul>
+  </div>
  <div class="row" style="justify-content:space-between;margin-bottom:14px">
   <h2>کلاینت‌ها</h2>
   <button class="btn p" id="ic-new" aria-label="ساخت کلاینت" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
@@ -596,7 +614,7 @@ select option{background:var(--ink8);color:var(--t1)}
     <div class="row" style="gap:8px;margin-bottom:6px"><button class="btn" id="ic-all" type="button">انتخاب همه</button><button class="btn" id="ic-none" type="button">پاک کردن</button></div>
     <div id="ic-inbounds"></div>
     <label class="sw"><input type="checkbox" id="ic-enabled" checked><i></i><span>فعال</span></label>
-    <p class="hint">حجم، IP Limit، HWID Limit، Traffic Reset، Auto renewal و Start after first use ذخیره می‌شوند ولی هنوز اعمال نمی‌شوند؛ اجرای آن‌ها نیاز به شمارش ترافیک دارد. انقضا و فعال/غیرفعال همین الان اعمال می‌شوند.</p>
+    <p class="hint">HWID Limit با لینک اشتراک اعمال می‌شود: دستگاه تازه بالاتر از حد، اشتراک نمی‌گیرد. IP Limit از access log سرور خارج شمرده می‌شود و با عبور از حد، کلاینت غیرفعال می‌شود (اتصال از تانل IP کاربر را نشان نمی‌دهد). حجم، Traffic Reset، Auto renewal و Start after first use هنوز اعمال نمی‌شوند.</p>
    </div>
 
    <div class="cpane" data-cpane="credentials" hidden>
@@ -721,7 +739,7 @@ select option{background:var(--ink8);color:var(--t1)}
 <script>
 const $=i=>document.getElementById(i);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const PAGES={bind:['اتصال به اینباند','انتخاب اینباند مقصد هر تانل'],admins:['مدیران','حساب‌های ادمین و نقش owner یا viewer'],xray:['اینباندها','ساخت و مدیریت inbound های Xray'],clients:['کلاینت‌ها','ساخت کلاینت و گرفتن لینک اتصال'],home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
+const PAGES={bind:['اتصال تانل‌ها به اینباند ها','انتخاب اینباند مقصد هر تانل'],admins:['مدیران','حساب‌های ادمین و نقش owner یا viewer'],xray:['اینباندها','ساخت و مدیریت inbound های Xray'],clients:['کلاینت‌ها','ساخت کلاینت و گرفتن لینک اتصال'],home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
 const TR=[['nahang','اختصاصی: رمزنگاری کامل، بدون امضای ثابت'],['nahangx','جدید: سریع و سخت‌شده؛ TLS ۱.۳ + ضد replay + کلید چرخشی'],['tcpmux','چندکاناله، پایدار'],['tcp','ساده و سریع'],['wssmux','رمزنگاری‌شده، چندکاناله'],['wss','رمزنگاری‌شده'],['wsmux','وب‌سوکت چندکاناله'],['ws','وب‌سوکت']];
 let tr='tcpmux',role='server',data=[],page='home',logName='';
 
@@ -834,6 +852,44 @@ async function showLog(n,q){if(!q){logName=n;logList();$('lgn').hidden=false;$('
 $('livebtn').onclick=()=>{live=!live;$('livebtn').classList.toggle('on',live);$('livebtn').textContent=live?'● زنده':'○ متوقف'};
 setInterval(()=>{if(page==='logs'&&live&&logName)showLog(logName,true)},3000);
 
+/* admins */
+let amBound=false;
+async function loadAdmins(){
+ const box=$('am-list');
+ if(!amBound){
+  amBound=true;
+  $('am-add').onclick=async()=>{
+   const u=$('am-user').value.trim(),pw=$('am-pass').value,role=$('am-role').value,e=$('am-e');
+   e.textContent='';
+   if(!u||!pw){e.textContent='نام کاربری و رمز الزامی است';return}
+   try{
+    const r=await post('/api/admins',{username:u,password:pw,role});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'خطا در ساخت مدیر');
+    $('am-user').value='';$('am-pass').value='';
+    toast('مدیر ساخته شد');loadAdmins();
+   }catch(x){e.textContent=x.message||'خطا در ارتباط'}
+  };
+  box.onclick=async ev=>{
+   const b=ev.target.closest('button[data-del]');if(!b)return;
+   if(!confirm('این مدیر حذف شود؟'))return;
+   try{
+    const r=await fetch('/api/admins/'+encodeURIComponent(b.dataset.del),{method:'DELETE',headers:H});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'خطا در حذف');
+    toast('حذف شد');
+   }catch(x){toast(x.message||'خطا در حذف','bad')}
+   loadAdmins();
+  };
+ }
+ try{
+  const r=await fetch('/api/admins');
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'خطا در بارگذاری');
+  box.innerHTML=d.map(a=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #ffffff12"><span class="mono" dir="ltr">${esc(a.username)}</span><span>${esc(a.role)}${a.primary?' (اصلی)':''}</span>${a.primary?'':`<button class="btn" data-del="${esc(a.username)}">حذف</button>`}</div>`).join('');
+ }catch(x){box.textContent=x.message||'خطا در بارگذاری مدیرها'}
+}
+
 /* settings */
 async function loadSet(){try{const d=await(await fetch('/api/settings')).json();$('tgc').value=d.chat||'';$('tgt').placeholder=d.tg?'ذخیره شده؛ برای تغییر دوباره وارد کن':'123456:ABC...';$('tgs').textContent=d.tg?'فعال':'غیرفعال';$('tgs').className='tag '+(d.tg?'ok':'bad')}catch(e){}}
 async function saveTg(b,m){try{const d=await(await post('/api/settings',b)).json();if(d.error)return toast(d.error,'bad');toast(m);$('tgt').value='';loadSet()}catch(e){toast('خطا در ارتباط','bad')}}
@@ -888,7 +944,7 @@ document.querySelectorAll('details').forEach(d=>{
  const b=document.createElement('button');
  b.type='button';b.className='btn dx';b.textContent='بستن';
  b.onclick=()=>d.removeAttribute('open');
- d.querySelector('.gb').appendChild(b);
+ (d.querySelector('.gb')||d).appendChild(b); // بعضی بخش‌ها (مثل Limit Fallback) .gb ندارند؛ اگر نداشته باشند، خود details میزبان دکمه می‌شود
 });
 document.addEventListener('click',e=>{
  document.querySelectorAll('details[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open')});
@@ -997,7 +1053,9 @@ function xSync(){
  $('ix-flow').disabled=$('ix-noflow').checked;
  if(ss){$('ix-sec').value='none';$('ix-net').value='tcp'}
  $('ix-sec').disabled=ss;$('ix-net').disabled=ss;
- const sec=$('ix-sec').value,net=$('ix-net').value;
+ const net=$('ix-net').value,rel=$('ix-sec').querySelector('option[value=reality]');
+ if(rel){rel.disabled=!['tcp','grpc','xhttp'].includes(net);if(rel.disabled&&$('ix-sec').value==='reality')$('ix-sec').value='none'}
+ const sec=$('ix-sec').value;
  $('ix-tls').hidden=sec!=='tls';$('ix-rel').hidden=sec!=='reality';if(sec==='tls'&&!$('ix-tls-certs').children.length)addCertRow();
  $('ix-ws').hidden=!['ws','httpupgrade','xhttp'].includes(net);$('ix-grpc').hidden=net!=='grpc';$('ix-xmode').hidden=net!=='xhttp';
  $('ix-p-vless').hidden=p!=='vless';
@@ -1023,7 +1081,7 @@ function renderXray(){
  const usable=xInb.filter(i=>i.protocol!=='shadowsocks');
  renderInboundChecks();
  $('ix-list').innerHTML=xInb.length?xInb.map(i=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(i.remark||'-')}</b><span>${esc(i.protocol)} · ${i.port} · ${esc(i.network||'tcp')} · ${esc(i.security||'none')}${i.disabled?' · غیرفعال':''}</span>${i.protocol==='shadowsocks'?`<button class="btn" data-ssl="${i.port}">لینک</button>`:''}</div>`).join(''):'<p>هنوز inbound ساخته نشده</p>';
- $('ic-list').innerHTML=xCli.length?xCli.map(c=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span>${(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]).map(p=>'پورت '+p).join('، ')}${c.group?' · گروه '+esc(c.group):''}${c.enabled?'':' · غیرفعال'}</span>${c.comment?`<span class="hint">${esc(c.comment)}</span>`:''}<button class="btn" data-cl="${esc(c.name)}">لینک</button></div>`).join(''):'<p>هنوز کلاینتی نیست</p>';
+ $('ic-list').innerHTML=xCli.length?xCli.map(c=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span>${(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]).map(p=>'پورت '+p).join('، ')}${c.group?' · گروه '+esc(c.group):''}${c.enabled?'':' · غیرفعال'}</span><span class="hint" dir="ltr">IP ${c.ip_limit||'∞'} · HWID ${(c.devices||[]).length}/${c.hwid_limit||'∞'}</span>${c.disabled_reason?`<span class="hint" style="color:#F59E0B">${esc(c.disabled_reason)}</span>`:''}${c.comment?`<span class="hint">${esc(c.comment)}</span>`:''}<button class="btn" data-cl="${esc(c.name)}">لینک</button><button class="btn" data-sub="${esc(c.name)}">اشتراک</button><button class="btn" data-rdev="${esc(c.name)}">ریست دستگاه‌ها</button>${(!c.enabled&&c.disabled_reason)?`<button class="btn p" data-ena="${esc(c.name)}">فعال کردن</button>`:''}</div>`).join(''):'<p>هنوز کلاینتی نیست</p>';
 }
 function showLink(link,note,out){
  const box=$(out);
@@ -1041,7 +1099,32 @@ async function xLink(qs,src,out){
  }catch(e){toast('خطا در ارتباط با پنل','bad')}
 }
 $('ix-list').onclick=e=>{const b=e.target.closest('[data-ssl]');if(b)xLink('inbound='+encodeURIComponent(b.dataset.ssl),'ib-server','ib-out')};
-$('ic-list').onclick=e=>{const b=e.target.closest('[data-cl]');if(b)xLink('name='+encodeURIComponent(b.dataset.cl),'ix-server','ix-out')};
+$('ic-list').onclick=async e=>{
+ const t=e.target;
+ const b=t.closest('[data-cl]');if(b){xLink('name='+encodeURIComponent(b.dataset.cl),'ix-server','ix-out');return}
+ const s=t.closest('[data-sub]');
+ if(s){
+  const c=xCli.find(x=>x.name===s.dataset.sub);
+  if(!c||!c.sub_token){toast('توکن اشتراک نیست','bad');return}
+  const srv=$('ix-server').value.trim();
+  const url=`${location.origin}/sub/${c.sub_token}`+(srv?`?server=${encodeURIComponent(srv)}`:'');
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('لینک اشتراک کپی شد'),()=>toast('کپی نشد','bad'));
+  else toast('مرورگر کپی را پشتیبانی نمی‌کند','bad');
+  return;
+ }
+ const r=t.closest('[data-rdev]');
+ if(r){
+  if(!confirm('لیست دستگاه‌های این کلاینت پاک شود؟'))return;
+  const res=await post(`/api/xray/clients/${encodeURIComponent(r.dataset.rdev)}/devices/reset`,{});
+  if(res.ok){toast('دستگاه‌ها ریست شدند');await loadXray()}else{const d=await res.json().catch(()=>({}));toast(d.error||'خطا','bad')}
+  return;
+ }
+ const en=t.closest('[data-ena]');
+ if(en){
+  const res=await post(`/api/xray/clients/${encodeURIComponent(en.dataset.ena)}/enable`,{});
+  if(res.ok){toast('کلاینت فعال شد');await loadXray()}else{const d=await res.json().catch(()=>({}));toast(d.error||'خطا','bad')}
+ }
+};
 /* امنیت: گواهی‌های TLS، ECH، Reality، ML-DSA-65، Limit Fallback */
 function randHexStr(n){const b=new Uint8Array(n);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function randAlnum(n){const a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';const b=new Uint8Array(n);crypto.getRandomValues(b);let s='';for(const x of b)s+=a[x%a.length];return s}
@@ -1203,6 +1286,14 @@ $('ix-add').onclick=async()=>{
   toast('inbound ساخته شد');$('ix-modal').hidden=true;await loadXray();
  }catch(e){$('ix-e').textContent='خطا در ارتباط با پنل'}
 };
+// intField عدد صحیح و نامنفی می‌خواند. خالی = ۰ (نامحدود)، ورودی غلط = null.
+// قبلاً "abc" یا "۵" (ارقام فارسی) به ۰ تبدیل می‌شد و کلاینت بی‌حد می‌شد.
+function intField(id){
+ const v=$(id).value.trim().replace(/[۰-۹]/g,d=>String(d.charCodeAt(0)-0x6F0)).replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660));
+ if(v==='')return 0;
+ if(!/^\d+$/.test(v))return null;
+ return parseInt(v,10);
+}
 function randEmail(){const a='abcdefghijklmnopqrstuvwxyz0123456789';const b=new Uint8Array(8);crypto.getRandomValues(b);let s='';for(const x of b)s+=a[x%a.length];return s}
 function randUUID(){
  if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
@@ -1252,11 +1343,13 @@ $('ic-link-refresh').onclick=()=>{$('ic-server').value=$('ic-server').value.trim
 $('ic-add').onclick=async()=>{
  $('ic-e').textContent='';
  const inbounds=[...document.querySelectorAll('.icb:checked')].map(x=>parseInt(x.value,10));
+ const gb=intField('ic-gb'),ipl=intField('ic-ipl'),hwid=intField('ic-hwid');
+ if(gb===null||ipl===null||hwid===null){$('ic-e').textContent='Traffic، IP Limit و HWID Limit باید عدد صحیح و بزرگ‌تر یا مساوی ۰ باشند';return}
  const body={
   name:$('ic-name').value.trim(),id:$('ic-uuid').value.trim(),enabled:$('ic-enabled').checked,inbounds,
   expire:parseInt($('ic-exp').value,10)||0,
-  limit_gb:parseInt($('ic-gb').value||'0',10)||0,ip_limit:parseInt($('ic-ipl').value||'0',10)||0,
-  hwid_limit:parseInt($('ic-hwid').value||'0',10)||0,traffic_reset:$('ic-reset').value,
+  limit_gb:gb,ip_limit:ipl,
+  hwid_limit:hwid,traffic_reset:$('ic-reset').value,
   auto_renew:$('ic-renew').checked,start_after_first_use:$('ic-after').checked,
   comment:$('ic-comment').value.trim(),group:$('ic-group').value.trim()
  };

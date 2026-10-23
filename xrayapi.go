@@ -15,6 +15,7 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 	registerXrayClientRoutes(m, auth)
 	registerXraySecRoutes(m, auth)
 	registerXrayStatusRoute(m, auth)
+	registerXrayShareRoutes(m, auth)
 	m.HandleFunc("GET /api/xray/inbounds", auth(func(w http.ResponseWriter, r *http.Request) {
 		st, err := loadStore()
 		if err != nil {
@@ -78,7 +79,7 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 				return
 			}
 			for _, in := range st.Inbounds {
-				if in.Port == port && in.Protocol == "shadowsocks" {
+				if in.Port == port && in.Protocol == "shadowsocks" && !in.Disabled {
 					reply(w, 200, map[string]string{"link": buildLink(nil, in, server)})
 					return
 				}
@@ -97,7 +98,7 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 				continue
 			}
 			for _, in := range st.Inbounds {
-				if c.attachedTo(in.Port) && !in.ExcludeSub {
+				if c.attachedTo(in.Port) && !in.ExcludeSub && !in.Disabled {
 					link := buildLink(&c, in, server)
 					if link == "" {
 						reply(w, 400, map[string]string{"error": "لینک برای این پروتکل ساخته نشد"})

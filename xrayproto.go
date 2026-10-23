@@ -47,13 +47,12 @@ func validateNetwork(in *Inbound) string {
 	if in.Protocol == "shadowsocks" && in.Network != "tcp" {
 		return "shadowsocks فقط روی tcp ساخته می‌شود"
 	}
+	// Reality فقط روی RAW (tcp)، gRPC و XHTTP کار می‌کند (Xray همین را هنگام لود کانفیگ چک می‌کند).
+	if in.Security == "reality" && in.Network != "tcp" && in.Network != "grpc" && in.Network != "xhttp" {
+		return "Reality فقط با tcp (RAW)، gRPC یا XHTTP کار می‌کند؛ شبکهٔ دیگر را با tls یا none بساز"
+	}
 	switch in.Network {
-	case "tcp", "ws", "grpc", "httpupgrade", "xhttp":
-		return ""
-	case "kcp":
-		if in.Security == "reality" {
-			return "mKCP با Reality سازگار نیست؛ از none یا tls استفاده کن"
-		}
+	case "tcp", "ws", "grpc", "httpupgrade", "xhttp", "kcp":
 		return ""
 	}
 	return "network باید tcp، kcp، ws، grpc، httpupgrade یا xhttp باشد"
@@ -201,6 +200,7 @@ func buildLink(c *Client, in Inbound, server string) string {
 	if !validServerAddr(server) {
 		return ""
 	}
+	server = shareHost(in, server)
 	switch in.Protocol {
 	case "shadowsocks":
 		userinfo := base64.RawURLEncoding.EncodeToString([]byte(ssMethod + ":" + in.Password))

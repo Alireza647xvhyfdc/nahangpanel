@@ -44,6 +44,15 @@ type Client struct {
 	StartAfterFirstUse bool   `json:"start_after_first_use,omitempty"`
 	Comment            string `json:"comment,omitempty"`
 	Group              string `json:"group,omitempty"`
+	// توکن لینک اشتراک (جدا از UUID) و دستگاه‌های ثبت‌شده برای HWID Limit
+	SubToken       string   `json:"sub_token,omitempty"`
+	Devices        []Device `json:"devices,omitempty"`
+	DisabledReason string   `json:"disabled_reason,omitempty"` // مثلاً ip_limit یا traffic_limit؛ خالی یعنی دستی یا فعال
+	// مصرف ترافیک (بایت) که از آمار Xray جمع شده، زمان ریست بعدی (unix) و دورهٔ انقضا (ثانیه)
+	UsedBytes  int64 `json:"used_bytes,omitempty"`
+	NextReset  int64 `json:"next_reset,omitempty"`
+	FirstUseAt int64 `json:"first_use_at,omitempty"` // برای Start after first use
+	Period     int64 `json:"period,omitempty"`       // طول دوره برای تمدید خودکار و Start after first use
 }
 
 // Inbound یک inbound ساده (فعلاً tcp و Security=none).
@@ -71,13 +80,16 @@ type Inbound struct {
 	Host        string   `json:"host,omitempty"` // ws، httpupgrade، xhttp
 	Mode        string   `json:"mode,omitempty"` // فقط xhttp
 	// تنظیمات بخش «پایه» (مثل پنل 3x-ui)
-	SortOrder     int    `json:"sort_order,omitempty"`     // ترتیب نمایش و اشتراک (کمتر = بالاتر)
-	ExcludeSub    bool   `json:"exclude_sub,omitempty"`    // اگر true باشد، در لینک‌های کلاینت نمی‌آید
-	DisableFlow   bool   `json:"disable_flow,omitempty"`   // اگر true باشد، flow (XTLS) خاموش می‌شود
-	ShareStrategy string `json:"share_strategy,omitempty"` // inbound_listen | server_ip (ذخیره می‌شود)
-	TotalFlow     int64  `json:"total_flow,omitempty"`     // سقف ترافیک به بایت؛ ۰ = نامحدود (ذخیره می‌شود)
-	TrafficReset  string `json:"traffic_reset,omitempty"`  // never | daily | weekly | monthly (ذخیره می‌شود)
-	Expires       int64  `json:"expires,omitempty"`        // انقضا به unix ثانیه؛ ۰ = بدون انقضا (ذخیره می‌شود)
+	SortOrder      int    `json:"sort_order,omitempty"`      // ترتیب نمایش و اشتراک (کمتر = بالاتر)
+	ExcludeSub     bool   `json:"exclude_sub,omitempty"`     // اگر true باشد، در لینک‌های کلاینت نمی‌آید
+	DisableFlow    bool   `json:"disable_flow,omitempty"`    // اگر true باشد، flow (XTLS) خاموش می‌شود
+	ShareStrategy  string `json:"share_strategy,omitempty"`  // inbound_listen | server_ip (ذخیره می‌شود)
+	TotalFlow      int64  `json:"total_flow,omitempty"`      // سقف ترافیک به بایت؛ ۰ = نامحدود (ذخیره می‌شود)
+	TrafficReset   string `json:"traffic_reset,omitempty"`   // never | daily | weekly | monthly (ذخیره می‌شود)
+	Expires        int64  `json:"expires,omitempty"`         // انقضا به unix ثانیه؛ ۰ = بدون انقضا
+	UsedBytes      int64  `json:"used_bytes,omitempty"`      // مصرف جمع‌شده از آمار Xray
+	NextReset      int64  `json:"next_reset,omitempty"`      // زمان ریست بعدی ترافیک (unix)
+	DisabledReason string `json:"disabled_reason,omitempty"` // traffic_limit یا expired؛ خالی یعنی دستی
 }
 
 // Store کل وضعیت پنل از نظر Xray است.
@@ -89,7 +101,7 @@ type Store struct {
 var reRemark = regexp.MustCompile(`^[A-Za-z0-9_\-]{1,32}$`)
 
 // پورت‌هایی که نباید برای inbound استفاده شوند (SSH، پنل تانل پیش‌فرض، تانل پیش‌فرض)
-var reservedPorts = map[int]bool{22: true, 3080: true, 28254: true}
+var reservedPorts = map[int]bool{22: true, 3080: true, 28254: true, xrayAPIPort: true}
 
 // سقف‌های معقول برای ورودی‌های عددی
 const (
@@ -187,7 +199,7 @@ func buildXrayJSON(st *Store) ([]byte, error) {
 		Sniff    map[string]any `json:"sniffing,omitempty"`
 	}
 
-	var inbounds []inboundJSON
+	var inbounds []any
 	for _, in := range st.Inbounds {
 		if in.Disabled {
 			continue
@@ -204,8 +216,22 @@ func buildXrayJSON(st *Store) ([]byte, error) {
 		})
 	}
 
+	// API آمار فقط روی localhost؛ برای خواندن مصرف هر کلاینت و هر inbound
+	inbounds = append(inbounds, map[string]any{
+		"tag": "api", "listen": "127.0.0.1", "port": xrayAPIPort, "protocol": "dokodemo-door",
+		"settings": map[string]any{"address": "127.0.0.1"},
+	})
 	cfg := map[string]any{
-		"log":       map[string]any{"loglevel": "warning"},
+		"log":   map[string]any{"loglevel": "warning", "access": accessLogPath},
+		"api":   map[string]any{"tag": "api", "services": []string{"StatsService"}},
+		"stats": map[string]any{},
+		"policy": map[string]any{
+			"levels": map[string]any{"0": map[string]any{"statsUserUplink": true, "statsUserDownlink": true}},
+			"system": map[string]any{"statsInboundUplink": true, "statsInboundDownlink": true},
+		},
+		"routing": map[string]any{"rules": []map[string]any{
+			{"type": "field", "inboundTag": []string{"api"}, "outboundTag": "api"},
+		}},
 		"inbounds":  inbounds,
 		"outbounds": []map[string]any{{"protocol": "freedom", "tag": "direct"}},
 	}
@@ -240,6 +266,9 @@ func writeXrayConfig(st *Store) error {
 		return fmt.Errorf("کانفیگ Xray نامعتبر است: %s", strings.TrimSpace(string(out)))
 	}
 	if err := os.MkdirAll(filepath.Dir(xrayConfigPath), 0o755); err != nil {
+		return err
+	}
+	if err := ensureAccessLogDir(); err != nil {
 		return err
 	}
 	if err := os.WriteFile(xrayConfigPath, b, 0o600); err != nil { // UUIDها محرمانه‌اند
