@@ -241,6 +241,28 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
      <div class="dinfo"><div class="dt">دیسک (/)</div><small id="vdisks">—</small></div>
     </div>
    </div>
+   <div class="hgrid" id="hstats"></div>
+  </section>
+
+  <!-- تانل‌ها -->
+  <section id="p-tunnels" hidden>
+   <div class="stats" id="stats"></div>
+   <div class="tl" id="list"></div>
+  </section>
+
+  <!-- ساخت تانل -->
+  <section id="p-create" hidden>
+   <div class="form">
+    <div class="card glass">
+     <label>نام تانل (انگلیسی، کوتاه)</label><input id="name" dir="ltr" class="mono" placeholder="t1" autocomplete="off">
+     <label>نقش این سرور</label>
+     <div class="seg" id="role"><button type="button" data-v="server" class="on">ایران (سرور)</button><button type="button" data-v="client">خارج (کلاینت)</button></div>
+     <label>ترنسپورت</label>
+     <div class="trs" id="trs"></div>
+     <div class="two">
+      <div><label id="al"></label><input id="addr" dir="ltr" class="mono" autocomplete="off"></div>
+      <div><label>پورت تانل</label><input id="tp" dir="ltr" class="mono" inputmode="numeric" placeholder="3080" autocomplete="off"></div>
+     </div>
      <label>توکن مشترک (در هر دو سرور یکسان)</label>
      <div class="tk"><input id="tok" dir="ltr" class="mono"><button class="btn" id="gen" type="button">تولید توکن</button></div>
      <label id="la"></label><input id="allow" dir="ltr" class="mono" placeholder="1.2.3.4">
@@ -355,6 +377,7 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
 </div>
 </div>
 
+<script>setTimeout(function(){var b=document.getElementById("boot");if(b)b.classList.add("gone")},3000)</script>
 <script>
 const $=i=>document.getElementById(i);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
