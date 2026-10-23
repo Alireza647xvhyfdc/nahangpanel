@@ -27,6 +27,14 @@ confirm() {
   [ "$answer" = "$2" ]
 }
 
+step() { echo ">>> $*"; }
+trap 'rc=$?; [ "$rc" -ne 0 ] && echo "!!! Install failed (exit code $rc) at line $LINENO. Fix the problem above and run the installer again." >&2' EXIT
+# download with timeouts and retries; prints a clear error instead of dying silently
+dl() {  # dl URL OUTPUT
+  curl -fL --connect-timeout 15 --max-time 300 --retry 3 --retry-delay 2 "$1" -o "$2" \
+    || { echo "!!! Download failed: $1" >&2; echo "    (check that this server can reach github.com, and that the release exists)" >&2; exit 1; }
+}
+
 uninstall_panel() {
   for u in $(systemctl list-units 'tp-*' --all --no-legend --plain 2>/dev/null | awk '{print $1}' | sed 's/\.service$//'); do
     systemctl disable --now "$u" 2>/dev/null || true
@@ -36,6 +44,9 @@ uninstall_panel() {
   rm -f "$SVC" /usr/local/bin/tunnelpanel /usr/local/bin/nahang
   iptables -S INPUT 2>/dev/null | grep -- '-j tp-' | sed 's/^-A/-D/' | while read -r r; do iptables $r || true; done
   for ch in $(iptables -S 2>/dev/null | awk '/^-N tp-/{print $2}'); do iptables -F "$ch" || true; iptables -X "$ch" || true; done
+  if [ -s /etc/tunnelpanel/host ] && [ -x /root/.acme.sh/acme.sh ]; then
+    /root/.acme.sh/acme.sh --remove -d "$(cat /etc/tunnelpanel/host)" >/dev/null 2>&1 || true
+  fi
   rm -rf /etc/tunnelpanel "$MENU_SHARE"
   systemctl daemon-reload || true
   echo "The panel has been removed."
@@ -99,8 +110,9 @@ fi
 LISTEN=127.0.0.1
 if [ "$PUBLIC" = 1 ]; then LISTEN=0.0.0.0; fi
 
+step "Checking requirements (curl, openssl)..."
 command -v curl >/dev/null || { apt-get update -y && apt-get install -y curl; }
-command -v openssl >/dev/null || apt-get install -y openssl
+command -v openssl >/dev/null || { apt-get update -y; apt-get install -y openssl; }
 
 mkdir -p /etc/tunnelpanel
 # Password: kept on update
@@ -116,7 +128,8 @@ A=$(uname -m); if [ "$A" = "x86_64" ]; then A=amd64; else A=arm64; fi
 
 # Backhaul core (only for the tcp/ws and mux transports)
 if [ ! -x /usr/local/bin/backhaul ]; then
-  curl -fL "https://github.com/Musixal/Backhaul/releases/latest/download/backhaul_linux_${A}.tar.gz" -o /tmp/bh.tgz
+  step "Downloading Backhaul core..."
+  dl "https://github.com/Musixal/Backhaul/releases/latest/download/backhaul_linux_${A}.tar.gz" /tmp/bh.tgz
   echo "Backhaul SHA256: $(sha256sum /tmp/bh.tgz | cut -d' ' -f1)"
   if [ -n "$BH_SHA256" ]; then
     echo "$BH_SHA256  /tmp/bh.tgz" | sha256sum -c - || { echo "Backhaul checksum mismatch"; exit 1; }
@@ -124,17 +137,127 @@ if [ ! -x /usr/local/bin/backhaul ]; then
   tar -xzf /tmp/bh.tgz -C /usr/local/bin backhaul && chmod +x /usr/local/bin/backhaul
 fi
 
-# Self-signed certificate for the wss and nahangx transports
-[ -f /etc/tunnelpanel/cert.pem ] || openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
-  -keyout /etc/tunnelpanel/key.pem -out /etc/tunnelpanel/cert.pem -subj "/CN=www.example.com" 2>/dev/null
+# ---------------------------------------------------------------------------
+# Certificate for the panel (HTTPS). Asked only on a fresh install / reinstall.
+#   1) Domain  -> trusted Let's Encrypt certificate for your domain
+#   2) IP      -> trusted Let's Encrypt certificate for the server IP (short-lived, auto-renewed)
+#   3) Self-signed (browser warning)
+# On update the existing certificate is kept untouched.
+# ---------------------------------------------------------------------------
+CERT_MODE=keep
+CERT_DOMAIN=""
+if [ "$UPDATE" != 1 ]; then
+  CERT_MODE=ip
+  if has_tty; then
+    echo
+    echo "How should the HTTPS certificate be issued?"
+    echo " 1) Domain  (Let's Encrypt, the domain must point to this server)"
+    echo " 2) IP      (Let's Encrypt, for the server IP address)"
+    echo " 3) Self-signed (no real certificate, browser shows a warning)"
+    case "$(ask 'Choice [2]: ' 2)" in
+      1) CERT_MODE=domain ;;
+      3) CERT_MODE=self ;;
+      *) CERT_MODE=ip ;;
+    esac
+  fi
+fi
+
+SERVER_IP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
+
+if [ "$CERT_MODE" = domain ]; then
+  while :; do
+    CERT_DOMAIN=$(ask "Domain name (e.g. panel.example.com): " "")
+    CERT_DOMAIN=$(echo "$CERT_DOMAIN" | tr 'A-Z' 'a-z' | tr -d ' ')
+    if [[ "$CERT_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$ ]]; then break; fi
+    echo "Invalid domain. Try again (example: panel.example.com)."
+  done
+  RESOLVED=$(getent ahostsv4 "$CERT_DOMAIN" 2>/dev/null | awk '{print $1; exit}')
+  if [ "$RESOLVED" != "$SERVER_IP" ]; then
+    echo "Warning: $CERT_DOMAIN resolves to '${RESOLVED:-nothing}', but this server's IP is $SERVER_IP."
+    if ! confirm "Continue anyway? [y/N]: " y; then
+      echo "Fix the DNS record and run the installer again."; exit 1
+    fi
+  fi
+fi
+
+issue_acme_cert() {  # issue_acme_cert MODE(domain|ip) VALUE ; returns non-zero on failure
+  local mode=$1 value=$2 AH=/root/.acme.sh
+  # port 80 must be free for the HTTP-01 challenge
+  if (exec 3<>"/dev/tcp/127.0.0.1/80") 2>/dev/null; then
+    echo "Port 80 is in use by another program; it is required to validate the certificate."
+    return 1
+  fi
+  command -v socat >/dev/null || { apt-get update -y >/dev/null 2>&1; apt-get install -y socat >/dev/null 2>&1; } || true
+  if [ ! -x "$AH/acme.sh" ]; then
+    step "Installing acme.sh..."
+    rm -rf /tmp/acme-src && mkdir -p /tmp/acme-src
+    curl -fL --connect-timeout 15 --max-time 120 --retry 3 \
+      "https://github.com/acmesh-official/acme.sh/archive/refs/heads/master.tar.gz" -o /tmp/acme-src.tgz || return 1
+    tar -xzf /tmp/acme-src.tgz -C /tmp/acme-src --strip-components=1 || return 1
+    (cd /tmp/acme-src && ./acme.sh --install --home "$AH" --accountemail "admin@${value//[^a-zA-Z0-9.-]/}.invalid" >/dev/null 2>&1) || true
+    rm -rf /tmp/acme-src /tmp/acme-src.tgz
+    [ -x "$AH/acme.sh" ] || return 1
+  fi
+  "$AH/acme.sh" --set-default-ca --server letsencrypt >/dev/null 2>&1 || true
+  step "Requesting certificate for $value (port 80 must be reachable from the internet)..."
+  local extra=()
+  [ "$mode" = ip ] && extra=(--certificate-profile shortlived --days 3)
+  "$AH/acme.sh" --issue -d "$value" --standalone --httpport 80 --server letsencrypt "${extra[@]}" --force \
+    || [ -s "$AH/${value}_ecc/fullchain.cer" ] || [ -s "$AH/$value/fullchain.cer" ] || return 1
+  "$AH/acme.sh" --install-cert -d "$value" --ecc \
+    --key-file /etc/tunnelpanel/key.pem --fullchain-file /etc/tunnelpanel/cert.pem \
+    --reloadcmd "systemctl restart tunnelpanel 2>/dev/null || true" >/dev/null 2>&1 \
+    || "$AH/acme.sh" --install-cert -d "$value" \
+    --key-file /etc/tunnelpanel/key.pem --fullchain-file /etc/tunnelpanel/cert.pem \
+    --reloadcmd "systemctl restart tunnelpanel 2>/dev/null || true" >/dev/null 2>&1 || true
+  [ -s /etc/tunnelpanel/cert.pem ] && [ -s /etc/tunnelpanel/key.pem ] || return 1
+  chmod 600 /etc/tunnelpanel/key.pem
+  return 0
+}
+
+PANEL_HOST="$SERVER_IP"
+case "$CERT_MODE" in
+  domain|ip)
+    step "Creating certificate (Let's Encrypt, $CERT_MODE)..."
+    if [ "$CERT_MODE" = domain ]; then WANT=$CERT_DOMAIN; else WANT=$SERVER_IP; fi
+    if issue_acme_cert "$CERT_MODE" "$WANT"; then
+      PANEL_HOST="$WANT"
+      echo "Trusted certificate installed for $WANT (renews automatically)."
+    else
+      echo "!!! Could not get a Let's Encrypt certificate for $WANT." >&2
+      echo "    Check: DNS/IP is correct, port 80 is open in the firewall and not used by another program." >&2
+      if [ -s /etc/tunnelpanel/cert.pem ]; then
+        echo "    The previous certificate was kept." >&2
+      else
+        echo "    Falling back to a self-signed certificate. Run the installer again later to retry." >&2
+        CERT_MODE=self
+      fi
+    fi
+    ;;
+esac
+
+# Self-signed certificate (also the fallback); used by the wss and nahangx transports too
+if [ "$CERT_MODE" = self ] || [ ! -s /etc/tunnelpanel/cert.pem ]; then
+  step "Creating self-signed certificate..."
+  openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+    -keyout /etc/tunnelpanel/key.pem -out /etc/tunnelpanel/cert.pem -subj "/CN=www.example.com" 2>/dev/null
+  rm -f /etc/tunnelpanel/host
+  [ "$CERT_MODE" = keep ] || CERT_MODE=self
+fi
+# Remember which host name the panel certificate is valid for (used by "sudo nahang")
+case "$CERT_MODE" in
+  domain|ip) printf '%s' "$PANEL_HOST" > /etc/tunnelpanel/host ;;
+esac
 
 # Download and verify the panel binary BEFORE stopping the service
 # (if the download fails, the running panel is left untouched)
 BASE="https://github.com/${REPO}/releases/latest/download"
-curl -fL "$BASE/tunnelpanel-linux-$A" -o /tmp/tunnelpanel-linux-$A
-curl -fL "$BASE/SHA256SUMS" -o /tmp/SHA256SUMS
+step "Downloading panel binary..."
+dl "$BASE/tunnelpanel-linux-$A" /tmp/tunnelpanel-linux-$A
+dl "$BASE/SHA256SUMS" /tmp/SHA256SUMS
 (cd /tmp && grep " tunnelpanel-linux-$A\$" SHA256SUMS | sha256sum -c -) || { echo "Panel binary checksum mismatch; install aborted"; exit 1; }
 
+step "Installing and starting the panel service..."
 systemctl stop tunnelpanel 2>/dev/null || true
 install -m 755 /tmp/tunnelpanel-linux-$A /usr/local/bin/tunnelpanel
 
@@ -159,7 +282,7 @@ if [ -f "$0" ] && [ "$(readlink -f "$0")" != "$MENU_SHARE/install.sh" ]; then
   cp "$0" "$MENU_SHARE/install.sh"
 elif [ ! -f "$MENU_SHARE/install.sh" ]; then
   # Run through a pipe (curl | bash): fetch a copy for future updates
-  curl -fsSL "https://raw.githubusercontent.com/$REPO/main/install.sh" -o "$MENU_SHARE/install.sh"
+  curl -fsSL --connect-timeout 15 --max-time 60 "https://raw.githubusercontent.com/$REPO/main/install.sh" -o "$MENU_SHARE/install.sh" || echo "Warning: could not save an installer copy for updates (not critical)."
 fi
 
 cat > /usr/local/bin/nahang <<'MENU'
@@ -199,7 +322,9 @@ show_addr() {
   ip=$(hostname -I 2>/dev/null | awk '{print $1}')
   a=""; grep -q -- '-listen 0.0.0.0' "$SVC" && a=1
   ip=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
-  if [ -n "$a" ]; then
+  if [ -n "$a" ] && [ -s "$DIR/host" ]; then
+    echo "Panel address: https://$(cat "$DIR/host"):$p  (trusted Let's Encrypt certificate)"
+  elif [ -n "$a" ]; then
     echo "Panel address: https://$ip:$p  (self-signed certificate, accept the browser warning)"
   else
     echo "The panel is local only. From your local machine run:"
@@ -302,8 +427,9 @@ echo "================================"
 if [ "$UPDATE" = 1 ]; then
   echo "Panel updated. Previous port and settings were kept."
 else
-  SERVER_IP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
-  if [ "$PUBLIC" = 1 ]; then
+  if [ "$PUBLIC" = 1 ] && [ "$CERT_MODE" != self ]; then
+    echo "Panel URL: https://$PANEL_HOST:$PORT  (trusted Let's Encrypt certificate)"
+  elif [ "$PUBLIC" = 1 ]; then
     echo "Panel URL: https://$SERVER_IP:$PORT  (self-signed certificate, accept the browser warning)"
   else
     echo "The panel listens locally only (not reachable from the internet). From your local machine run:"

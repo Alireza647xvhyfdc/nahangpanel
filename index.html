@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nahang · پنل تانل</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22fbg%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%2316202C%22/%3E%3Cstop offset=%221%22 stop-color=%22%23070A0F%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22ftile%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%2322D3EE%22/%3E%3Cstop offset=%221%22 stop-color=%22%238B5CF6%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x=%222%22 y=%222%22 width=%2260%22 height=%2260%22 rx=%2218%22 fill=%22url%28%23fbg%29%22 stroke=%22%2322D3EE%22 stroke-opacity=%22.35%22 stroke-width=%221%22/%3E%3Crect x=%2214%22 y=%2214%22 width=%2236%22 height=%2236%22 rx=%2211%22 fill=%22url%28%23ftile%29%22/%3E%3Cpath d=%22M 17 36 C 17 29 22 26 29 26 C 35 26 40 28 42 32 L 46 26 Q 43 33 46 40 L 42 38 C 38 42 32 42 27 42 C 21 42 17 40 17 36%22 fill=%22%230B0F14%22/%3E%3Cpath d=%22M 30 41 Q 29 46 25 48 Q 27 44 34 40 Z%22 fill=%22%230B0F14%22/%3E%3Cpath d=%22M 25 23 Q 23 20 21 17 M 25 23 L 25 18 M 25 23 Q 27 20 29 17%22 fill=%22none%22 stroke=%22%230B0F14%22 stroke-width=%221.6%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M 18 38 Q 22 39 27 37%22 fill=%22none%22 stroke=%22%2367E8F9%22 stroke-width=%221.1%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2222.5%22 cy=%2232.5%22 r=%221.3%22 fill=%22%23E6EDF5%22/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0B0F14">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300..800&display=swap" media="print" onload="this.media='all'">
 <style>
@@ -27,7 +29,7 @@ button,input{font:inherit;color:inherit}
 /* boot */
 #boot{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--ink95);text-align:center;transition:opacity .5s,visibility .5s}
 #boot.gone{opacity:0;visibility:hidden}
-.logo{display:grid;place-items:center;font-weight:900;color:var(--ink95);background:linear-gradient(135deg,var(--neon),var(--vio))}
+.logo{display:grid;place-items:center}.logo svg{width:100%;height:100%;display:block}
 #boot .logo{width:72px;height:72px;border-radius:20px;font-size:32px;margin:auto;animation:pop .7s cubic-bezier(.2,1.4,.3,1) both,glow 2s ease-in-out infinite 1s}
 @keyframes pop{from{transform:scale(.4) rotate(-12deg);opacity:0}}
 @keyframes glow{0%,100%{box-shadow:0 0 30px rgba(34,211,238,.35)}50%{box-shadow:0 0 70px rgba(139,92,246,.55)}}
@@ -121,6 +123,12 @@ details[open] summary::after{transform:rotate(45deg)}
 .hero .ver b{color:var(--neon);font-size:18px;margin-inline-start:4px}
 .hero .host{font-size:17px;font-weight:800;margin-top:4px}
 .hero small{color:var(--t3);font-size:12px}
+.xcard{margin:12px 0;padding:14px 16px}
+.xhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.xt{font-weight:700}
+.xbadge{font-size:12px;border:1px solid;border-radius:999px;padding:3px 10px}
+.xgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.xgrid small{display:block;color:var(--t2);font-size:12px;margin-bottom:4px}
 .upd{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t2);padding:8px 12px;border-radius:12px;border:1px solid var(--ln)}
 .upd.has{border-color:var(--ok);color:var(--ok);animation:glow 2.4s ease-in-out infinite}
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:12px}
@@ -169,6 +177,29 @@ input:focus{border-color:rgba(34,211,238,.6);box-shadow:0 0 0 3px rgba(34,211,23
 .tr.on b{color:var(--neon)}
 .tk{display:flex;gap:8px}.tk input{flex:1}
 .err{margin-top:12px;font-size:12.5px;color:var(--bad);min-height:20px}
+.fr{display:grid;grid-template-columns:minmax(118px,40%) 1fr;align-items:center;gap:10px;margin:10px 0}
+.fr .fl{font-size:13px;color:var(--t2);display:flex;align-items:center;gap:4px}
+.fr input,.fr select{margin:0}
+.fr .sw{margin:0}
+.dtp-btn{width:100%;text-align:right;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(11,15,20,.7);color:var(--t1);font:inherit;font-size:13px;cursor:pointer}
+.dtp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dtp-chip{padding:5px 10px;border-radius:999px;border:1px solid var(--ln);background:transparent;color:var(--t2);font:inherit;font-size:12px;cursor:pointer}
+.dtp-chip:hover,.dtp-nav:hover,.dtp-time button:hover{border-color:rgba(34,211,238,.5);color:var(--t1)}
+.dtp-cal{margin-top:10px;padding:10px;border:1px solid var(--ln);border-radius:12px;background:rgba(11,15,20,.5)}
+.dtp-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.dtp-title{font-size:14px;color:var(--t1);white-space:nowrap}
+.dtp-nav{white-space:nowrap;flex:0 0 auto}
+.dtp-nav,.dtp-time button{padding:6px 10px;border-radius:8px;border:1px solid var(--ln);background:transparent;color:var(--t2);font:inherit;font-size:12px;cursor:pointer}
+.dtp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dtp-wd{font-size:11px;color:var(--t3);margin-bottom:4px}
+.dtp-day{padding:7px 0;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--t1);font:inherit;font-size:13px;cursor:pointer}
+.dtp-day:hover{border-color:var(--ln)}
+.dtp-day.today{color:#38bdf8}
+.dtp-day.on{background:linear-gradient(135deg,var(--neon),var(--vio));color:#fff;border-color:transparent}
+.dtp-time{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.dtp-time label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);margin:0}
+.dtp-time input{width:72px;padding:6px 8px}
+.qh{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:11px;font-style:normal;cursor:help;flex:0 0 auto}
 .hint{border:1px solid rgba(255,255,255,.08);background:rgba(11,15,20,.5);border-radius:12px;padding:12px;font-size:12px;color:var(--t2);line-height:1.9}
 .hint b{color:var(--t1)}
 /* logs */
@@ -187,21 +218,71 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
 }
 @media(max-width:520px){.two,.trs{grid-template-columns:1fr 1fr}.tl{grid-template-columns:1fr}.live{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+.ro .btn.p{display:none!important}
+.psel{position:relative;width:100%}
+.psel-btn{width:100%;text-align:start;padding:10px 12px;border-radius:12px;background:rgba(11,15,20,.7);border:1px solid var(--ln);color:var(--t1);font:inherit;cursor:pointer}
+.psel-btn:disabled{opacity:.5;cursor:default}
+.psel-list{position:absolute;inset-inline:0;top:calc(100% + 6px);z-index:60;padding:6px;border-radius:14px;max-height:50vh;overflow:auto}
+.psel-it{display:block;width:100%;text-align:start;padding:11px 12px;border-radius:10px;background:transparent;border:0;color:var(--t1);font:inherit;cursor:pointer}
+.psel-it:hover{background:rgba(255,255,255,.06)}
+.psel-it.on{background:rgba(56,189,248,.16)}
+.psel-it:disabled{opacity:.4;cursor:default}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(3,6,10,.7);display:grid;place-items:center;padding:16px}
+.mbox{width:min(560px,100%);max-height:90vh;overflow:auto;padding:18px;border-radius:18px}
+.sec{border:1px solid var(--ln);border-radius:14px;padding:14px;margin-top:12px}
+.sec h4{margin-bottom:8px;color:var(--t2);font-size:13px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;border-bottom:1px solid var(--ln);margin-bottom:12px}
+.tabbtn{flex:none;padding:7px 12px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--t2);font:inherit;font-size:13px;cursor:pointer}
+.tabbtn.on{color:#38bdf8;border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.1)}
+.pane{padding-top:4px}
+.ck{display:flex;align-items:center;gap:8px;margin:8px 0}
+.sw{position:relative;display:inline-flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;user-select:none;color:var(--t1)}
+.sw input{position:absolute;opacity:0;width:0;height:0;margin:0;padding:0;pointer-events:none}
+.sw i{position:relative;flex:0 0 auto;width:46px;height:26px;border-radius:999px;background:var(--ink8);border:1px solid var(--ln);box-shadow:inset 0 1px 3px rgba(0,0,0,.4);transition:background .25s,border-color .25s,box-shadow .25s}
+.sw i::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--t2);box-shadow:0 1px 4px rgba(0,0,0,.45);transition:transform .25s,background .25s}
+.sw input:checked+i{background:linear-gradient(135deg,var(--neon),var(--vio));border-color:transparent;box-shadow:0 0 14px rgba(34,211,238,.35)}
+.sw input:checked+i::after{transform:translateX(20px);background:#fff}
+.sw input:focus-visible+i{outline:2px solid var(--neon);outline-offset:2px}
+.sw input:disabled+i{opacity:.5}
+.sw span{font-size:14px}
+select{appearance:none;-webkit-appearance:none;-moz-appearance:none;width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(11,15,20,.7) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2322D3EE' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat 12px center;color:var(--t1);font-size:13px;cursor:pointer;outline:0;transition:.2s}
+select:focus{border-color:rgba(34,211,238,.6);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+select:disabled{opacity:.5;cursor:not-allowed}
+select option{background:var(--ink8);color:var(--t1)}
+.sel-ov{position:fixed;inset:0;z-index:9999;background:rgba(3,6,10,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .2s}
+.sel-ov.show{opacity:1}
+.sel-sheet{width:min(380px,100%);max-height:80vh;overflow:auto;background:var(--ink8);border:1px solid var(--ln);border-radius:20px;padding:14px 10px;box-shadow:0 20px 60px rgba(0,0,0,.55);transform:scale(.94);transition:transform .25s}
+.sel-ov.show .sel-sheet{transform:none}
+.sel-t{font-size:12px;color:var(--t3);padding:4px 12px 10px}
+.sel-o{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 14px;margin:3px 0;border-radius:12px;background:transparent;border:1px solid transparent;color:var(--t1);font:inherit;font-size:14px;cursor:pointer;text-align:start}
+.sel-o:hover,.sel-o:active{background:rgba(255,255,255,.05)}
+.sel-o i{width:18px;height:18px;border-radius:50%;border:2px solid var(--t3);flex:0 0 auto;transition:.2s}
+.sel-o.on{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.35)}
+.sel-o.on i{border-color:var(--neon);background:radial-gradient(circle,var(--neon) 0 5px,transparent 6px)}
+.sel-o:disabled{opacity:.4;cursor:not-allowed}
+.hint{color:var(--t3);font-size:12px;margin-top:8px}
+.ctabbtn{flex:none;padding:7px 12px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--t2);font:inherit;font-size:13px;cursor:pointer}
+.ctabbtn.on{color:#38bdf8;border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.1)}
+.cpane{padding-top:4px}
 </style>
 </head>
 <body>
 <div class="orbs"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div><div class="grid"></div>
-<div id="boot"><div><div class="logo">N</div><div style="margin-top:14px;font-weight:700;letter-spacing:.2em;font-size:13px;color:rgba(255,255,255,.7)">NAHANG</div><div style="font-size:11px;color:var(--t3)">پنل تانل</div><div class="bbar"><i></i></div></div></div>
+<div id="boot"><div><div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgBootbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#16202C"/><stop offset="1" stop-color="#070A0F"/></linearGradient><linearGradient id="lgBoottile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="18" fill="url(#lgBootbg)" stroke="#22D3EE" stroke-opacity=".35" stroke-width="1"/><rect x="14" y="14" width="36" height="36" rx="11" fill="url(#lgBoottile)"/><path d="M 17 36 C 17 29 22 26 29 26 C 35 26 40 28 42 32 L 46 26 Q 43 33 46 40 L 42 38 C 38 42 32 42 27 42 C 21 42 17 40 17 36" fill="#0B0F14"/><path d="M 30 41 Q 29 46 25 48 Q 27 44 34 40 Z" fill="#0B0F14"/><path d="M 25 23 Q 23 20 21 17 M 25 23 L 25 18 M 25 23 Q 27 20 29 17" fill="none" stroke="#0B0F14" stroke-width="1.6" stroke-linecap="round"/><path d="M 18 38 Q 22 39 27 37" fill="none" stroke="#67E8F9" stroke-width="1.1" stroke-linecap="round"/><circle cx="22.5" cy="32.5" r="1.3" fill="#E6EDF5"/></svg></div><div style="margin-top:14px;font-weight:700;letter-spacing:.2em;font-size:13px;color:rgba(255,255,255,.7)">NAHANG</div><div style="font-size:11px;color:var(--t3)">پنل تانل</div><div class="bbar"><i></i></div></div></div>
 <div id="toasts"></div>
 
 <div class="app">
 <aside id="side" class="glass">
- <div class="brand"><div class="logo">N</div><div><b>Nahang</b><small>پنل تانل</small></div><button class="sx" id="sx" type="button" aria-label="بستن منو"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+ <div class="brand"><div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgSidebg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#16202C"/><stop offset="1" stop-color="#070A0F"/></linearGradient><linearGradient id="lgSidetile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="18" fill="url(#lgSidebg)" stroke="#22D3EE" stroke-opacity=".35" stroke-width="1"/><rect x="14" y="14" width="36" height="36" rx="11" fill="url(#lgSidetile)"/><path d="M 17 36 C 17 29 22 26 29 26 C 35 26 40 28 42 32 L 46 26 Q 43 33 46 40 L 42 38 C 38 42 32 42 27 42 C 21 42 17 40 17 36" fill="#0B0F14"/><path d="M 30 41 Q 29 46 25 48 Q 27 44 34 40 Z" fill="#0B0F14"/><path d="M 25 23 Q 23 20 21 17 M 25 23 L 25 18 M 25 23 Q 27 20 29 17" fill="none" stroke="#0B0F14" stroke-width="1.6" stroke-linecap="round"/><path d="M 18 38 Q 22 39 27 37" fill="none" stroke="#67E8F9" stroke-width="1.1" stroke-linecap="round"/><circle cx="22.5" cy="32.5" r="1.3" fill="#E6EDF5"/></svg></div><div><b>Nahang</b><small>پنل تانل</small></div><button class="sx" id="sx" type="button" aria-label="بستن منو"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
  <nav id="nav">
   <a data-p="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>نمای کلی</a>
   <a data-p="tunnels" class="on"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 21h8v-6H3z"/></svg>تانل‌ها</a>
   <a data-p="create"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>ساخت تانل</a>
-  <a data-p="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>تنظیمات</a>
+  <a data-p="bind"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg>اتصال به اینباند</a>
+  <a data-p="xray"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>اینباندها</a>
+<a data-p="clients"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>کلاینت‌ها</a>
+<a data-p="admins"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>مدیران</a>
+<a data-p="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>تنظیمات</a>
   <a data-p="guide"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6M9 12h4"/></svg>آموزش</a>
   <a data-p="logs"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>لاگ‌ها</a>
  </nav>
@@ -241,6 +322,14 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
      <div class="dinfo"><div class="dt">دیسک (/)</div><small id="vdisks">—</small></div>
     </div>
    </div>
+   <div class="card glass xcard" id="xcard">
+    <div class="xhead"><span class="xt">Xray</span><b id="xsvc" class="xbadge">—</b></div>
+    <div class="xgrid">
+     <div><small>نسخه</small><b id="xver">—</b></div>
+     <div><small>Inbound فعال</small><b id="xin">—</b></div>
+     <div><small>کلاینت فعال</small><b id="xcl">—</b></div>
+    </div>
+   </div>
    <div class="hgrid" id="hstats"></div>
   </section>
 
@@ -248,6 +337,29 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
   <section id="p-tunnels" hidden>
    <div class="stats" id="stats"></div>
    <div class="tl" id="list"></div>
+  </section>
+
+  <!-- اتصال تانل به اینباند -->
+  <section id="p-bind" hidden>
+   <div class="row" style="justify-content:space-between;margin-bottom:14px">
+    <h2>اتصال تانل‌ها به اینباند</h2>
+    <button class="btn p" id="bd-new" aria-label="اتصال تانل به اینباند" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
+   </div>
+   <div class="card glass">
+    <p class="sub" style="margin-top:0">هر تانل روی سرور خارج را به یک اینباند وصل کن. پورت مقصد تانل برابر پورت همان اینباند می‌شود.</p>
+    <div id="bd-list" style="margin-top:10px"></div>
+   </div>
+   <div id="bd-modal" class="modal" hidden>
+    <div class="mbox glass">
+     <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3>اتصال تانل به اینباند</h3><button class="btn" id="bd-close" aria-label="بستن">✕</button></div>
+     <label>تانل (فقط روی سرور خارج)</label>
+     <select id="bd-tunnel"></select>
+     <label>اینباند</label>
+     <select id="bd-inb"></select>
+     <p class="hint">با ذخیره، تانل یک بار دوباره راه‌اندازی می‌شود.</p>
+     <div class="row" style="margin-top:14px;justify-content:flex-end;gap:10px"><span class="err" id="bd-e"></span><button class="btn" id="bd-cancel">انصراف</button><button class="btn p" id="bd-save">ذخیره</button></div>
+    </div>
+   </div>
   </section>
 
   <!-- ساخت تانل -->
@@ -293,7 +405,235 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
    </div>
   </section>
   <!-- تنظیمات -->
-  <section id="p-settings" hidden>
+  <section id="p-xray" hidden>
+ <div class="row" style="justify-content:space-between;margin-bottom:14px">
+  <h2>اینباندها</h2>
+  <button class="btn p" id="ix-new" aria-label="ساخت اینباند" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
+ </div>
+ <div class="card glass">
+  <label>IP سرور برای لینک shadowsocks (IP سرور ایران)</label>
+  <input id="ib-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
+  <div id="ix-list" style="margin-top:10px"></div>
+  <div id="ib-out" style="margin-top:14px"></div>
+ </div>
+
+ <div id="ix-modal" class="modal" hidden>
+ <div class="mbox glass">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3>ساخت اینباند</h3><button class="btn" id="ix-close" aria-label="بستن">✕</button></div>
+  <div class="tabs">
+   <button type="button" class="tabbtn on" data-tab="basics">پایه</button>
+   <button type="button" class="tabbtn" data-tab="protocol">پروتکل</button>
+   <button type="button" class="tabbtn" data-tab="stream">انتقال</button>
+   <button type="button" class="tabbtn" data-tab="security">امنیت</button>
+   <button type="button" class="tabbtn" data-tab="sniffing">Sniffing</button>
+   <button type="button" class="tabbtn" data-tab="advanced">پیشرفته</button>
+  </div>
+
+  <div class="pane" data-pane="basics">
+   <div class="fr"><span class="fl">Enabled</span><label class="sw"><input type="checkbox" id="ix-enabled" checked><i></i></label></div>
+   <div class="fr"><span class="fl">Remark</span><input id="ix-remark" dir="ltr" class="mono" placeholder="main" autocomplete="off"></div>
+   <div class="fr"><span class="fl">Protocol</span><select id="ix-proto"><option value="vless">vless</option><option value="vmess">vmess</option><option value="trojan">trojan</option><option value="shadowsocks">shadowsocks</option></select></div>
+   <div class="fr"><span class="fl">Address<i class="qh" title="خالی بگذار تا روی همهٔ IPهای سرور گوش دهد. فقط IPی را بگذار که واقعاً روی همین سرور است.">?</i></span><input id="ix-listen" dir="ltr" class="mono" placeholder="Leave blank to listen on all IPs" autocomplete="off"></div>
+   <div class="fr"><span class="fl">Share address strategy<i class="qh" title="نحوهٔ انتخاب آدرس در لینک اشتراک.">?</i></span><select id="ix-share"><option value="inbound_listen">Inbound listen</option><option value="server_ip">Server IP</option></select></div>
+   <div class="fr"><span class="fl">Subscription sort order<i class="qh" title="ترتیب نمایش این inbound در لیست و لینک‌ها؛ عدد کمتر بالاتر است.">?</i></span><input id="ix-sort" type="number" min="0" max="9999" value="1" dir="ltr"></div>
+   <div class="fr"><span class="fl">Exclude from subscriptions<i class="qh" title="اگر روشن باشد، این inbound در لینک‌های کلاینت‌ها نمی‌آید.">?</i></span><label class="sw"><input type="checkbox" id="ix-excl"><i></i></label></div>
+   <div class="fr"><span class="fl">Disable XTLS flow<i class="qh" title="اگر روشن باشد، flow (xtls-rprx-vision) استفاده نمی‌شود.">?</i></span><label class="sw"><input type="checkbox" id="ix-noflow"><i></i></label></div>
+   <div class="fr"><span class="fl">Port</span><input id="ix-port" dir="ltr" class="mono" inputmode="numeric" placeholder="7955" autocomplete="off"></div>
+   <div class="fr"><span class="fl">Total Flow (GB)<i class="qh" title="سقف ترافیک به گیگابایت؛ ۰ یعنی نامحدود.">?</i></span><input id="ix-total" type="number" min="0" step="any" value="0" dir="ltr"></div>
+   <div class="fr"><span class="fl">Traffic Reset<i class="qh" title="بازنشانی دوره‌ای ترافیک.">?</i></span><select id="ix-reset"><option value="never">Never</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div>
+   <div class="fr"><span class="fl">Duration<i class="qh" title="زمان انقضا؛ «بدون انقضا» یعنی بدون محدودیت زمانی.">?</i></span><div><input type="hidden" id="ix-expires" value="0"><div class="dtp" data-dtp="ix-expires"></div></div></div>
+  </div>
+
+  <div class="pane" data-pane="protocol" hidden>
+   <p class="hint" id="ix-p-hint"></p>
+   <div id="ix-p-vless" hidden>
+    <label>Flow</label><select id="ix-flow"><option value="">خالی</option><option value="xtls-rprx-vision">xtls-rprx-vision</option></select>
+    <p class="hint">Flow فقط برای vless روی tcp با TLS یا Reality معتبر است.</p>
+   </div>
+  </div>
+
+  <div class="pane" data-pane="stream" hidden>
+   <label>شبکه (Network)</label><select id="ix-net"><option value="tcp">RAW (tcp)</option><option value="kcp">mKCP (UDP)</option><option value="ws">WebSocket</option><option value="grpc">gRPC</option><option value="httpupgrade">HTTPUpgrade</option><option value="xhttp">XHTTP</option></select>
+   <div id="ix-ws" hidden>
+    <label>مسیر (Path)، مثلاً /ray</label><input id="ix-path" dir="ltr" class="mono" placeholder="/" autocomplete="off">
+    <label>Host (اختیاری، دامنه)</label><input id="ix-host" dir="ltr" class="mono" placeholder="example.com" autocomplete="off">
+   </div>
+   <div id="ix-xmode" hidden><label>Mode (XHTTP)</label><select id="ix-mode"><option value="auto">auto</option><option value="packet-up">packet-up</option><option value="stream-up">stream-up</option><option value="stream-one">stream-one</option></select></div>
+   <div id="ix-grpc" hidden><label>Service name</label><input id="ix-svc" dir="ltr" class="mono" placeholder="grpc" autocomplete="off"></div>
+   <p class="hint" id="ix-net-hint"></p>
+  </div>
+
+  <div class="pane" data-pane="security" hidden>
+   <label>امنیت</label><select id="ix-sec"><option value="none">none</option><option value="tls">tls</option><option value="reality">reality</option></select>
+   <label>uTLS (Fingerprint، برای لینک کلاینت)</label><select id="ix-fp"><option value="chrome">chrome</option><option value="firefox">firefox</option><option value="safari">safari</option><option value="ios">ios</option><option value="android">android</option><option value="edge">edge</option><option value="random">random</option></select>
+
+   <div id="ix-tls" hidden>
+    <label>SNI (server_name)</label><input id="ix-tls-sn" dir="ltr" class="mono" placeholder="example.com" autocomplete="off">
+    <label>Cipher Suites (با کاما، خالی = خودکار)</label><input id="ix-tls-ciphers" dir="ltr" class="mono" autocomplete="off">
+    <label>حداقل نسخهٔ TLS</label><select id="ix-tls-min"><option value="">پیش‌فرض</option><option value="1.0">1.0</option><option value="1.1">1.1</option><option value="1.2" selected>1.2</option><option value="1.3">1.3</option></select>
+    <label>حداکثر نسخهٔ TLS</label><select id="ix-tls-max"><option value="">پیش‌فرض</option><option value="1.0">1.0</option><option value="1.1">1.1</option><option value="1.2">1.2</option><option value="1.3" selected>1.3</option></select>
+    <label>ALPN (با کاما جدا کن)</label><input id="ix-tls-alpn" dir="ltr" class="mono" list="dl-alpn" placeholder="h2,http/1.1" autocomplete="off">
+    <datalist id="dl-alpn"><option value="h2"><option value="http/1.1"></datalist>
+    <label>Curve Preferences (با کاما)</label><input id="ix-tls-curves" dir="ltr" class="mono" list="dl-curves" placeholder="X25519,P-256" autocomplete="off">
+    <datalist id="dl-curves"><option value="X25519"><option value="P-256"><option value="P-384"><option value="P-521"></datalist>
+
+    <div class="fr"><span class="fl">Digital Certificate</span><div><button type="button" class="btn p" id="ix-tls-cert-add">+ افزودن گواهی</button></div></div>
+    <div id="ix-tls-certs"></div>
+    <label>Usage Option</label><select id="ix-tls-usage"><option value="encipherment">encipherment</option><option value="verify">verify</option><option value="issue">issue</option></select>
+    <label>OCSP Stapling (ثانیه)</label><input type="number" id="ix-tls-ocsp" min="0" max="86400" value="0">
+    <label class="sw"><input type="checkbox" id="ix-tls-onetime"><i></i><span>One Time Loading</span></label>
+
+    <label>Pinned Peer Cert SHA-256 (هگز، با کاما)</label>
+    <div class="row" style="gap:8px;align-items:center"><input id="ix-tls-pin" dir="ltr" class="mono" autocomplete="off" style="flex:1"><button type="button" class="btn" id="ix-tls-pinfile" title="محاسبه از گواهی اول">از گواهی</button></div>
+    <label>Verify Peer Cert By Name (با کاما)</label><input id="ix-tls-vname" dir="ltr" class="mono" placeholder="example.com" autocomplete="off">
+    <label>Master Key Log (مسیر مطلق)</label><input id="ix-tls-mkl" dir="ltr" class="mono" placeholder="/var/log/sslkeylog.txt" autocomplete="off">
+    <label class="sw"><input type="checkbox" id="ix-tls-rej"><i></i><span>Reject Unknown SNI</span></label>
+    <label class="sw"><input type="checkbox" id="ix-tls-nosys"><i></i><span>Disable System Root</span></label>
+    <label class="sw"><input type="checkbox" id="ix-tls-resume"><i></i><span>Session Resumption</span></label>
+
+    <div class="fr"><span class="fl">ECH</span><label class="sw"><input type="checkbox" id="ix-tls-echsock"><i></i><span>ECH Sockopt</span></label></div>
+    <label>ECH key</label><textarea id="ix-tls-ech-key" dir="ltr" class="mono" rows="2" autocomplete="off"></textarea>
+    <label>ECH config</label><textarea id="ix-tls-ech-cfg" dir="ltr" class="mono" rows="2" autocomplete="off"></textarea>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn p" id="ix-tls-ech-gen">Get New ECH Cert</button><button type="button" class="btn" id="ix-tls-ech-clr">Clear</button></div>
+   </div>
+
+   <div id="ix-rel" hidden>
+    <label>Target (dest)</label>
+    <input id="ix-dest" dir="ltr" class="mono" placeholder="www.microsoft.com:443" autocomplete="off">
+    <div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0"><button type="button" class="btn" id="ix-rel-scan">Scan</button><button type="button" class="btn" id="ix-rel-find">Find Targets</button></div>
+    <div id="ix-rel-scanres" style="font-size:13px;color:var(--t2);margin-bottom:8px"></div>
+    <label>SNI (server_names، با کاما)</label><input id="ix-snames" dir="ltr" class="mono" placeholder="www.microsoft.com" autocomplete="off">
+    <label>Short IDs (هگز، با کاما؛ خالی = ساخت خودکار)</label>
+    <div class="row" style="gap:8px;align-items:center"><input id="ix-rel-sids" dir="ltr" class="mono" placeholder="a1b2c3d4,ff" autocomplete="off" style="flex:1"><button type="button" class="btn" id="ix-rel-sids-gen" title="ساخت تصادفی">↻</button></div>
+    <label>SpiderX (پیش‌فرض /)</label>
+    <div class="row" style="gap:8px;align-items:center"><input id="ix-rel-spx" dir="ltr" class="mono" placeholder="/" autocomplete="off" style="flex:1"><button type="button" class="btn" id="ix-rel-spx-gen" title="ساخت تصادفی">↻</button></div>
+    <label>Xver</label><input type="number" id="ix-rel-xver" min="0" max="2" value="0">
+    <label>Max Time Diff (ms، ۰ = بدون محدودیت)</label><input type="number" id="ix-rel-mtd" min="0" value="0">
+    <label>Min Client Ver</label><input id="ix-rel-minv" dir="ltr" class="mono" placeholder="x.y.z" autocomplete="off">
+    <label>Max Client Ver</label><input id="ix-rel-maxv" dir="ltr" class="mono" placeholder="x.y.z" autocomplete="off">
+    <label class="sw"><input type="checkbox" id="ix-rel-show"><i></i><span>Show (نمایش در لاگ)</span></label>
+
+    <label>Public Key</label><input id="ix-rel-pub" dir="ltr" class="mono" autocomplete="off">
+    <label>Private Key</label><input id="ix-rel-priv" dir="ltr" class="mono" autocomplete="off">
+    <div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn p" id="ix-rel-keygen">Get New Cert</button><button type="button" class="btn" id="ix-rel-keyclr">Clear</button></div>
+
+    <label>ML-DSA-65 Seed</label><textarea id="ix-rel-mseed" dir="ltr" class="mono" rows="2" autocomplete="off"></textarea>
+    <label>ML-DSA-65 Verify</label><textarea id="ix-rel-mver" dir="ltr" class="mono" rows="2" autocomplete="off"></textarea>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn p" id="ix-rel-mgen">Get New Seed</button><button type="button" class="btn" id="ix-rel-mclr">Clear</button></div>
+
+    <label>Master Key Log (مسیر مطلق)</label><input id="ix-rel-mkl" dir="ltr" class="mono" placeholder="/var/log/sslkeylog.txt" autocomplete="off">
+   </div>
+
+   <details id="ix-lf"><summary>Limit Fallback</summary>
+    <div style="padding:8px 0">
+     <p class="hint">Upload (بایت، سرعت بایت بر ثانیه، Burst بایت بر ثانیه)</p>
+     <div class="row" style="gap:8px;flex-wrap:wrap"><input type="number" min="0" id="ix-lf-ua" placeholder="afterBytes" style="flex:1;min-width:120px"><input type="number" min="0" id="ix-lf-ub" placeholder="bytesPerSec" style="flex:1;min-width:120px"><input type="number" min="0" id="ix-lf-ubt" placeholder="burstBytesPerSec" style="flex:1;min-width:120px"></div>
+     <p class="hint" style="margin-top:10px">Download</p>
+     <div class="row" style="gap:8px;flex-wrap:wrap"><input type="number" min="0" id="ix-lf-da" placeholder="afterBytes" style="flex:1;min-width:120px"><input type="number" min="0" id="ix-lf-db" placeholder="bytesPerSec" style="flex:1;min-width:120px"><input type="number" min="0" id="ix-lf-dbt" placeholder="burstBytesPerSec" style="flex:1;min-width:120px"></div>
+    </div>
+   </details>
+  </div>
+
+  <div class="pane" data-pane="sniffing" hidden>
+   <label class="sw"><input type="checkbox" id="ix-sniff"><i></i><span>فعال‌سازی Sniffing</span></label>
+   <p class="hint">برای شناسایی نوع ترافیک. اگر خاموش باشد، مقصدهای زیر اعمال نمی‌شوند.</p>
+   <div class="ck"><label class="ck"><input type="checkbox" class="sd" value="http"> HTTP</label></div>
+   <div class="ck"><label class="ck"><input type="checkbox" class="sd" value="tls" checked> TLS</label></div>
+   <div class="ck"><label class="ck"><input type="checkbox" class="sd" value="quic"> QUIC</label></div>
+   <div class="ck"><label class="ck"><input type="checkbox" class="sd" value="fakedns"> FakeDNS</label></div>
+  </div>
+
+  <div class="pane" data-pane="advanced" hidden>
+   <p class="hint">تنظیمات Listen (Address) به بخش «پایه» منتقل شد.</p>
+  </div>
+
+  <div class="row" style="margin-top:14px;justify-content:flex-end;gap:10px"><span class="err" id="ix-e"></span><button class="btn" id="ix-cancel">انصراف</button><button class="btn p" id="ix-add">ساخت اینباند</button></div>
+ </div>
+</div>
+</section>
+<section id="p-clients" hidden>
+ <div class="row" style="justify-content:space-between;margin-bottom:14px">
+  <h2>کلاینت‌ها</h2>
+  <button class="btn p" id="ic-new" aria-label="ساخت کلاینت" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
+ </div>
+ <div class="card glass">
+  <label>IP سرور برای لینک (tcp: IP سرور ایران، kcp: IP سرور خارج)</label>
+  <input id="ix-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
+  <div id="ic-list" style="margin-top:10px"></div>
+  <div id="ix-out" style="margin-top:14px"></div>
+ </div>
+
+ <div id="ic-modal" class="modal" hidden>
+  <div class="mbox glass">
+   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3>ساخت کلاینت</h3><button class="btn" id="ic-close" aria-label="بستن">✕</button></div>
+   <div class="tabs">
+    <button type="button" class="ctabbtn on" data-ctab="basics">پایه</button>
+    <button type="button" class="ctabbtn" data-ctab="credentials">اعتبارنامه</button>
+    <button type="button" class="ctabbtn" data-ctab="links">لینک‌ها</button>
+   </div>
+
+   <div class="cpane" data-cpane="basics">
+    <label>ایمیل / نام کلاینت (انگلیسی)</label>
+    <div class="row" style="gap:8px"><input id="ic-name" dir="ltr" class="mono" autocomplete="off" style="flex:1"><button class="btn" id="ic-gen" type="button" aria-label="نام تصادفی">⟳</button></div>
+    <div class="two">
+     <div><label>Traffic Limit (گیگ، ۰ = نامحدود)</label><input id="ic-gb" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+     <div><label>IP Limit (۰ = نامحدود)</label><input id="ic-ipl" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+    </div>
+    <div class="two">
+     <div><label>HWID Limit (۰ = نامحدود)</label><input id="ic-hwid" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+     <div><label>انقضا</label><input type="hidden" id="ic-exp" value="0"><div class="dtp" data-dtp="ic-exp"></div></div>
+    </div>
+    <div class="two">
+     <div><label>Traffic Reset</label><select id="ic-reset"><option value="never">Never</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div>
+     <div><label>Auto renewal</label><label class="sw"><input type="checkbox" id="ic-renew"><i></i><span>فعال</span></label></div>
+    </div>
+    <label class="sw"><input type="checkbox" id="ic-after"><i></i><span>Start after first use</span></label>
+    <div class="two">
+     <div><label>توضیح</label><input id="ic-comment" autocomplete="off"></div>
+     <div><label>گروه</label><input id="ic-group" dir="ltr" class="mono" placeholder="customer-a" autocomplete="off"></div>
+    </div>
+    <label>Inbound های متصل</label>
+    <div class="row" style="gap:8px;margin-bottom:6px"><button class="btn" id="ic-all" type="button">انتخاب همه</button><button class="btn" id="ic-none" type="button">پاک کردن</button></div>
+    <div id="ic-inbounds"></div>
+    <label class="sw"><input type="checkbox" id="ic-enabled" checked><i></i><span>فعال</span></label>
+    <p class="hint">حجم، IP Limit، HWID Limit، Traffic Reset، Auto renewal و Start after first use ذخیره می‌شوند ولی هنوز اعمال نمی‌شوند؛ اجرای آن‌ها نیاز به شمارش ترافیک دارد. انقضا و فعال/غیرفعال همین الان اعمال می‌شوند.</p>
+   </div>
+
+   <div class="cpane" data-cpane="credentials" hidden>
+    <label>UUID کلاینت</label>
+    <div class="row" style="gap:8px"><input id="ic-uuid" dir="ltr" class="mono" autocomplete="off" style="flex:1"><button class="btn" id="ic-uuid-gen" type="button" aria-label="UUID تازه">⟳</button></div>
+    <p class="hint">این UUID برای همهٔ inbound های انتخاب‌شده یکسان است. برای trojan همین مقدار رمز است. اگر خالی بماند پنل خودش می‌سازد.</p>
+   </div>
+
+   <div class="cpane" data-cpane="links" hidden>
+    <label>IP سرور برای لینک</label>
+    <input id="ic-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
+    <div class="row" style="margin-top:8px"><button class="btn" id="ic-link-refresh" type="button">ساخت دوباره لینک‌ها</button></div>
+    <div id="ic-links"></div>
+   </div>
+
+   <div class="row" style="margin-top:14px;justify-content:flex-end;gap:10px"><span class="err" id="ic-e"></span><button class="btn" id="ic-cancel">انصراف</button><button class="btn p" id="ic-add">ساخت کلاینت</button></div>
+  </div>
+ </div>
+</section>
+<section id="p-admins" hidden>
+ <div class="form">
+  <div class="card glass">
+   <h3>افزودن مدیر</h3>
+   <label>نام کاربری (انگلیسی، ۳ تا ۳۲ کاراکتر)</label><input id="am-user" dir="ltr" class="mono" autocomplete="off">
+   <label>رمز (حداقل ۸ کاراکتر)</label><input id="am-pass" type="password" dir="ltr" class="mono" autocomplete="new-password">
+   <label>نقش</label><select id="am-role"><option value="viewer">viewer (فقط مشاهده)</option><option value="owner">owner (همه‌کار)</option></select>
+   <div class="row" style="margin-top:14px"><button class="btn p" id="am-add">ساخت مدیر</button><span class="err" id="am-e"></span></div>
+  </div>
+  <div class="card glass">
+   <h3>راهنما</h3>
+   <p>مدیر اصلی همان نامی است که با <span class="mono" dir="ltr">-user</span> و <span class="mono" dir="ltr">-pass</span> اجرا شده است. همیشه owner است و از این بخش قابل حذف یا تغییر نیست.</p>
+   <p>viewer فقط صفحات را می‌بیند و نمی‌تواند تغییری بدهد. تغییر نقش یا حذف، بلافاصله روی نشست‌های فعال اثر می‌گذارد.</p>
+  </div>
+ </div>
+ <div class="card glass" style="margin-top:18px"><div id="am-list"></div></div>
+</section>
+<section id="p-settings" hidden>
    <div class="form" style="grid-template-columns:1fr 1fr">
     <div class="card glass">
      <div class="row"><h2>هشدار تلگرام</h2><span class="tag bad" id="tgs">غیرفعال</span></div>
@@ -381,7 +721,7 @@ pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);borde
 <script>
 const $=i=>document.getElementById(i);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const PAGES={home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
+const PAGES={bind:['اتصال به اینباند','انتخاب اینباند مقصد هر تانل'],admins:['مدیران','حساب‌های ادمین و نقش owner یا viewer'],xray:['اینباندها','ساخت و مدیریت inbound های Xray'],clients:['کلاینت‌ها','ساخت کلاینت و گرفتن لینک اتصال'],home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
 const TR=[['nahang','اختصاصی: رمزنگاری کامل، بدون امضای ثابت'],['nahangx','جدید: سریع و سخت‌شده؛ TLS ۱.۳ + ضد replay + کلید چرخشی'],['tcpmux','چندکاناله، پایدار'],['tcp','ساده و سریع'],['wssmux','رمزنگاری‌شده، چندکاناله'],['wss','رمزنگاری‌شده'],['wsmux','وب‌سوکت چندکاناله'],['ws','وب‌سوکت']];
 let tr='tcpmux',role='server',data=[],page='home',logName='';
 
@@ -390,10 +730,10 @@ function toast(m,k='ok'){const c={ok:'#34D399',bad:'#F87171'}[k],e=document.crea
 document.addEventListener('click',e=>{const b=e.target.closest('.btn');if(!b)return;const r=b.getBoundingClientRect(),s=document.createElement('span'),z=Math.max(r.width,r.height);s.className='rip';s.style.cssText=`width:${z}px;height:${z}px;left:${e.clientX-r.left-z/2}px;top:${e.clientY-r.top-z/2}px`;b.appendChild(s);setTimeout(()=>s.remove(),600)});
 
 /* navigation */
-function go(p){page=p;['home','tunnels','create','logs','settings','guide'].forEach(x=>$('p-'+x).hidden=x!==p);
+function go(p){page=p;['home','tunnels','create','logs','settings','guide','xray','clients','admins','bind'].forEach(x=>$('p-'+x).hidden=x!==p);
  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
  $('pt').textContent=PAGES[p][0];$('ps').textContent=PAGES[p][1];$('side').classList.remove('open');
- if(p==='logs')logList();if(p==='settings')loadSet();if(p==='home')loadHome();window.scrollTo({top:0})}
+ if(p==='logs')logList();if(p==='bind')bdLoad();if(p==='xray'||p==='clients')loadXray();if(p==='admins')loadAdmins();if(p==='settings')loadSet();if(p==='home')loadHome();window.scrollTo({top:0})}
 $('nav').onclick=e=>{const a=e.target.closest('a');if(a)go(a.dataset.p)};
 $('menu').onclick=()=>$('side').classList.toggle('open');
 $('sx').onclick=()=>$('side').classList.remove('open');
@@ -440,7 +780,7 @@ function render(){
   return `<div class="card glass hov tun ${rc}" style="animation-delay:${i*55}ms">
   <div class="row"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tn">${n}</span><span class="addr mono" style="margin:0">${esc(t.addr)}</span></div><span class="tag ${ST[s][0]}"><span class="dot ${s=='up'?'pulse':''}" style="width:6px;height:6px"></span> ${ST[s][1]}${t.conns>0?' · '+t.conns:''}</span></div>
   <div class="path">${path(t,i)}</div>
-  <div class="row l3"><div class="chips"><span class="tag ${t.role=='server'?'n':'v'}">${t.role=='server'?'ایران (سرور)':'خارج (کلاینت)'}</span><span class="tag mono">${esc(t.transport)}</span>${(t.ports||[]).map(p=>`<span class="tag mono">${esc(p)}</span>`).join('')}</div>
+  <div class="row l3"><div class="chips"><span class="tag ${t.role=='server'?'n':'v'}">${t.role=='server'?'ایران (سرور)':'خارج (کلاینت)'}</span><span class="tag mono">${esc(t.transport)}</span>${(t.ports||[]).map(p=>`<span class="tag mono">${esc(p)}</span>`).join('')}${t.inbound?`<span class="tag">اینباند: ${esc(t.inbound_name||'-')} · ${t.inbound}</span>`:''}</div>
   <div class="acts"><button class="btn" data-a="restart" data-n="${n}">ری‌استارت</button><button class="btn" data-a="${s=='up'||s=='wait'?'stop':'start'}" data-n="${n}">${s=='up'||s=='wait'?'توقف':'اجرا'}</button><button class="btn" data-a="logs" data-n="${n}">لاگ</button><button class="btn" data-a="edit" data-n="${n}">ویرایش</button><button class="btn" data-a="code" data-n="${n}">کد مقابل</button><button class="btn d" data-a="delete" data-n="${n}">حذف</button></div></div></div>`}).join('')
  :`<div class="card glass empty rise">هنوز تانلی نساخته‌ای.<br><button class="btn p" data-a="new">ساخت اولین تانل</button></div>`}
 $('list').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,n=b.dataset.n;
@@ -457,6 +797,7 @@ async function full(n){const r=await fetch('/api/tunnels/'+encodeURIComponent(n)
 let editing='';
 async function edit(n){try{const t=await full(n);editing=n;setRole(t.role);setTr(t.transport);$('name').value=n;$('name').readOnly=true;const [ip,pt]=splitAddr(t.addr);$('addr').value=ip;$('tp').value=pt;$('tok').value=t.token||'';$('allow').value=t.allow||'';$('ports').value=(t.ports||[]).join(', ');$('add').textContent='ذخیره تغییرات';$('cancel').hidden=false;go('create')}catch(e){toast('خواندن تانل ممکن نشد','bad')}}
 function resetForm(){editing='';$('name').readOnly=false;$('name').value='';$('add').textContent='ساخت و اجرا';$('cancel').hidden=true;$('imp').value='';$('e').textContent='';$('tp').value='';setRole('server');setTr('tcpmux');gen();$('allow').value='';$('ports').value=''}
+
 $('cancel').onclick=()=>{resetForm();go('tunnels')};
 function splitAddr(a){const i=(a||'').lastIndexOf(':');return i<0?[a||'',''] :[a.slice(0,i),a.slice(i+1)]}
 function buildAddr(){
@@ -582,11 +923,33 @@ function plot(id,series,max){
   ar.setAttribute('d',s.area&&k>1?d+` L${CW} ${CH} L${(CW-(k-1)*step).toFixed(1)} ${CH} Z`:'');
  });
 }
+async function loadXrayStatus(){
+ try{
+  const r=await fetch('/api/xray/status');
+  if(r.status==401){location.href='/login';return}
+  if(!r.ok)return;
+  renderXrayStatus(await r.json());
+ }catch(e){}
+}
+function renderXrayStatus(x){
+ const badge=$('xsvc');
+ let label,color;
+ if(!x.installed){label='Xray نصب نیست';color='#F87171'}
+ else if(x.service==='active'){label='در حال اجرا';color='var(--ok)'}
+ else if(x.service==='inactive'){label='متوقف';color='#FBBF24'}
+ else if(x.service==='failed'){label='خطا';color='#F87171'}
+ else{label=x.service||'نامشخص';color='var(--t2)'}
+ badge.textContent=label;badge.style.color=color;badge.style.borderColor=color;
+ $('xver').textContent=x.version||'—';
+ $('xin').textContent=x.installed?`${x.active_inbounds} از ${x.inbounds}`:'—';
+ $('xcl').textContent=x.installed?`${x.active_clients} از ${x.clients}`:'—';
+}
 async function loadHome(){
  if(homeBusy)return;homeBusy=true;
  try{
   const [s,u,t]=await Promise.all(['/api/system','/api/update','/api/tunnels'].map(x=>fetch(x).then(r=>{if(r.status==401){location.href='/login';throw 0}return r.json()})));
   renderHome(s,u,t);
+  loadXrayStatus();
  }catch(e){}finally{homeBusy=false}
 }
 function renderHome(s,u,t){
@@ -627,9 +990,525 @@ $('updb').onclick=async()=>{
   toast('به‌روزرسانی شروع شد؛ چند ثانیه بعد صفحه را تازه کن')
  }catch(e){toast('خطا در شروع به‌روزرسانی','bad')}
 };
+/* xray: inbound و کلاینت */
+let xInb=[],xCli=[];
+function xSync(){
+ const p=$('ix-proto').value,ss=p==='shadowsocks';
+ $('ix-flow').disabled=$('ix-noflow').checked;
+ if(ss){$('ix-sec').value='none';$('ix-net').value='tcp'}
+ $('ix-sec').disabled=ss;$('ix-net').disabled=ss;
+ const sec=$('ix-sec').value,net=$('ix-net').value;
+ $('ix-tls').hidden=sec!=='tls';$('ix-rel').hidden=sec!=='reality';if(sec==='tls'&&!$('ix-tls-certs').children.length)addCertRow();
+ $('ix-ws').hidden=!['ws','httpupgrade','xhttp'].includes(net);$('ix-grpc').hidden=net!=='grpc';$('ix-xmode').hidden=net!=='xhttp';
+ $('ix-p-vless').hidden=p!=='vless';
+ const hints={vless:'vless: چند کاربر با UUID.',vmess:'vmess: چند کاربر با UUID. Reality پشتیبانی نمی‌شود.',trojan:'trojan: چند کاربر؛ رمز هر کاربر همان UUID اوست. بدون TLS یا Reality ساخته نمی‌شود.',shadowsocks:'shadowsocks: یک رمز برای کل inbound؛ کاربر جدا ندارد و فقط tcp و بدون امنیت است.'};
+ $('ix-p-hint').textContent=hints[p]||'';
+ const nh={tcp:'RAW همان TCP ساده است.',ws:'WebSocket برای عبور از CDN یا پروکسی مناسب است.',grpc:'gRPC با سرویس نام‌گذاری‌شده.',httpupgrade:'HTTPUpgrade یک اتصال HTTP را ارتقا می‌دهد؛ مسیر و Host را بگذار.',xhttp:'XHTTP ترافیک را با HTTP می‌فرستد؛ mode را انتخاب کن (auto برای بیشتر موارد).',kcp:'mKCP روی UDP است و از تانل TCP عبور نمی‌کند؛ کلاینت باید مستقیم به سرور خارج وصل شود.'};
+ $('ix-net-hint').textContent=nh[net]||'';
+}
+$('ix-proto').onchange=xSync;$('ix-sec').onchange=xSync;$('ix-net').onchange=xSync;$('ix-noflow').onchange=xSync;
+function selectTab(name){document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));document.querySelectorAll('.pane').forEach(x=>x.hidden=x.dataset.pane!==name)}
+document.querySelectorAll('.tabbtn').forEach(b=>b.onclick=()=>selectTab(b.dataset.tab));
+$('ix-new').onclick=()=>{$('ix-e').textContent='';selectTab('basics');$('ix-modal').hidden=false;dtpSet('ix-expires',0);xSync()};
+$('ix-close').onclick=()=>{$('ix-modal').hidden=true};
+$('ix-cancel').onclick=()=>{$('ix-modal').hidden=true};
+$('ix-modal').onclick=e=>{if(e.target.id==='ix-modal')$('ix-modal').hidden=true};
+async function loadXray(){
+ try{
+  const [a,b]=await Promise.all(['/api/xray/inbounds','/api/xray/clients'].map(u=>fetch(u).then(r=>{if(r.status==401){location.href='/login';throw 0}if(!r.ok)throw 0;return r.json()})));
+  xInb=a||[];xCli=b||[];renderXray();
+ }catch(e){}
+}
+function renderXray(){
+ const usable=xInb.filter(i=>i.protocol!=='shadowsocks');
+ renderInboundChecks();
+ $('ix-list').innerHTML=xInb.length?xInb.map(i=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(i.remark||'-')}</b><span>${esc(i.protocol)} · ${i.port} · ${esc(i.network||'tcp')} · ${esc(i.security||'none')}${i.disabled?' · غیرفعال':''}</span>${i.protocol==='shadowsocks'?`<button class="btn" data-ssl="${i.port}">لینک</button>`:''}</div>`).join(''):'<p>هنوز inbound ساخته نشده</p>';
+ $('ic-list').innerHTML=xCli.length?xCli.map(c=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span>${(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]).map(p=>'پورت '+p).join('، ')}${c.group?' · گروه '+esc(c.group):''}${c.enabled?'':' · غیرفعال'}</span>${c.comment?`<span class="hint">${esc(c.comment)}</span>`:''}<button class="btn" data-cl="${esc(c.name)}">لینک</button></div>`).join(''):'<p>هنوز کلاینتی نیست</p>';
+}
+function showLink(link,note,out){
+ const box=$(out);
+ box.innerHTML=`<div class="card glass" style="padding:12px"><div class="mono" dir="ltr" style="word-break:break-all;font-size:12px">${esc(link)}</div>${note?`<p style="color:#F59E0B;margin-top:8px">${esc(note)}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn p" data-copy="1">کپی لینک</button></div></div>`;
+ box.querySelector('[data-copy]').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>toast('کپی شد'),()=>toast('کپی نشد','bad'));else toast('مرورگر کپی را پشتیبانی نمی‌کند','bad')};
+}
+async function xLink(qs,src,out){
+ const server=$(src).value.trim();
+ if(!server){toast('اول IP سرور را وارد کن','bad');return}
+ try{
+  const r=await fetch('/api/xray/link?server='+encodeURIComponent(server)+'&'+qs);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){toast(d.error||'خطا در ساخت لینک','bad');return}
+  showLink(d.link,d.note,out);
+ }catch(e){toast('خطا در ارتباط با پنل','bad')}
+}
+$('ix-list').onclick=e=>{const b=e.target.closest('[data-ssl]');if(b)xLink('inbound='+encodeURIComponent(b.dataset.ssl),'ib-server','ib-out')};
+$('ic-list').onclick=e=>{const b=e.target.closest('[data-cl]');if(b)xLink('name='+encodeURIComponent(b.dataset.cl),'ix-server','ix-out')};
+/* امنیت: گواهی‌های TLS، ECH، Reality، ML-DSA-65، Limit Fallback */
+function randHexStr(n){const b=new Uint8Array(n);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function randAlnum(n){const a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';const b=new Uint8Array(n);crypto.getRandomValues(b);let s='';for(const x of b)s+=a[x%a.length];return s}
+async function genCall(url,body){
+ try{const r=await post(url,body||{});const d=await r.json().catch(()=>({}));if(!r.ok){toast(d.error||'خطا در ساخت','bad');return null}return d}
+ catch(e){toast('خطا در ارتباط با پنل','bad');return null}
+}
+function certFields(row,mode,a,b){
+ const holder=row.querySelector('.cf');
+ const ta=mode==='content';
+ holder.innerHTML=ta
+  ?`<label>Public Key (PEM)</label><textarea dir="ltr" class="mono" data-f="cert" rows="4" autocomplete="off" placeholder="-----BEGIN CERTIFICATE-----"></textarea><label>Private Key (PEM)</label><textarea dir="ltr" class="mono" data-f="key" rows="4" autocomplete="off" placeholder="-----BEGIN PRIVATE KEY-----"></textarea>`
+  :`<label>Public Key (مسیر فایل روی سرور خارج)</label><input dir="ltr" class="mono" data-f="cert" placeholder="/etc/ssl/fullchain.pem" autocomplete="off"><label>Private Key (مسیر فایل روی سرور خارج)</label><input dir="ltr" class="mono" data-f="key" placeholder="/etc/ssl/privkey.pem" autocomplete="off">`;
+ holder.querySelector('[data-f=cert]').value=a||'';
+ holder.querySelector('[data-f=key]').value=b||'';
+}
+function setCertMode(row,mode){
+ row.dataset.mode=mode;
+ row.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
+ const a=row.querySelector('[data-f=cert]')?.value||'',b=row.querySelector('[data-f=key]')?.value||'';
+ certFields(row,mode,a,b);
+}
+function addCertRow(a,b,mode){
+ const box=$('ix-tls-certs');
+ if(box.children.length>=4){toast('حداکثر ۴ گواهی مجاز است','bad');return null}
+ const row=document.createElement('div');
+ row.className='card glass';row.dataset.cert='1';row.style.cssText='padding:12px;margin:10px 0';
+ row.innerHTML=`<div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Digital Certificate ${box.children.length+1}</b><div class="row" style="gap:6px"><button type="button" class="tabbtn" data-m="file">File Path</button><button type="button" class="tabbtn" data-m="content">File Content</button></div></div><div class="cf" style="margin-top:8px"></div><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn p" data-act="panel">Set Cert from Panel</button><button type="button" class="btn" data-act="clear">Clear</button><button type="button" class="btn" data-act="del">حذف</button></div>`;
+ box.appendChild(row);
+ setCertMode(row,mode||'file');
+ if(a!==undefined)row.querySelector('[data-f=cert]').value=a;
+ if(b!==undefined)row.querySelector('[data-f=key]').value=b;
+ return row;
+}
+function renumberCerts(){[...$('ix-tls-certs').children].forEach((r,i)=>{const b=r.querySelector('b');if(b)b.textContent='Digital Certificate '+(i+1)})}
+$('ix-tls-certs').onclick=async e=>{
+ const m=e.target.closest('[data-m]'),act=e.target.closest('[data-act]'),row=e.target.closest('[data-cert]');
+ if(!row)return;
+ if(m){setCertMode(row,m.dataset.m);return}
+ if(!act)return;
+ if(act.dataset.act==='del'){row.remove();renumberCerts();return}
+ if(act.dataset.act==='clear'){row.querySelectorAll('[data-f]').forEach(x=>x.value='');return}
+ if(act.dataset.act==='panel'){
+  try{
+   const r=await fetch('/api/xray/panel-cert');const d=await r.json().catch(()=>({}));
+   if(!r.ok){toast(d.error||'گواهی پنل پیدا نشد','bad');return}
+   setCertMode(row,'file');
+   row.querySelector('[data-f=cert]').value=d.cert_file;row.querySelector('[data-f=key]').value=d.key_file;
+   toast('گواهی پنل تنظیم شد');
+  }catch(err){toast('خطا در ارتباط با پنل','bad')}
+ }
+};
+$('ix-tls-cert-add').onclick=()=>{addCertRow()};
+$('ix-tls-pinfile').onclick=async()=>{
+ const row=[...$('ix-tls-certs').children].find(r=>r.dataset.mode==='file');
+ const path=row?row.querySelector('[data-f=cert]').value.trim():'';
+ if(!path){toast('یک گواهی با مسیر فایل اضافه کن','bad');return}
+ const d=await genCall('/api/xray/cert-pin',{path});
+ if(!d)return;
+ const cur=$('ix-tls-pin').value.split(',').map(x=>x.trim()).filter(Boolean);
+ if(!cur.includes(d.sha256))cur.push(d.sha256);
+ $('ix-tls-pin').value=cur.join(',');
+ toast('هش گواهی اضافه شد');
+};
+$('ix-tls-ech-gen').onclick=async()=>{
+ const sn=$('ix-tls-sn').value.trim();
+ if(!sn){toast('اول SNI را وارد کن','bad');return}
+ const d=await genCall('/api/xray/gen/ech',{server_name:sn});
+ if(!d)return;
+ $('ix-tls-ech-cfg').value=d.config;$('ix-tls-ech-key').value=d.key;
+};
+$('ix-tls-ech-clr').onclick=()=>{$('ix-tls-ech-cfg').value='';$('ix-tls-ech-key').value=''};
+$('ix-rel-sids-gen').onclick=()=>{$('ix-rel-sids').value=randHexStr(8)};
+$('ix-rel-spx-gen').onclick=()=>{$('ix-rel-spx').value='/'+randAlnum(10)};
+$('ix-rel-keygen').onclick=async()=>{
+ const d=await genCall('/api/xray/gen/reality');if(!d)return;
+ $('ix-rel-pub').value=d.public_key;$('ix-rel-priv').value=d.private_key;
+};
+$('ix-rel-keyclr').onclick=()=>{$('ix-rel-pub').value='';$('ix-rel-priv').value=''};
+$('ix-rel-mgen').onclick=async()=>{
+ const d=await genCall('/api/xray/gen/mldsa65');if(!d)return;
+ $('ix-rel-mseed').value=d.seed;$('ix-rel-mver').value=d.verify;
+};
+$('ix-rel-mclr').onclick=()=>{$('ix-rel-mseed').value='';$('ix-rel-mver').value=''};
+$('ix-rel-scan').onclick=async()=>{
+ const t=$('ix-dest').value.trim();
+ if(!t){toast('اول Target را بنویس','bad');return}
+ $('ix-rel-scanres').textContent='در حال بررسی…';
+ const d=await genCall('/api/xray/scan-target',{target:t});
+ if(!d)return;
+ $('ix-rel-scanres').textContent=(d.ok?'✓ ':'✗ ')+d.detail;
+};
+$('ix-rel-find').onclick=async()=>{
+ $('ix-rel-scanres').textContent='در حال جست‌وجو…';
+ try{
+  const r=await fetch('/api/xray/find-targets');const d=await r.json().catch(()=>({}));
+  const list=d.targets||[];
+  $('ix-rel-scanres').innerHTML=list.length?list.map(t=>`<button type="button" class="btn" data-tgt="${esc(t)}" style="margin:4px 4px 0 0">${esc(t)}</button>`).join(''):'هدف مناسبی پیدا نشد';
+ }catch(e){$('ix-rel-scanres').textContent='خطا در ارتباط با پنل'}
+};
+$('ix-rel-scanres').onclick=e=>{
+ const b=e.target.closest('[data-tgt]');if(!b)return;
+ const t=b.dataset.tgt;$('ix-dest').value=t;$('ix-snames').value=t.split(':')[0];toast('هدف انتخاب شد');
+};
+function lfVal(){
+ const g=id=>Math.max(0,parseInt($(id).value,10)||0);
+ const o={upload_after:g('ix-lf-ua'),upload_bps:g('ix-lf-ub'),upload_burst:g('ix-lf-ubt'),download_after:g('ix-lf-da'),download_bps:g('ix-lf-db'),download_burst:g('ix-lf-dbt')};
+ return Object.values(o).some(Boolean)?o:null;
+}
+function certsBody(){
+ return [...$('ix-tls-certs').children].map(row=>{
+  const a=row.querySelector('[data-f=cert]').value.trim(),b=row.querySelector('[data-f=key]').value.trim();
+  return row.dataset.mode==='content'?{mode:'content',cert_content:a,key_content:b}:{mode:'file',cert_file:a,key_file:b};
+ });
+}
+$('ix-add').onclick=async()=>{
+ $('ix-e').textContent='';
+ const p=$('ix-proto').value,ss=p==='shadowsocks';
+ const sec=ss?'none':$('ix-sec').value,net=ss?'tcp':$('ix-net').value;
+ const body={
+  remark:$('ix-remark').value.trim(),protocol:p,port:parseInt($('ix-port').value,10),
+  network:net,security:sec,disabled:!$('ix-enabled').checked,listen:$('ix-listen').value.trim(),
+  sniffing:$('ix-sniff').checked,sniff_dest:[...document.querySelectorAll('.sd:checked')].map(x=>x.value),
+  flow:p==='vless'&&!$('ix-noflow').checked?$('ix-flow').value:'',fingerprint:$('ix-fp').value,
+  path:$('ix-path').value.trim(),service_name:$('ix-svc').value.trim(),host:$('ix-host').value.trim(),mode:$('ix-mode').value,
+  share_strategy:$('ix-share').value,sort_order:parseInt($('ix-sort').value,10)||0,
+  exclude_sub:$('ix-excl').checked,disable_flow:$('ix-noflow').checked,
+  total_flow:Math.round((parseFloat($('ix-total').value)||0)*1073741824),
+  traffic_reset:$('ix-reset').value,expires:parseInt($('ix-expires').value,10)||0
+ };
+ const csv=id=>$(id).value.split(',').map(x=>x.trim()).filter(Boolean);
+  if(sec==='tls'){
+  const certs=certsBody();
+  if(!certs.length){$('ix-e').textContent='حداقل یک گواهی لازم است';return}
+  body.tls={
+   server_name:$('ix-tls-sn').value.trim(),certificates:certs,
+   usage:$('ix-tls-usage').value,alpn:csv('ix-tls-alpn'),min_version:$('ix-tls-min').value,max_version:$('ix-tls-max').value,
+   cipher_suites:csv('ix-tls-ciphers'),curves:csv('ix-tls-curves'),ocsp_stapling:parseInt($('ix-tls-ocsp').value,10)||0,
+   pinned_sha256:csv('ix-tls-pin'),verify_peer_name:csv('ix-tls-vname'),master_key_log:$('ix-tls-mkl').value.trim(),
+   reject_unknown_sni:$('ix-tls-rej').checked,disable_system_root:$('ix-tls-nosys').checked,
+   session_resumption:$('ix-tls-resume').checked,one_time_loading:$('ix-tls-onetime').checked,
+   ech_sockopt:$('ix-tls-echsock').checked,ech_key:$('ix-tls-ech-key').value.trim(),ech_config:$('ix-tls-ech-cfg').value.trim(),
+   limit_fallback:lfVal()
+  };
+ }
+ if(sec==='reality')body.reality={
+  dest:$('ix-dest').value.trim(),server_names:csv('ix-snames'),short_ids:csv('ix-rel-sids'),
+  spider_x:$('ix-rel-spx').value.trim(),xver:parseInt($('ix-rel-xver').value,10)||0,
+  max_time_diff:parseInt($('ix-rel-mtd').value,10)||0,min_client_ver:$('ix-rel-minv').value.trim(),
+  max_client_ver:$('ix-rel-maxv').value.trim(),show:$('ix-rel-show').checked,
+  private_key:$('ix-rel-priv').value.trim(),public_key:$('ix-rel-pub').value.trim(),
+  mldsa65_seed:$('ix-rel-mseed').value.trim(),mldsa65_verify:$('ix-rel-mver').value.trim(),
+  master_key_log:$('ix-rel-mkl').value.trim(),limit_fallback:lfVal()
+ };
+ try{
+  const r=await post('/api/xray/inbounds',body);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){$('ix-e').textContent=d.error||'خطا';return}
+  toast('inbound ساخته شد');$('ix-modal').hidden=true;await loadXray();
+ }catch(e){$('ix-e').textContent='خطا در ارتباط با پنل'}
+};
+function randEmail(){const a='abcdefghijklmnopqrstuvwxyz0123456789';const b=new Uint8Array(8);crypto.getRandomValues(b);let s='';for(const x of b)s+=a[x%a.length];return s}
+function randUUID(){
+ if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
+ const b=new Uint8Array(16);crypto.getRandomValues(b);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;
+ const h=[...b].map(x=>x.toString(16).padStart(2,'0')).join('');
+ return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+function renderInboundChecks(){
+ const list=xInb.filter(i=>i.protocol!=='shadowsocks');
+ $('ic-inbounds').innerHTML=list.length?list.map(i=>`<label class="ck"><input type="checkbox" class="icb" value="${i.port}"> ${esc(i.remark||'-')} · ${esc(i.protocol)} · ${i.port}</label>`).join(''):'<p class="hint">اول یک inbound (غیر از shadowsocks) بساز.</p>';
+}
+function selectCTab(name){document.querySelectorAll('.ctabbtn').forEach(b=>b.classList.toggle('on',b.dataset.ctab===name));document.querySelectorAll('.cpane').forEach(x=>x.hidden=x.dataset.cpane!==name)}
+document.querySelectorAll('.ctabbtn').forEach(b=>b.onclick=()=>selectCTab(b.dataset.ctab));
+let createdName='';
+async function loadClientLinks(name){
+ const box=$('ic-links'),server=$('ic-server').value.trim();
+ if(!server){box.innerHTML='<p class="hint">IP سرور را وارد کن و دوباره بساز.</p>';return}
+ try{
+  const r=await fetch('/api/xray/links?server='+encodeURIComponent(server)+'&name='+encodeURIComponent(name));
+  const d=await r.json().catch(()=>[]);
+  if(!r.ok){box.innerHTML=`<p class="hint">${esc(d.error||'خطا')}</p>`;return}
+  box.innerHTML=d.length?d.map((it,i)=>`<div class="card glass" style="padding:10px;margin-top:10px"><b>${esc(it.protocol)} · ${it.port}</b><div class="mono" dir="ltr" style="word-break:break-all;font-size:12px;margin-top:6px">${esc(it.link||'—')}</div>${it.note?`<p class="hint">${esc(it.note)}</p>`:''}${it.link?`<div class="row" style="margin-top:8px"><button class="btn p" data-cpy="${i}">کپی</button></div>`:''}</div>`).join(''):'<p class="hint">این کلاینت به هیچ inbound قابل لینکی وصل نیست.</p>';
+  box.querySelectorAll('[data-cpy]').forEach(b=>b.onclick=()=>{const link=d[+b.dataset.cpy].link;if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>toast('کپی شد'),()=>toast('کپی نشد','bad'));else toast('مرورگر کپی را پشتیبانی نمی‌کند','bad')});
+ }catch(e){box.innerHTML='<p class="hint">خطا در ارتباط با پنل</p>'}
+}
+$('ic-new').onclick=()=>{
+ renderInboundChecks();
+ $('ic-e').textContent='';
+ $('ic-name').value=randEmail();$('ic-uuid').value=randUUID();
+ $('ic-gb').value='0';$('ic-ipl').value='0';$('ic-hwid').value='0';dtpSet('ic-exp',0);
+ $('ic-after').checked=false;$('ic-reset').value='never';$('ic-renew').checked=false;
+ $('ic-comment').value='';$('ic-group').value='';$('ic-enabled').checked=true;
+ document.querySelectorAll('.icb').forEach(x=>x.checked=false);
+ $('ic-server').value=$('ix-server').value;
+ $('ic-links').innerHTML='';
+ $('ic-add').hidden=false;$('ic-cancel').textContent='انصراف';
+ selectCTab('basics');$('ic-modal').hidden=false;
+};
+$('ic-gen').onclick=()=>{$('ic-name').value=randEmail()};
+$('ic-uuid-gen').onclick=()=>{$('ic-uuid').value=randUUID()};
+$('ic-all').onclick=()=>document.querySelectorAll('.icb').forEach(x=>x.checked=true);
+$('ic-none').onclick=()=>document.querySelectorAll('.icb').forEach(x=>x.checked=false);
+$('ic-close').onclick=()=>{$('ic-modal').hidden=true};
+$('ic-cancel').onclick=()=>{$('ic-modal').hidden=true};
+$('ic-modal').onclick=e=>{if(e.target.id==='ic-modal')$('ic-modal').hidden=true};
+$('ic-link-refresh').onclick=()=>{$('ic-server').value=$('ic-server').value.trim();loadClientLinks(createdName||$('ic-name').value.trim())};
+$('ic-add').onclick=async()=>{
+ $('ic-e').textContent='';
+ const inbounds=[...document.querySelectorAll('.icb:checked')].map(x=>parseInt(x.value,10));
+ const body={
+  name:$('ic-name').value.trim(),id:$('ic-uuid').value.trim(),enabled:$('ic-enabled').checked,inbounds,
+  expire:parseInt($('ic-exp').value,10)||0,
+  limit_gb:parseInt($('ic-gb').value||'0',10)||0,ip_limit:parseInt($('ic-ipl').value||'0',10)||0,
+  hwid_limit:parseInt($('ic-hwid').value||'0',10)||0,traffic_reset:$('ic-reset').value,
+  auto_renew:$('ic-renew').checked,start_after_first_use:$('ic-after').checked,
+  comment:$('ic-comment').value.trim(),group:$('ic-group').value.trim()
+ };
+ try{
+  const r=await post('/api/xray/clients',body);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){$('ic-e').textContent=d.error||'خطا';return}
+  createdName=d.name||body.name;
+  $('ic-uuid').value=d.id||body.id;
+  toast('کلاینت ساخته شد');
+  $('ic-add').hidden=true;$('ic-cancel').textContent='بستن';
+  selectCTab('links');
+  await loadClientLinks(createdName);
+  await loadXray();
+ }catch(e){$('ic-e').textContent='خطا در ارتباط با پنل'}
+};
 setInterval(()=>{if(page==='home')loadHome()},4000);
+let bdTunnels=[],bdInbounds=[];
+async function bdLoad(){
+ try{
+  const [t,i]=await Promise.all(['/api/tunnels','/api/xray/inbounds'].map(u=>fetch(u).then(r=>{if(!r.ok)throw 0;return r.json()})));
+  bdTunnels=t;bdInbounds=i;bdRender();
+ }catch(e){$('bd-list').innerHTML='<p class="sub">خواندن اطلاعات ممکن نشد.</p>'}
+}
+function bdRender(){
+ const cl=bdTunnels.filter(t=>t.role==='client');
+ $('bd-list').innerHTML=cl.length?cl.map(t=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap;justify-content:space-between"><div><b>${esc(t.name)}</b><div class="sub" style="margin-top:4px">پورت‌ها: ${esc((t.ports||[]).join('، ')||'-')}</div></div><div class="row" style="gap:8px"><span class="tag">${t.inbound?'اینباند: '+esc(t.inbound_name||'-')+' · '+t.inbound:'بدون اتصال'}</span><button class="btn" data-bd="${esc(t.name)}">تغییر</button></div></div>`).join(''):'<p class="sub">هنوز تانلی روی سرور خارج نساخته‌ای.</p>';
+}
+function bdOpen(name){
+ const cl=bdTunnels.filter(t=>t.role==='client');
+ $('bd-e').textContent='';
+ if(!cl.length){$('bd-e').textContent='اول یک تانل روی سرور خارج بساز';return}
+ $('bd-tunnel').innerHTML=cl.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+ if(name)$('bd-tunnel').value=name;
+ $('bd-inb').innerHTML='<option value="0">بدون اتصال</option>'+bdInbounds.map(i=>`<option value="${i.port}">${esc(i.remark||'-')} · ${esc(i.protocol)} · ${i.port}</option>`).join('');
+ bdPreset();
+ $('bd-modal').hidden=false;
+}
+function bdPreset(){
+ const cur=bdTunnels.find(t=>t.name===$('bd-tunnel').value);
+ $('bd-inb').value=String(cur&&cur.inbound||0);
+}
+$('bd-tunnel').onchange=bdPreset;
+$('bd-new').onclick=()=>bdOpen();
+$('bd-list').onclick=e=>{const b=e.target.closest('[data-bd]');if(b)bdOpen(b.dataset.bd)};
+$('bd-close').onclick=()=>{$('bd-modal').hidden=true};
+$('bd-cancel').onclick=()=>{$('bd-modal').hidden=true};
+$('bd-modal').onclick=e=>{if(e.target.id==='bd-modal')$('bd-modal').hidden=true};
+$('bd-save').onclick=async()=>{
+ const name=$('bd-tunnel').value,inbound=+$('bd-inb').value||0;
+ $('bd-e').textContent='';
+ if(!name){$('bd-e').textContent='تانلی انتخاب نشده';return}
+ try{
+  const r=await post(`/api/tunnels/${encodeURIComponent(name)}/bind`,{inbound});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){$('bd-e').textContent=d.error||'خطا';return}
+  toast('اتصال ذخیره شد');$('bd-modal').hidden=true;await bdLoad();load();
+ }catch(e){$('bd-e').textContent='خطا در ارتباط با پنل'}
+};
 gen();rl();go('home');load();setInterval(load,10000);
 window.addEventListener('load',()=>setTimeout(()=>$('boot').classList.add('gone'),900));setTimeout(()=>$('boot').classList.add('gone'),2000);
+
+/* انتخاب‌گر هم‌تراز تم: به‌جای منوی بومی مرورگر/سیستم، یک برگهٔ پایینی با استایل پنل باز می‌شود */
+function openSelSheet(sel){
+ if(sel.disabled)return;
+ const prev=sel.previousElementSibling;
+ const title=prev&&prev.tagName==='LABEL'?prev.textContent.trim():'انتخاب';
+ const ov=document.createElement('div');
+ ov.className='sel-ov';
+ ov.innerHTML='<div class="sel-sheet" role="listbox"><div class="sel-t">'+esc(title)+'</div>'+
+  [...sel.options].map((o,i)=>'<button type="button" class="sel-o'+(i===sel.selectedIndex?' on':'')+'" data-i="'+i+'"'+(o.disabled?' disabled':'')+'><span>'+esc(o.textContent)+'</span><i></i></button>').join('')+
+  '</div>';
+ document.body.appendChild(ov);
+ requestAnimationFrame(()=>ov.classList.add('show'));
+ const close=()=>{ov.remove();document.removeEventListener('keydown',onKey)};
+ const onKey=e=>{if(e.key==='Escape')close()};
+ document.addEventListener('keydown',onKey);
+ ov.onclick=e=>{
+  if(e.target===ov){close();return}
+  const b=e.target.closest('.sel-o');
+  if(!b||b.disabled)return;
+  sel.selectedIndex=+b.dataset.i;
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+  close();
+ };
+}
+document.querySelectorAll('select').forEach(sel=>{
+ const open=e=>{e.preventDefault();openSelSheet(sel)};
+ sel.addEventListener('mousedown',open);
+ sel.addEventListener('touchstart',open,{passive:false});
+ sel.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSelSheet(sel)}});
+});
+</script>
+<script>
+/* ===== انتخاب تاریخ و ساعت خود پنل (تقویم شمسی؛ جایگزین تقویم بومی مرورگر) ===== */
+const DTP_MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const DTP_WD=['ش','ی','د','س','چ','پ','ج'];
+const DTP_PRESETS=[
+ ['۱ ساعت',d=>d.setHours(d.getHours()+1)],
+ ['۱ روز',d=>d.setDate(d.getDate()+1)],
+ ['۱ هفته',d=>d.setDate(d.getDate()+7)],
+ ['۱ ماه',d=>d.setMonth(d.getMonth()+1)],
+ ['۳ ماه',d=>d.setMonth(d.getMonth()+3)],
+ ['۶ ماه',d=>d.setMonth(d.getMonth()+6)],
+ ['۱ سال',d=>d.setFullYear(d.getFullYear()+1)]
+];
+const DTP_DAY_MS=864e5;
+const DTP_F=new Intl.DateTimeFormat('en-u-ca-persian-nu-latn',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'});
+const faNum=s=>String(s).replace(/\d/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
+const pad2=n=>String(n).padStart(2,'0');
+// تاریخ میلادی (y، m، d) -> [سال، ماه، روز] شمسی
+function dtpToJalali(y,m,d){
+ const p=DTP_F.formatToParts(new Date(Date.UTC(y,m-1,d)));
+ const g=t=>Number(p.find(x=>x.type===t).value);
+ return [g('year'),g('month'),g('day')];
+}
+// تاریخ شمسی -> [سال، ماه، روز] میلادی (با جستجوی روز به روز)
+function dtpToGregorian(jy,jm,jd){
+ let t=Date.UTC(jy+621,2,19);
+ for(let i=0;i<800;i++){
+  const dt=new Date(t);
+  const c=dtpToJalali(dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate());
+  const cmp=c[0]!==jy?c[0]-jy:c[1]!==jm?c[1]-jm:c[2]-jd;
+  if(cmp===0)return [dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate()];
+  t+=cmp<0?DTP_DAY_MS:-DTP_DAY_MS;
+ }
+ return null;
+}
+function dtpDaysInMonth(jy,jm){
+ if(jm<=6)return 31;
+ if(jm<=11)return 30;
+ return dtpToGregorian(jy,12,30)?30:29;
+}
+const DTP={}; // id -> ریشهٔ کامپوننت
+
+function dtpStateFromValue(root){
+ const ts=parseInt($(root.dataset.dtp).value,10)||0;
+ if(!ts){root._st.sel=null;root._st.view=dtpToJalali(...dtpLocalYMD(new Date()));return}
+ const d=new Date(ts*1000);
+ root._st.sel=dtpToJalali(d.getFullYear(),d.getMonth()+1,d.getDate());
+ root._st.h=d.getHours();root._st.mi=d.getMinutes();
+ root._st.view=root._st.sel.slice();
+}
+function dtpLocalYMD(d){return [d.getFullYear(),d.getMonth()+1,d.getDate()]}
+
+function dtpSync(root){
+ const st=root._st;
+ dtpStateFromValue(root);
+ const ts=parseInt($(root.dataset.dtp).value,10)||0;
+ const btn=root.querySelector('.dtp-btn');
+ if(ts&&st.sel){
+  btn.textContent=`${faNum(st.sel[2])} ${DTP_MONTHS[st.sel[1]-1]} ${faNum(st.sel[0])}، ساعت ${faNum(pad2(st.h))}:${faNum(pad2(st.mi))}`;
+  root.querySelector('.dtp-h').value=st.h;root.querySelector('.dtp-m').value=st.mi;
+ }else{
+  btn.textContent='بدون انقضا';
+  root.querySelector('.dtp-h').value='';root.querySelector('.dtp-m').value='';
+ }
+ dtpRender(root);
+}
+
+function dtpCommit(root){
+ const st=root._st;
+ if(!st.sel)return;
+ const g=dtpToGregorian(...st.sel);
+ if(!g)return;
+ const ts=Math.floor(new Date(g[0],g[1]-1,g[2],st.h,st.mi).getTime()/1000);
+ $(root.dataset.dtp).value=ts;
+ dtpSync(root);
+}
+
+function dtpRender(root){
+ const st=root._st;
+ const [vy,vm]=st.view;
+ const today=dtpToJalali(...dtpLocalYMD(new Date()));
+ root.querySelector('.dtp-title').textContent=`${DTP_MONTHS[vm-1]} ${faNum(vy)}`;
+ const g=dtpToGregorian(vy,vm,1);
+ const wd=g?new Date(Date.UTC(g[0],g[1]-1,g[2])).getUTCDay():0;
+ const offset=(wd+1)%7; // هفته از شنبه شروع می‌شود
+ const days=root.querySelector('.dtp-days');
+ let html='';
+ for(let i=0;i<offset;i++)html+='<span></span>';
+ const n=dtpDaysInMonth(vy,vm);
+ for(let d=1;d<=n;d++){
+  const isSel=st.sel&&st.sel[0]===vy&&st.sel[1]===vm&&st.sel[2]===d;
+  const isToday=today[0]===vy&&today[1]===vm&&today[2]===d;
+  html+=`<button type="button" class="dtp-day${isSel?' on':''}${isToday?' today':''}" data-d="${d}">${faNum(d)}</button>`;
+ }
+ days.innerHTML=html;
+ root.querySelector('.dtp-wd').innerHTML=DTP_WD.map(x=>`<span>${x}</span>`).join('');
+}
+
+function mountDTP(root){
+ const id=root.dataset.dtp;
+ DTP[id]=root;
+ root._st={sel:null,view:null,h:0,mi:0};
+ root.innerHTML=`
+  <button type="button" class="dtp-btn" aria-expanded="false"></button>
+  <div class="dtp-chips">
+   ${DTP_PRESETS.map((p,i)=>`<button type="button" class="dtp-chip" data-p="${i}">${p[0]}</button>`).join('')}
+   <button type="button" class="dtp-chip" data-p="none">بدون انقضا</button>
+  </div>
+  <div class="dtp-cal" hidden>
+   <div class="dtp-head"><button type="button" class="dtp-nav" data-m="-1">ماه قبل</button><b class="dtp-title"></b><button type="button" class="dtp-nav" data-m="1">ماه بعد</button></div>
+   <div class="dtp-grid dtp-wd"></div>
+   <div class="dtp-grid dtp-days"></div>
+   <div class="dtp-time">
+    <label>ساعت <input type="number" min="0" max="23" class="dtp-h" dir="ltr" inputmode="numeric"></label>
+    <label>دقیقه <input type="number" min="0" max="59" class="dtp-m" dir="ltr" inputmode="numeric"></label>
+    <button type="button" class="dtp-close">بستن</button>
+   </div>
+  </div>`;
+ const cal=root.querySelector('.dtp-cal');
+ root.querySelector('.dtp-btn').onclick=()=>{
+  cal.hidden=!cal.hidden;
+  root.querySelector('.dtp-btn').setAttribute('aria-expanded',String(!cal.hidden));
+ };
+ root.querySelector('.dtp-close').onclick=()=>{cal.hidden=true;root.querySelector('.dtp-btn').setAttribute('aria-expanded','false')};
+ root.querySelectorAll('.dtp-nav').forEach(b=>b.onclick=()=>{
+  const st=root._st;let [y,m]=st.view;m+=Number(b.dataset.m);
+  if(m<1){m=12;y--}if(m>12){m=1;y++}
+  st.view=[y,m,1];dtpRender(root);
+ });
+ root.querySelector('.dtp-days').onclick=e=>{
+  const b=e.target.closest('.dtp-day');if(!b)return;
+  const st=root._st;const [y,m]=st.view;
+  if(!st.sel){const now=new Date();st.h=now.getHours();st.mi=now.getMinutes()}
+  st.sel=[y,m,Number(b.dataset.d)];
+  dtpCommit(root);
+ };
+ const onTime=()=>{
+  const st=root._st;
+  const h=parseInt(root.querySelector('.dtp-h').value,10),mi=parseInt(root.querySelector('.dtp-m').value,10);
+  if(Number.isNaN(h)||Number.isNaN(mi))return;
+  st.h=Math.min(23,Math.max(0,h));st.mi=Math.min(59,Math.max(0,mi));
+  if(!st.sel){const now=new Date();st.sel=dtpToJalali(...dtpLocalYMD(now))}
+  dtpCommit(root);
+ };
+ root.querySelector('.dtp-h').onchange=onTime;
+ root.querySelector('.dtp-m').onchange=onTime;
+ root.querySelectorAll('.dtp-chip').forEach(c=>c.onclick=()=>{
+  if(c.dataset.p==='none'){$(id).value=0;dtpSync(root);return}
+  const d=new Date();DTP_PRESETS[Number(c.dataset.p)][1](d);
+  $(id).value=Math.floor(d.getTime()/1000);
+  dtpSync(root);
+ });
+ dtpSync(root);
+}
+function dtpSet(id,ts){
+ $(id).value=ts||0;
+ if(DTP[id])dtpSync(DTP[id]);
+}
+document.querySelectorAll('.dtp').forEach(mountDTP);
 </script>
 </body>
 </html>

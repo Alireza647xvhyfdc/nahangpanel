@@ -4,7 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
-	"crypto/subtle"
 	"embed"
 	"encoding/hex"
 	"encoding/json"
@@ -16,7 +15,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -39,6 +37,7 @@ type Tunnel struct {
 	Ports     []string `json:"ports"`
 	Allow     string   `json:"allow,omitempty"`   // فقط این IP به پورت تانل (سرور ایران) دسترسی دارد
 	Stopped   bool     `json:"stopped,omitempty"` // توقف دستی؛ نگهبان ری‌استارت نمی‌کند
+	Inbound   int      `json:"inbound,omitempty"` // پورت inbound این سرور که تانل به آن وصل است (فقط سرور خارج)
 }
 
 type Settings struct {
@@ -255,6 +254,9 @@ func linked(t Tunnel, lines []string) int {
 }
 
 func validate(t *Tunnel) string {
+	if e := bindInbound(t); e != "" {
+		return e
+	}
 	if !reName.MatchString(t.Name) || !okTrans[t.Transport] || !reTok.MatchString(t.Token) || (t.Role != "server" && t.Role != "client") {
 		return "ورودی نامعتبر"
 	}
@@ -368,27 +370,6 @@ func sign(s string) string {
 	return hex.EncodeToString(m.Sum(nil))
 }
 
-func newSession() string {
-	e := strconv.FormatInt(time.Now().Add(sessTTL).Unix(), 10)
-	return e + "." + sign(e)
-}
-
-func sessionOK(r *http.Request) bool {
-	c, err := r.Cookie(sessName)
-	if err != nil {
-		return false
-	}
-	parts := strings.SplitN(c.Value, ".", 2)
-	if len(parts) != 2 {
-		return false
-	}
-	exp, err := strconv.ParseInt(parts[0], 10, 64)
-	if err != nil || time.Now().Unix() > exp {
-		return false
-	}
-	return hmac.Equal([]byte(parts[1]), []byte(sign(parts[0])))
-}
-
 func blocked(ip string) bool {
 	failMu.Lock()
 	defer failMu.Unlock()
@@ -450,14 +431,11 @@ func main() {
 	}
 	load()
 	loadSettings()
+	setOwner(*user, pw)
 	for _, t := range tunnels {
 		fw(t, true)
 	}
 	go guardian()
-
-	credsOK := func(u, p string) bool {
-		return subtle.ConstantTimeCompare([]byte(u), []byte(*user)) == 1 && subtle.ConstantTimeCompare([]byte(p), []byte(pw)) == 1
-	}
 
 	auth := func(h http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -466,21 +444,22 @@ func main() {
 				http.Error(w, "تلاش‌های ناموفق زیاد؛ چند دقیقه بعد دوباره امتحان کنید", 429)
 				return
 			}
-			if !sessionOK(r) {
-				// برای اسکریپت‌ها: Basic Auth هم پذیرفته می‌شود
-				u, p, ok := r.BasicAuth()
-				if !ok || !credsOK(u, p) {
-					if r.Header.Get("Authorization") != "" {
-						failed(ip)
-					}
-					if r.Method == "GET" && r.URL.Path == "/" {
-						http.Redirect(w, r, "/login", http.StatusFound)
-						return
-					}
-					reply(w, 401, map[string]string{"error": "unauthorized"})
+			user, role := identify(r, ip)
+			if role == "" {
+				if r.Header.Get("Authorization") != "" {
+					failed(ip)
+				}
+				if r.Method == "GET" && r.URL.Path == "/" {
+					http.Redirect(w, r, "/login", http.StatusFound)
 					return
 				}
-				clearFails(ip)
+				reply(w, 401, map[string]string{"error": "unauthorized"})
+				return
+			}
+			// viewer فقط می‌تواند بخواند؛ هر تغییری فقط برای owner است
+			if r.Method != "GET" && role != "owner" {
+				reply(w, 403, map[string]string{"error": "فقط مدیر اصلی می‌تواند تغییر دهد"})
+				return
 			}
 			// جلوگیری از CSRF: درخواست‌های تغییردهنده باید هدر سفارشی و Origin هم‌میزبان داشته باشند
 			if r.Method != "GET" {
@@ -495,7 +474,7 @@ func main() {
 					}
 				}
 			}
-			h(w, r)
+			h(w, withIdent(r, user, role))
 		}
 	}
 
@@ -512,7 +491,7 @@ func main() {
 		w.Write(b)
 	}))
 	m.HandleFunc("GET /login", func(w http.ResponseWriter, r *http.Request) {
-		if sessionOK(r) {
+		if _, role := sessionIdent(r); role != "" {
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
@@ -543,13 +522,14 @@ func main() {
 			bad(w, "ورودی نامعتبر")
 			return
 		}
-		if !credsOK(in.User, in.Pass) {
+		user, role := loginRole(in.User, in.Pass)
+		if role == "" {
 			failed(ip)
 			reply(w, 401, map[string]string{"error": "نام کاربری یا رمز عبور اشتباه است"})
 			return
 		}
 		clearFails(ip)
-		http.SetCookie(w, &http.Cookie{Name: sessName, Value: newSession(), Path: "/", HttpOnly: true, Secure: *useTLS, SameSite: http.SameSiteStrictMode, MaxAge: int(sessTTL.Seconds())})
+		http.SetCookie(w, &http.Cookie{Name: sessName, Value: newSession(user, role), Path: "/", HttpOnly: true, Secure: *useTLS, SameSite: http.SameSiteStrictMode, MaxAge: int(sessTTL.Seconds())})
 		reply(w, 200, map[string]bool{"ok": true})
 	})
 	m.HandleFunc("GET /api/tunnels", auth(func(w http.ResponseWriter, r *http.Request) {
@@ -557,6 +537,7 @@ func main() {
 		mu.Lock()
 		defer mu.Unlock()
 		out := []map[string]any{}
+		remarks := inboundRemarks()
 		for n, t := range tunnels {
 			us := units(t)
 			on := 0
@@ -565,7 +546,7 @@ func main() {
 					on++
 				}
 			}
-			out = append(out, map[string]any{"name": n, "role": t.Role, "transport": t.Transport, "addr": t.Addr, "ports": t.Ports, "allow": t.Allow, "stopped": t.Stopped, "on": on, "total": len(us), "conns": linked(t, lines)})
+			out = append(out, map[string]any{"name": n, "role": t.Role, "transport": t.Transport, "addr": t.Addr, "ports": t.Ports, "allow": t.Allow, "stopped": t.Stopped, "on": on, "total": len(us), "conns": linked(t, lines), "inbound": t.Inbound, "inbound_name": remarks[t.Inbound]})
 		}
 		reply(w, 200, out)
 	}))
@@ -708,6 +689,9 @@ func main() {
 		reply(w, 200, map[string]string{"ok": "1"})
 	}))
 
+	registerXrayRoutes(m, auth)
+	registerTunnelBindRoute(m, auth)
+	registerAdminRoutes(m, auth)
 	fmt.Println("پنل روی پورت", *port, "اجرا شد")
 	srv := &http.Server{Addr: *listen + ":" + *port, Handler: m, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 60 * time.Second, IdleTimeout: 120 * time.Second}
 	var err error
