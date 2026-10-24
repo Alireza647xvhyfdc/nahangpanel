@@ -520,7 +520,7 @@ func sellerAllowed(r *http.Request) bool {
 	switch r.Method {
 	case "GET":
 		switch p {
-		case "/", "/api/me", "/api/system", "/api/xray/inbounds", "/api/xray/clients", "/api/xray/links":
+		case "/dashboard/", "/api/me", "/api/system", "/api/xray/inbounds", "/api/xray/clients", "/api/xray/links":
 			return true
 		}
 	case "POST":

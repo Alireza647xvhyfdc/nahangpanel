@@ -54,7 +54,7 @@ curl -fsSL https://raw.githubusercontent.com/Alireza647xvhyfdc/nahangpanel/main/
 در مرورگر باز کن:
 
 ```
-https://SERVER-IP:PANEL_PORT
+https://SERVER-IP:PANEL_PORT/dashboard/
 ```
 
 - گواهی خودامضاست، پس مرورگر هشدار می‌دهد. گزینه‌ی **Advanced ← Proceed** را بزن.
@@ -72,7 +72,7 @@ ssh -L PANEL_PORT:127.0.0.1:PANEL_PORT root@SERVER-IP
 بعد در مرورگر باز کن:
 
 ```
-http://127.0.0.1:PANEL_PORT
+http://127.0.0.1:PANEL_PORT/dashboard/
 ```
 
 > `PANEL_PORT` همان پورتی است که هنگام نصب انتخاب کردی. هر دو جای آن را با همان عدد عوض کن.

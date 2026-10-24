@@ -10,7 +10,7 @@ func TestSellerAllowed(t *testing.T) {
 		method, path string
 		want         bool
 	}{
-		{"GET", "/", true},
+		{"GET", "/dashboard/", true},
 		{"GET", "/api/me", true},
 		{"GET", "/api/xray/inbounds", true},
 		{"GET", "/api/xray/clients", true},

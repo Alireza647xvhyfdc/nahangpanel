@@ -368,13 +368,13 @@ show_addr() {
   a=""; grep -q -- '-listen 0.0.0.0' "$SVC" && a=1
   ip=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
   if [ -n "$a" ] && [ -s "$DIR/host" ]; then
-    echo "Panel address: https://$(cat "$DIR/host"):$p  (trusted Let's Encrypt certificate)"
+    echo "Panel address: https://$(cat "$DIR/host"):$p/dashboard/  (trusted Let's Encrypt certificate)"
   elif [ -n "$a" ]; then
-    echo "Panel address: https://$ip:$p  (self-signed certificate, accept the browser warning)"
+    echo "Panel address: https://$ip:$p/dashboard/  (self-signed certificate, accept the browser warning)"
   else
     echo "The panel is local only. From your local machine run:"
     echo "  ssh -L $p:127.0.0.1:$p root@$ip"
-    echo "Then open in your browser: http://127.0.0.1:$p"
+    echo "Then open in your browser: http://127.0.0.1:$p/dashboard/"
   fi
   echo "User:     admin"
   echo "Password: $(cat $DIR/pass 2>/dev/null)"
@@ -472,13 +472,13 @@ if [ "$UPDATE" = 1 ]; then
   echo "Panel updated. Previous port and settings were kept."
 else
   if [ "$PUBLIC" = 1 ] && [ "$CERT_MODE" != self ]; then
-    echo "Panel URL: https://$PANEL_HOST:$PORT  (trusted Let's Encrypt certificate)"
+    echo "Panel URL: https://$PANEL_HOST:$PORT/dashboard/  (trusted Let's Encrypt certificate)"
   elif [ "$PUBLIC" = 1 ]; then
-    echo "Panel URL: https://$SERVER_IP:$PORT  (self-signed certificate, accept the browser warning)"
+    echo "Panel URL: https://$SERVER_IP:$PORT/dashboard/  (self-signed certificate, accept the browser warning)"
   else
     echo "The panel listens locally only (not reachable from the internet). From your local machine run:"
     echo "  ssh -L $PORT:127.0.0.1:$PORT root@$SERVER_IP"
-    echo "Then open in your browser: http://127.0.0.1:$PORT"
+    echo "Then open in your browser: http://127.0.0.1:$PORT/dashboard/"
   fi
   echo "User:     admin"
   echo "Password: $PASS $PASS_NOTE"

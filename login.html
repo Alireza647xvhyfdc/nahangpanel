@@ -121,7 +121,7 @@ input.ltr{direction:ltr;text-align:left;font-family:ui-monospace,Menlo,monospace
         headers:{'Content-Type':'application/json','X-Requested-With':'tunnelpanel'},
         body:JSON.stringify({user:u.value.trim(),pass:p.value})
       });
-      if(r.ok){gl.textContent='ورود موفق…';location.replace('/');return}
+      if(r.ok){gl.textContent='ورود موفق…';location.replace('/dashboard/');return}
       var d={};try{d=await r.json()}catch(x){}
       if(r.status===429) fail(d.error||'تلاش‌های ناموفق زیاد؛ چند دقیقه بعد دوباره امتحان کنید');
       else if(r.status===401) fail('نام کاربری یا رمز عبور اشتباه است');

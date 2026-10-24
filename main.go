@@ -472,8 +472,8 @@ func main() {
 				if r.Header.Get("Authorization") != "" {
 					failed(ip)
 				}
-				if r.Method == "GET" && r.URL.Path == "/" {
-					http.Redirect(w, r, "/login", http.StatusFound)
+				if r.Method == "GET" && r.URL.Path == "/dashboard/" {
+					http.Redirect(w, r, "/dashboard/login", http.StatusFound)
 					return
 				}
 				reply(w, 401, map[string]string{"error": "unauthorized"})
@@ -504,7 +504,16 @@ func main() {
 	}
 
 	m := http.NewServeMux()
-	m.HandleFunc("GET /{$}", auth(func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/dashboard/", http.StatusFound)
+	})
+	m.HandleFunc("GET /dashboard", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/dashboard/", http.StatusFound)
+	})
+	m.HandleFunc("GET /login", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/dashboard/login", http.StatusFound)
+	})
+	m.HandleFunc("GET /dashboard/{$}", auth(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := ui.ReadFile("index.html")
 		b = []byte(strings.ReplaceAll(string(b), "__VERSION__", version))
 		h := w.Header()
@@ -515,9 +524,9 @@ func main() {
 		h.Set("Content-Security-Policy", pageCSP)
 		w.Write(b)
 	}))
-	m.HandleFunc("GET /login", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("GET /dashboard/login", func(w http.ResponseWriter, r *http.Request) {
 		if _, role := sessionIdent(r); role != "" {
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, "/dashboard/", http.StatusFound)
 			return
 		}
 		b, _ := ui.ReadFile("login.html")
