@@ -1,8 +1,5 @@
 package main
 
-// xraygen.go: ساخت کلیدهای Reality، ML-DSA-65 و ECH، آماده‌سازی گواهی‌های TLS،
-// اسکن هدف Reality و محاسبهٔ Pinned SHA-256 از گواهی.
-
 import (
 	"context"
 	"crypto/sha256"
@@ -25,8 +22,6 @@ import (
 
 const tlsCertDir = "/etc/tunnelpanel/xcerts/"
 
-// kvLines خروجی ابزارهای xray را به شکل کلید/مقدار می‌خواند.
-// اگر مقدار بعد از ":" خالی باشد، خط بعدی را مقدار می‌گیرد.
 func kvLines(out string) map[string]string {
 	res := map[string]string{}
 	lines := strings.Split(out, "\n")
@@ -50,7 +45,6 @@ func kvLines(out string) map[string]string {
 	return res
 }
 
-// pickKV اولین کلیدی را برمی‌گرداند که همهٔ بخش‌های must را داشته باشد و کلید خصوصی‌ای نباشد.
 func pickKV(m map[string]string, must ...string) string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -82,7 +76,6 @@ func runXray(args ...string) (string, error) {
 	return string(out), nil
 }
 
-// genRealityKeys یک جفت کلید X25519 تازه می‌سازد.
 func genRealityKeys() (priv, pub string, err error) {
 	out, err := runXray("x25519")
 	if err != nil {
@@ -95,7 +88,6 @@ func genRealityKeys() (priv, pub string, err error) {
 	return priv, pub, nil
 }
 
-// genMLDSA65 یک جفت Seed/Verify پس‌کوانتومی می‌سازد.
 func genMLDSA65() (seed, verify string, err error) {
 	out, err := runXray("mldsa65")
 	if err != nil {
@@ -109,7 +101,6 @@ func genMLDSA65() (seed, verify string, err error) {
 	return seed, verify, nil
 }
 
-// genECH یک ECH config و کلید سرور برای یک SNI می‌سازد.
 func genECH(serverName string) (config, key string, err error) {
 	out, err := runXray("tls", "ech", "--serverName", serverName)
 	if err != nil {
@@ -124,8 +115,6 @@ func genECH(serverName string) (config, key string, err error) {
 	return config, key, nil
 }
 
-// materializeCerts گواهی‌های به‌صورت محتوای PEM را داخل فایل می‌نویسد و مسیرشان را ثبت می‌کند.
-// محتوای PEM بعد از نوشتن از inbound پاک می‌شود تا در store ذخیره نشود.
 func materializeCerts(in *Inbound) error {
 	if in.Security != "tls" || in.TLS == nil {
 		return nil
@@ -153,7 +142,6 @@ func materializeCerts(in *Inbound) error {
 	return nil
 }
 
-// scanTarget بررسی می‌کند که host:port برای Reality مناسب است (TLS 1.3 و ALPN برابر h2).
 func scanTarget(target string) (ok bool, detail string) {
 	host, port, err := net.SplitHostPort(target)
 	if err != nil || !reSNI.MatchString(host) {
@@ -182,14 +170,12 @@ func scanTarget(target string) (ok bool, detail string) {
 	return true, "مناسب است"
 }
 
-// reality targets پیشنهادی برای Find Targets. نتیجه فقط با اسکن زنده تأیید می‌شود.
 var realityCandidates = []string{
 	"www.microsoft.com:443", "www.apple.com:443", "www.cloudflare.com:443", "www.google.com:443",
 	"www.amazon.com:443", "dl.google.com:443", "www.bing.com:443", "learn.microsoft.com:443",
 	"www.nvidia.com:443", "www.intel.com:443", "www.samsung.com:443", "www.yahoo.com:443",
 }
 
-// findTargets کاندیدها را موازی بررسی می‌کند و موارد مناسب را برمی‌گرداند.
 func findTargets() []string {
 	var (
 		mu  sync.Mutex
@@ -215,7 +201,6 @@ func findTargets() []string {
 	return ok
 }
 
-// certPinFromFile هش SHA-256 گواهی برگ (اولین بلاک CERTIFICATE) را به شکل هگز برمی‌گرداند.
 func certPinFromFile(path string) (string, error) {
 	if !filepath.IsAbs(path) || strings.Contains(path, "..") {
 		return "", errors.New("مسیر گواهی باید مطلق باشد")
@@ -238,7 +223,6 @@ func certPinFromFile(path string) (string, error) {
 	return "", errors.New("در فایل، گواهی PEM پیدا نشد")
 }
 
-// registerXraySecRoutes مسیرهای کمکی امنیت (تولید کلید، اسکن هدف، هش گواهی) را ثبت می‌کند.
 func registerXraySecRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	jsonReply := func(w http.ResponseWriter, code int, v any) {
 		w.Header().Set("Content-Type", "application/json")
@@ -302,7 +286,6 @@ func registerXraySecRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Ha
 		jsonReply(w, 200, map[string]any{"targets": findTargets()})
 	}))
 
-	// گواهی‌های خود پنل، برای دکمهٔ Set Cert from Panel
 	m.HandleFunc("GET /api/xray/panel-cert", auth(func(w http.ResponseWriter, r *http.Request) {
 		c, k := filepath.Join(dir, "cert.pem"), filepath.Join(dir, "key.pem")
 		if _, err1 := os.Stat(c); err1 != nil {

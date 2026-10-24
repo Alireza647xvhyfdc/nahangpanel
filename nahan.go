@@ -1,11 +1,5 @@
 package main
 
-// روش تانل «نهنگ» (nahang)
-// تانل معکوس: سرور خارج چند اتصال آماده (pool) به سرور ایران می‌زند؛ هر کاربر یکی از آن‌ها را می‌گیرد.
-// دست‌دادن: X25519 + احراز هویت با HMAC از توکن؛ بایت‌های اول کاملاً تصادفی و بدون امضای ثابت.
-// داده: AES-256-GCM، طول فریم رمز می‌شود و هر فریم پدینگ تصادفی دارد؛ ضربان تصادفی در حالت بیکاری.
-// پروب بدون توکن هیچ پاسخی نمی‌گیرد (tarpit).
-
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -34,7 +28,7 @@ type nCfg struct {
 	Ports []string `json:"ports"`
 	TLS   bool     `json:"tls"`
 	Pool  int      `json:"pool"`
-	Fast  bool     `json:"fast"` // nahangx: پروتکل نسخه‌ی ۲ (سریع + ضد replay + کلید چرخشی)
+	Fast  bool     `json:"fast"`
 }
 
 var errAuth = errors.New("auth")
@@ -85,7 +79,7 @@ type sess struct {
 	wk, rk []byte
 	wc, rc uint64
 	wmu    sync.Mutex
-	fast   bool // nahangx: ارسال/دریافت در nahangx.go
+	fast   bool
 }
 
 func newSess(c net.Conn, master, shared, C, S []byte, client bool) (*sess, error) {
@@ -116,7 +110,6 @@ func ctr(n uint64) []byte { b := make([]byte, 8); binary.BigEndian.PutUint64(b, 
 
 func nonce(n uint64) []byte { b := make([]byte, 12); binary.BigEndian.PutUint64(b[4:], n); return b }
 
-// فریم: [طول رمزشده ۲ بایت][AES-GCM(نوع ۱ | طول داده ۲ | داده | پدینگ تصادفی)]
 func (s *sess) send(typ byte, data []byte) error {
 	if s.fast {
 		return s.sendX(typ, data)
@@ -256,7 +249,6 @@ func tune(c net.Conn) {
 	}
 }
 
-// پروب‌های بدون توکن: هیچ پاسخی نمی‌گیرند و چند ثانیه سرگردان می‌مانند
 func tarpit(c net.Conn) {
 	c.SetDeadline(time.Now().Add(time.Duration(8+ri(25)) * time.Second))
 	io.Copy(io.Discard, c)
@@ -370,8 +362,7 @@ func parsePorts(ps []string) map[int]int {
 func forward(l, t int, idle chan *sess) {
 	ln, err := net.Listen("tcp", ":"+strconv.Itoa(l))
 	if err != nil {
-		log.Println("listen", l, err)
-		return
+		log.Fatal("listen ", l, ": ", err)
 	}
 	for {
 		u, err := ln.Accept()
@@ -476,7 +467,6 @@ func heartbeat(s *sess, stop chan struct{}) {
 	}
 }
 
-// هر worker یک اتصال آماده نگه می‌دارد؛ هنگام استفاده، جانشینش بلافاصله ساخته می‌شود
 func worker(cfg nCfg, master []byte) {
 	hs := hsClient
 	if cfg.Fast {
@@ -486,7 +476,6 @@ func worker(cfg nCfg, master []byte) {
 		var c net.Conn
 		var err error
 		if cfg.TLS {
-			// اعتبار با HMAC توکن داخل تانل تأیید می‌شود، نه با گواهی
 			tc := &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS12}
 			if cfg.Fast {
 				tc.MinVersion = tls.VersionTLS13
@@ -548,7 +537,7 @@ func runNahan(path string) {
 	}
 	label := "nahan1|"
 	if cfg.Fast {
-		cfg.TLS = true // nahangx همیشه داخل TLS ۱.۳ است
+		cfg.TLS = true
 		label = "nahanx2|"
 	}
 	master := hsum([]byte(label), []byte(cfg.Token))

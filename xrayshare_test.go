@@ -22,7 +22,7 @@ func TestParseAccessLine(t *testing.T) {
 		}
 	}
 	bad := []string{
-		"2026/10/23 18:00:00 1.2.3.4:5678 accepted tcp:example.com:443 [in-443 >> direct]", // بدون email
+		"2026/10/23 18:00:00 1.2.3.4:5678 accepted tcp:example.com:443 [in-443 >> direct]",
 		"2026/10/23 18:00:00 1.2.3.4:5678 rejected tcp:x:443 email: dave",
 		"garbage",
 		"",
@@ -65,9 +65,9 @@ func TestAdmitDeviceLimits(t *testing.T) {
 func TestIPTrackerWindowAndLoopback(t *testing.T) {
 	tr := &ipTracker{seen: map[string]map[string]time.Time{}}
 	now := time.Now()
-	tr.observe("u", "127.0.0.1", now) // تانل داخلی نباید شمرده شود
+	tr.observe("u", "127.0.0.1", now)
 	tr.observe("u", "1.1.1.1", now)
-	tr.observe("u", "2.2.2.2", now.Add(-time.Hour)) // قدیمی
+	tr.observe("u", "2.2.2.2", now.Add(-time.Hour))
 	tr.observe("u", "3.3.3.3", now.Add(-time.Minute))
 	if n := tr.distinct("u", now); n != 2 {
 		t.Errorf("distinct = %d, want 2", n)
@@ -105,7 +105,6 @@ func TestFindClientByToken(t *testing.T) {
 	}
 }
 
-// مسیر /sub با توکن ناشناخته باید 404 بدهد و چیزی لو ندهد.
 func TestSubRouteUnknownToken(t *testing.T) {
 	m := http.NewServeMux()
 	registerXrayShareRoutes(m, func(h http.HandlerFunc) http.HandlerFunc { return h })

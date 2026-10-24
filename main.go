@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -21,7 +22,6 @@ import (
 	"time"
 )
 
-// version با -ldflags "-X main.version=vX.Y.Z" در build تنظیم می‌شود
 var version = "dev"
 
 //go:embed index.html login.html
@@ -31,14 +31,14 @@ const dir = "/etc/tunnelpanel/"
 
 type Tunnel struct {
 	Name      string   `json:"name"`
-	Role      string   `json:"role"` // server (ایران) | client (خارج)
+	Role      string   `json:"role"`
 	Transport string   `json:"transport"`
-	Addr      string   `json:"addr"` // server: bind addr, client: remote addr
+	Addr      string   `json:"addr"`
 	Token     string   `json:"token,omitempty"`
 	Ports     []string `json:"ports"`
-	Allow     string   `json:"allow,omitempty"`   // فقط این IP به پورت تانل (سرور ایران) دسترسی دارد
-	Stopped   bool     `json:"stopped,omitempty"` // توقف دستی؛ نگهبان ری‌استارت نمی‌کند
-	Inbound   int      `json:"inbound,omitempty"` // پورت inbound این سرور که تانل به آن وصل است (فقط سرور خارج)
+	Allow     string   `json:"allow,omitempty"`
+	Stopped   bool     `json:"stopped,omitempty"`
+	Inbound   int      `json:"inbound,omitempty"`
 }
 
 type Settings struct {
@@ -150,10 +150,18 @@ func apply(t Tunnel) error {
 	return nil
 }
 
-// فایروال: پورت‌ها فقط برای IP مجاز باز می‌مانند (ایران: پورت تانل | خارج: پورت‌های قفل‌شونده)
 func fw(t Tunnel, add bool) {
 	if t.Allow == "" {
 		return
+	}
+	ip := net.ParseIP(t.Allow)
+	if ip == nil {
+		return
+	}
+	v6 := ip.To4() == nil
+	tool := "iptables"
+	if v6 {
+		tool = "ip6tables"
 	}
 	var ports []string
 	if t.Role == "server" {
@@ -169,26 +177,30 @@ func fw(t Tunnel, add bool) {
 	}
 	ch := "tp-" + t.Name
 	if add {
-		sh("iptables", "-N", ch)
-		sh("iptables", "-F", ch)
-		sh("iptables", "-A", ch, "-i", "lo", "-j", "ACCEPT")
-		sh("iptables", "-A", ch, "-s", t.Allow, "-j", "ACCEPT")
-		sh("iptables", "-A", ch, "-j", "DROP")
+		sh(tool, "-N", ch)
+		sh(tool, "-F", ch)
+		sh(tool, "-A", ch, "-i", "lo", "-j", "ACCEPT")
+		sh(tool, "-A", ch, "-s", t.Allow, "-j", "ACCEPT")
+		sh(tool, "-A", ch, "-j", "DROP")
 		for _, p := range ports {
-			if _, err := sh("iptables", "-C", "INPUT", "-p", "tcp", "--dport", p, "-j", ch); err != nil {
-				sh("iptables", "-I", "INPUT", "-p", "tcp", "--dport", p, "-j", ch)
+			if _, err := sh(tool, "-C", "INPUT", "-p", "tcp", "--dport", p, "-j", ch); err != nil {
+				sh(tool, "-I", "INPUT", "-p", "tcp", "--dport", p, "-j", ch)
 			}
-			if _, err := sh("ip6tables", "-C", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP"); err != nil {
-				sh("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP")
+			if !v6 {
+				if _, err := sh("ip6tables", "-C", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP"); err != nil {
+					sh("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP")
+				}
 			}
 		}
 	} else {
 		for _, p := range ports {
-			sh("iptables", "-D", "INPUT", "-p", "tcp", "--dport", p, "-j", ch)
-			sh("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP")
+			sh(tool, "-D", "INPUT", "-p", "tcp", "--dport", p, "-j", ch)
+			if !v6 {
+				sh("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", p, "!", "-i", "lo", "-j", "DROP")
+			}
 		}
-		sh("iptables", "-F", ch)
-		sh("iptables", "-X", ch)
+		sh(tool, "-F", ch)
+		sh(tool, "-X", ch)
 	}
 }
 
@@ -208,7 +220,6 @@ func loadSettings() {
 
 func saveSettings() { b, _ := json.Marshal(set); os.WriteFile(dir+"settings.json", b, 0600) }
 
-// اعلان تلگرام (روی سرور خارج تنظیم شود؛ از ایران معمولاً در دسترس نیست)
 func notify(msg string) error {
 	setMu.Lock()
 	s := set
@@ -229,13 +240,11 @@ func notify(msg string) error {
 	return nil
 }
 
-// اتصال‌های برقرارشده‌ی سیستم (یک بار برای همه‌ی تانل‌ها)
 func conns() []string {
 	o, _ := sh("ss", "-Htn", "state", "established")
 	return strings.Split(o, "\n")
 }
 
-// تعداد اتصال واقعی تانل؛ -1 یعنی قابل تشخیص نیست
 func linked(t Tunnel, lines []string) int {
 	host, port, err := net.SplitHostPort(t.Addr)
 	if err != nil || (t.Role == "client" && net.ParseIP(host) == nil) {
@@ -276,6 +285,11 @@ func validate(t *Tunnel) string {
 	if t.Allow != "" && net.ParseIP(t.Allow) == nil {
 		return "IP مجاز نامعتبر است"
 	}
+	if t.Role == "server" {
+		if e := checkListenPorts(t); e != "" {
+			return e
+		}
+	}
 	if t.Role == "client" && len(t.Ports) > 0 {
 		if t.Allow == "" {
 			return "برای قفل پورت، IP سرور ایران لازم است"
@@ -289,13 +303,19 @@ func validate(t *Tunnel) string {
 	return ""
 }
 
-// ساخت یا جایگزینی تانل (mu باید قفل باشد)
 func create(t Tunnel) error {
-	if old, ok := tunnels[t.Name]; ok {
+	old, hadOld := tunnels[t.Name]
+	if hadOld {
 		fw(old, false)
 		remove(old)
 	}
 	if err := apply(t); err != nil {
+		remove(t)
+		if hadOld {
+			if rerr := apply(old); rerr == nil {
+				fw(old, true)
+			}
+		}
 		return err
 	}
 	fw(t, true)
@@ -349,7 +369,6 @@ func guardian() {
 	}
 }
 
-// نشست ورود: کوکی امضاشده با کلید تصادفی (با ری‌استارت سرویس همه دوباره وارد می‌شوند)
 var sessKey = func() []byte {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
@@ -361,7 +380,6 @@ var sessKey = func() []byte {
 const (
 	sessName = "tp_session"
 	sessTTL  = 12 * time.Hour
-	// همان سیاست امنیتی صفحه اصلی
 	pageCSP = "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src 'self'; frame-ancestors 'none'"
 )
 
@@ -461,12 +479,14 @@ func main() {
 				reply(w, 401, map[string]string{"error": "unauthorized"})
 				return
 			}
-			// viewer فقط می‌تواند بخواند؛ هر تغییری فقط برای owner است
-			if r.Method != "GET" && role != "owner" {
+			if role == "seller" && !sellerAllowed(r) {
+				reply(w, 403, map[string]string{"error": "دسترسی ندارید"})
+				return
+			}
+			if r.Method != "GET" && role != "owner" && role != "seller" {
 				reply(w, 403, map[string]string{"error": "فقط مدیر اصلی می‌تواند تغییر دهد"})
 				return
 			}
-			// جلوگیری از CSRF: درخواست‌های تغییردهنده باید هدر سفارشی و Origin هم‌میزبان داشته باشند
 			if r.Method != "GET" {
 				if r.Header.Get("X-Requested-With") != "tunnelpanel" {
 					http.Error(w, "forbidden", 403)
@@ -571,12 +591,16 @@ func main() {
 			bad(w, "ورودی نامعتبر")
 			return
 		}
+		mu.Lock()
+		defer mu.Unlock()
+		if _, dup := tunnels[t.Name]; dup {
+			reply(w, 409, map[string]string{"error": "تانلی با این نام از قبل وجود دارد"})
+			return
+		}
 		if e := validate(&t); e != "" {
 			bad(w, e)
 			return
 		}
-		mu.Lock()
-		defer mu.Unlock()
 		if err := create(t); err != nil {
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
@@ -595,7 +619,10 @@ func main() {
 		case "start", "stop", "restart":
 			t := tunnels[n]
 			for _, u := range units(t) {
-				sh("systemctl", act, u)
+				if out, err := sh("systemctl", act, u); err != nil {
+					reply(w, 500, map[string]string{"error": act + " ناموفق: " + out})
+					return
+				}
 			}
 			t.Stopped = act == "stop"
 			tunnels[n] = t
@@ -637,7 +664,7 @@ func main() {
 			tn[k] = v
 		}
 		mu.Unlock()
-		xs, err := loadStore() // تانل‌ها و کلاینت/اینباند Xray هر دو داخل پشتیبان می‌روند
+		xs, err := loadStore()
 		if err != nil {
 			bad(w, "خواندن اطلاعات Xray ناموفق بود: "+err.Error())
 			return
@@ -657,13 +684,21 @@ func main() {
 		tunnelsIn := map[string]Tunnel{}
 		if json.Unmarshal(body, &bf) == nil && bf.Format == "tunnelpanel-backup" {
 			tunnelsIn = bf.Tunnels
-		} else if json.Unmarshal(body, &tunnelsIn) != nil { // فرمت قدیمی: فقط نقشهٔ تانل‌ها
+		} else if json.Unmarshal(body, &tunnelsIn) != nil {
 			bad(w, "فایل پشتیبان نامعتبر است")
 			return
 		}
 		mu.Lock()
 		defer mu.Unlock()
 		okN, errs := 0, []string{}
+		xrayN := 0
+		if bf.Xray != nil {
+			n, e := restoreXrayStore(bf.Xray)
+			xrayN = n
+			if e != nil {
+				errs = append(errs, "Xray: "+e.Error())
+			}
+		}
 		for n, t := range tunnelsIn {
 			t.Name = n
 			if e := validate(&t); e != "" {
@@ -672,14 +707,6 @@ func main() {
 				errs = append(errs, n+": "+err.Error())
 			} else {
 				okN++
-			}
-		}
-		xrayN := 0
-		if bf.Xray != nil {
-			n, e := restoreXrayStore(bf.Xray)
-			xrayN = n
-			if e != nil {
-				errs = append(errs, "Xray: "+e.Error())
 			}
 		}
 		reply(w, 200, map[string]any{"ok": okN, "xray_clients": xrayN, "errors": errs})
@@ -734,4 +761,30 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func checkListenPorts(t *Tunnel) string {
+	want := map[int]bool{}
+	for _, p := range t.Ports {
+		m := parsePorts([]string{p})
+		if len(m) == 0 {
+			return "پورت نامعتبر: " + p + " (مثال: 443 یا 443=8443 یا 8000-8010)"
+		}
+		for l := range m {
+			want[l] = true
+		}
+	}
+	for n, o := range tunnels {
+		if n == t.Name || o.Role != "server" {
+			continue
+		}
+		for _, p := range o.Ports {
+			for l := range parsePorts([]string{p}) {
+				if want[l] {
+					return "پورت " + strconv.Itoa(l) + " قبلاً توسط تانل «" + n + "» استفاده می‌شود"
+				}
+			}
+		}
+	}
+	return ""
 }

@@ -1,8 +1,5 @@
 package main
 
-// xrayapi.go: مسیرهای HTTP برای مدیریت inbound و کلاینت Xray.
-// احراز هویت و CSRF از همان wrapper ِ auth در main.go گرفته می‌شود.
-
 import (
 	"encoding/json"
 	"net/http"
@@ -10,12 +7,12 @@ import (
 	"strconv"
 )
 
-// registerXrayRoutes را از main.go صدا بزن، قبل از ListenAndServe.
 func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	registerXrayClientRoutes(m, auth)
 	registerXraySecRoutes(m, auth)
 	registerXrayStatusRoute(m, auth)
 	registerXrayShareRoutes(m, auth)
+	registerXrayVersionRoutes(m, auth)
 	m.HandleFunc("GET /api/xray/inbounds", auth(func(w http.ResponseWriter, r *http.Request) {
 		st, err := loadStore()
 		if err != nil {
@@ -32,6 +29,22 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 			}
 			return safe[i].Port < safe[j].Port
 		})
+		if sellerOf(r) != "" {
+			type sellerInbound struct {
+				Port     int    `json:"port"`
+				Protocol string `json:"protocol"`
+				Remark   string `json:"remark"`
+				Network  string `json:"network,omitempty"`
+				Security string `json:"security"`
+				Disabled bool   `json:"disabled,omitempty"`
+			}
+			view := make([]sellerInbound, 0, len(safe))
+			for _, in := range safe {
+				view = append(view, sellerInbound{Port: in.Port, Protocol: in.Protocol, Remark: in.Remark, Network: in.Network, Security: in.Security, Disabled: in.Disabled})
+			}
+			reply(w, 200, view)
+			return
+		}
 		reply(w, 200, safe)
 	}))
 
@@ -54,14 +67,25 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
+		if s := sellerOf(r); s != "" {
+			mine := []Client{}
+			for _, c := range st.Clients {
+				if c.Owner == s {
+					mine = append(mine, c)
+				}
+			}
+			reply(w, 200, mine)
+			return
+		}
 		reply(w, 200, st.Clients)
 	}))
 
-	// GET /api/xray/link?server=IP-ایران&name=NAME      (vless، vmess، trojan)
-	// GET /api/xray/link?server=IP-ایران&inbound=PORT    (shadowsocks، بدون کلاینت)
 	m.HandleFunc("GET /api/xray/link", auth(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		server := q.Get("server")
+		if server == "" {
+			server = irServerAddr()
+		}
 		if !validServerAddr(server) {
 			reply(w, 400, map[string]string{"error": "server باید IP یا نام میزبان معتبر باشد"})
 			return

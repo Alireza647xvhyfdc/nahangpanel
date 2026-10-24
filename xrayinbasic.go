@@ -1,8 +1,5 @@
 package main
 
-// xrayinbasic.go: اعتبارسنجی و پیش‌فرض‌های بخش «پایه» ساخت inbound
-// (ترتیب اشتراک، حذف از اشتراک، Share address، سقف ترافیک، ریست ترافیک، زمان انقضا).
-
 import (
 	"net"
 	"time"
@@ -13,7 +10,6 @@ var (
 	basicTrafficResets   = map[string]bool{"never": true, "daily": true, "weekly": true, "monthly": true}
 )
 
-// validateBasicExtras مقدارهای بخش پایه را بررسی و پیش‌فرض‌ها را تعیین می‌کند.
 func validateBasicExtras(in *Inbound) string {
 	if in.SortOrder < 0 || in.SortOrder > 9999 {
 		return "ترتیب اشتراک باید بین ۰ و ۹۹۹۹ باشد"
@@ -42,9 +38,6 @@ func validateBasicExtras(in *Inbound) string {
 	return ""
 }
 
-// shareHost آدرس داخل لینک را انتخاب می‌کند.
-// Server IP (و داده‌های قدیمی بدون استراتژی): همان IP سرور.
-// Inbound listen: اگر inbound روی یک IP مشخص گوش می‌دهد (نه همه‌ی IPها یا loopback)، همان IP.
 func shareHost(in Inbound, server string) string {
 	if in.ShareStrategy != "inbound_listen" {
 		return server

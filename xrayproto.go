@@ -1,25 +1,24 @@
 package main
 
-// xrayproto.go: پروتکل‌ها (vless، vmess، trojan، shadowsocks)، settings کانفیگ و لینک هر کدام.
-
 import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// protocols پروتکل‌های پشتیبانی‌شده را نگه می‌دارد.
 var protocols = map[string]bool{"vless": true, "vmess": true, "trojan": true, "shadowsocks": true}
 
-// ssMethod روش رمزنگاری shadowsocks. aes-256-gcm در همهٔ نسخه‌های Xray پشتیبانی می‌شود.
 const ssMethod = "aes-256-gcm"
 
-// validateProtocolSecurity قوانین امنیتی مخصوص هر پروتکل را بررسی می‌کند.
-// باید بعد از validateSecurity صدا زده شود، چون مقدار خالی security را none می‌کند.
+func hostPort(server string, port int) string {
+	return net.JoinHostPort(server, strconv.Itoa(port))
+}
+
 func validateProtocolSecurity(in Inbound) string {
 	switch in.Protocol {
 	case "vmess":
@@ -38,8 +37,6 @@ func validateProtocolSecurity(in Inbound) string {
 	return ""
 }
 
-// validateNetwork شبکهٔ inbound را بررسی و پیش‌فرض tcp را می‌گذارد.
-// mKCP یک transport روی UDP است و از تانل TCP عبور نمی‌کند؛ کلاینت باید مستقیم به سرور خارج وصل شود.
 func validateNetwork(in *Inbound) string {
 	if in.Network == "" {
 		in.Network = "tcp"
@@ -47,7 +44,6 @@ func validateNetwork(in *Inbound) string {
 	if in.Protocol == "shadowsocks" && in.Network != "tcp" {
 		return "shadowsocks فقط روی tcp ساخته می‌شود"
 	}
-	// Reality فقط روی RAW (tcp)، gRPC و XHTTP کار می‌کند (Xray همین را هنگام لود کانفیگ چک می‌کند).
 	if in.Security == "reality" && in.Network != "tcp" && in.Network != "grpc" && in.Network != "xhttp" {
 		return "Reality فقط با tcp (RAW)، gRPC یا XHTTP کار می‌کند؛ شبکهٔ دیگر را با tls یا none بساز"
 	}
@@ -58,7 +54,6 @@ func validateNetwork(in *Inbound) string {
 	return "network باید tcp، kcp، ws، grpc، httpupgrade یا xhttp باشد"
 }
 
-// ensureKCPSeed برای mKCP یک seed تصادفی می‌سازد اگر خالی باشد.
 func ensureKCPSeed(in *Inbound) error {
 	if in.Network != "kcp" || in.Seed != "" {
 		return nil
@@ -71,7 +66,6 @@ func ensureKCPSeed(in *Inbound) error {
 	return nil
 }
 
-// ensureSSPassword برای shadowsocks رمز تصادفی می‌سازد اگر خالی باشد.
 func ensureSSPassword(in *Inbound) error {
 	if in.Protocol != "shadowsocks" || in.Password != "" {
 		return nil
@@ -84,12 +78,9 @@ func ensureSSPassword(in *Inbound) error {
 	return nil
 }
 
-// inboundSettings بخش settings کانفیگ Xray را بر اساس پروتکل می‌سازد.
-// کلاینت‌های غیرفعال یا منقضی‌شده وارد کانفیگ نمی‌شوند.
 func inboundSettings(in Inbound, clients []Client, now time.Time) map[string]any {
 	switch in.Protocol {
 	case "shadowsocks":
-		// shadowsocks یک رمز برای کل inbound دارد و کلاینت جدا ندارد.
 		return map[string]any{"method": ssMethod, "password": in.Password, "network": "tcp,udp"}
 
 	case "trojan":
@@ -110,7 +101,7 @@ func inboundSettings(in Inbound, clients []Client, now time.Time) map[string]any
 		}
 		return map[string]any{"clients": cl}
 
-	default: // vless
+	default:
 		cl := []map[string]any{}
 		for _, c := range clients {
 			if c.attachedTo(in.Port) && clientUsable(c, now) {
@@ -125,7 +116,6 @@ func inboundSettings(in Inbound, clients []Client, now time.Time) map[string]any
 	}
 }
 
-// securityParams پارامترهای امنیتی مشترک لینک vless و trojan را می‌سازد.
 func securityParams(in Inbound) url.Values {
 	q := url.Values{}
 	switch in.Network {
@@ -193,9 +183,6 @@ func securityParams(in Inbound) url.Values {
 	return q
 }
 
-// buildLink لینک اشتراک یک inbound یا کلاینت را می‌سازد.
-// برای shadowsocks، c می‌تواند nil باشد و لینک از خود inbound ساخته می‌شود.
-// server باید IP سرور ایران باشد، چون کاربر به آن وصل می‌شود.
 func buildLink(c *Client, in Inbound, server string) string {
 	if !validServerAddr(server) {
 		return ""
@@ -208,7 +195,7 @@ func buildLink(c *Client, in Inbound, server string) string {
 		if name == "" {
 			name = "ss"
 		}
-		return fmt.Sprintf("ss://%s@%s:%d#%s", userinfo, server, in.Port, url.QueryEscape(name))
+		return fmt.Sprintf("ss://%s@%s#%s", userinfo, hostPort(server, in.Port), url.QueryEscape(name))
 
 	case "vmess":
 		if c == nil {
@@ -253,17 +240,16 @@ func buildLink(c *Client, in Inbound, server string) string {
 		if c == nil {
 			return ""
 		}
-		return fmt.Sprintf("trojan://%s@%s:%d?%s#%s", c.ID, server, in.Port, securityParams(in).Encode(), url.QueryEscape(c.Name))
+		return fmt.Sprintf("trojan://%s@%s?%s#%s", c.ID, hostPort(server, in.Port), securityParams(in).Encode(), url.QueryEscape(c.Name))
 
-	default: // vless
+	default:
 		if c == nil {
 			return ""
 		}
-		return fmt.Sprintf("vless://%s@%s:%d?%s#%s", c.ID, server, in.Port, securityParams(in).Encode(), url.QueryEscape(c.Name))
+		return fmt.Sprintf("vless://%s@%s?%s#%s", c.ID, hostPort(server, in.Port), securityParams(in).Encode(), url.QueryEscape(c.Name))
 	}
 }
 
-// pathOf مسیر ws را برمی‌گرداند (پیش‌فرض /).
 func pathOf(in Inbound) string {
 	if in.Path == "" {
 		return "/"
@@ -271,7 +257,6 @@ func pathOf(in Inbound) string {
 	return in.Path
 }
 
-// svcOf نام سرویس grpc را برمی‌گرداند (پیش‌فرض grpc).
 func svcOf(in Inbound) string {
 	if in.ServiceName == "" {
 		return "grpc"
@@ -279,7 +264,6 @@ func svcOf(in Inbound) string {
 	return in.ServiceName
 }
 
-// fpOf fingerprint کلاینت را برمی‌گرداند (پیش‌فرض chrome).
 func fpOf(in Inbound) string {
 	if in.Fingerprint == "" {
 		return "chrome"
@@ -287,7 +271,6 @@ func fpOf(in Inbound) string {
 	return in.Fingerprint
 }
 
-// sniffFor تنظیمات sniffing را برای کانفیگ Xray می‌سازد؛ nil یعنی غیرفعال.
 func sniffFor(in Inbound) map[string]any {
 	if !in.Sniffing {
 		return nil
@@ -299,7 +282,6 @@ func sniffFor(in Inbound) map[string]any {
 	return map[string]any{"enabled": true, "destOverride": dest}
 }
 
-// modeOf حالت xhttp را برمی‌گرداند (پیش‌فرض auto).
 func modeOf(in Inbound) string {
 	if in.Mode == "" {
 		return "auto"

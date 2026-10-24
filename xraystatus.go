@@ -1,7 +1,5 @@
 package main
 
-// xraystatus.go: وضعیت Xray برای نمایش در صفحه‌ی اصلی.
-
 import (
 	"context"
 	"net/http"
@@ -15,7 +13,7 @@ import (
 type xrayStatus struct {
 	Installed      bool   `json:"installed"`
 	Version        string `json:"version"`
-	Service        string `json:"service"` // active | inactive | failed | ...
+	Service        string `json:"service"`
 	Inbounds       int    `json:"inbounds"`
 	ActiveInbounds int    `json:"active_inbounds"`
 	Clients        int    `json:"clients"`
@@ -27,7 +25,6 @@ var xrayVersionCache struct {
 	val string
 }
 
-// xrayVersion نسخه‌ی Xray را یک بار می‌خواند و نگه می‌دارد.
 func xrayVersion() string {
 	xrayVersionCache.mu.Lock()
 	defer xrayVersionCache.mu.Unlock()
@@ -46,7 +43,6 @@ func xrayVersion() string {
 	return line
 }
 
-// xrayServiceState وضعیت سرویس systemd با نام xray را برمی‌گرداند.
 func xrayServiceState() string {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -83,7 +79,6 @@ func currentXrayStatus() xrayStatus {
 	return s
 }
 
-// registerXrayStatusRoute مسیر GET /api/xray/status را ثبت می‌کند.
 func registerXrayStatusRoute(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	m.HandleFunc("GET /api/xray/status", auth(func(w http.ResponseWriter, r *http.Request) {
 		reply(w, 200, currentXrayStatus())

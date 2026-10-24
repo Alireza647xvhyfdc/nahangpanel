@@ -1,19 +1,19 @@
 package main
 
-// xraytunnel.go: اتصال هر تانل به یک inbound از همین سرور (فقط سرور خارج).
-
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-// bindInbound اگر تانل به inbound وصل شده باشد، پورت مقصد را برابر پورت همان inbound می‌گذارد.
-// خروجی رشتهٔ خطا (یا خالی) است.
 func bindInbound(t *Tunnel) string {
 	if t.Inbound == 0 {
+		if t.Role == "client" {
+			t.Ports = nil
+		}
 		return ""
 	}
 	if t.Role != "client" {
@@ -32,7 +32,6 @@ func bindInbound(t *Tunnel) string {
 	return fmt.Sprintf("اینباندی با پورت %d روی این سرور پیدا نشد", t.Inbound)
 }
 
-// inboundRemarks نام هر inbound را بر اساس پورتش برمی‌گرداند.
 func inboundRemarks() map[int]string {
 	out := map[int]string{}
 	st, err := loadStore()
@@ -49,7 +48,6 @@ func inboundRemarks() map[int]string {
 	return out
 }
 
-// registerTunnelBindRoute: POST /api/tunnels/{name}/bind  بدنه: {"inbound": PORT}  (۰ = جدا کردن)
 func registerTunnelBindRoute(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	m.HandleFunc("POST /api/tunnels/{name}/bind", auth(func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
@@ -68,12 +66,20 @@ func registerTunnelBindRoute(m *http.ServeMux, auth func(http.HandlerFunc) http.
 		}
 		t := old
 		t.Inbound = req.Inbound
+		if t.Role == "client" && t.Inbound != 0 && t.Allow == "" {
+			if h, _, err := net.SplitHostPort(t.Addr); err == nil {
+				t.Allow = h
+			}
+		}
 		if e := bindInbound(&t); e != "" {
 			bad(w, e)
 			return
 		}
+		if e := validate(&t); e != "" {
+			bad(w, e)
+			return
+		}
 		if strings.Join(t.Ports, ",") != strings.Join(old.Ports, ",") {
-			// پورت مقصد عوض شده: تانل باید با تنظیمات جدید دوباره ساخته شود
 			if err := create(t); err != nil {
 				reply(w, 500, map[string]string{"error": err.Error()})
 				return
@@ -84,4 +90,26 @@ func registerTunnelBindRoute(m *http.ServeMux, auth func(http.HandlerFunc) http.
 		}
 		reply(w, 200, map[string]string{"ok": "1"})
 	}))
+}
+
+func irServerAddr() string {
+	mu.Lock()
+	defer mu.Unlock()
+	best := ""
+	for _, t := range tunnels {
+		if t.Role != "client" {
+			continue
+		}
+		host, _, err := net.SplitHostPort(t.Addr)
+		if err != nil || host == "" {
+			continue
+		}
+		if t.Inbound != 0 {
+			return host
+		}
+		if best == "" {
+			best = host
+		}
+	}
+	return best
 }

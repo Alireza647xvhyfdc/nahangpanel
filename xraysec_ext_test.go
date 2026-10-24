@@ -115,7 +115,6 @@ func TestValidateNewSecurityFields(t *testing.T) {
 }
 
 func TestCertPinFromFile(t *testing.T) {
-	// گواهی خودامضای کوچک برای تست؛ هش باید طول ۶۴ هگز داشته باشد.
 	dir := t.TempDir()
 	p := filepath.Join(dir, "c.pem")
 	pemData := "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUZ0y2pI1xq8r3H1Vu3dU5dQe8VrYwCgYIKoZIzj0EAwIw\nRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGElu\ndGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNDAxMDEwMDAwMDBaFw0yNTAxMDEw\nMDAwMDBaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYD\nVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwWTATBgcqhkjOPQIBBggqhkjO\n-----END CERTIFICATE-----\n"
@@ -152,7 +151,6 @@ func TestMaterializeCertsContentMode(t *testing.T) {
 	}
 	in.TLS.Certificates[0].CertContent = "-----BEGIN CERTIFICATE-----\nAA\n-----END CERTIFICATE-----"
 	in.TLS.Certificates[0].KeyContent = "-----BEGIN PRIVATE KEY-----\nBB\n-----END PRIVATE KEY-----"
-	// مسیر پیش‌فرض tlsCertDir به /etc نوشته می‌شود؛ در تست فقط بررسی خطا کافی است.
 	if err := materializeCerts(&in); err != nil {
 		t.Skipf("cannot write to %s in this environment: %v", tlsCertDir, err)
 	}

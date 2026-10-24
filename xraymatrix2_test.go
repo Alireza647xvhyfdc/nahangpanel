@@ -1,8 +1,5 @@
 package main
 
-// تست ماتریس دوم: گزینه‌های اختیاری inbound (ALPN، نسخهٔ TLS، cipher، curves، sniffing،
-// Listen، Reality show/timediff، Limit Fallback، حالت xhttp). فقط با XRAY_BIN اجرا می‌شود.
-
 import (
 	"fmt"
 	"os"

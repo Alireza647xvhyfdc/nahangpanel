@@ -1,18 +1,5 @@
 package main
 
-// ترنسپورت «نهنگ ایکس» (nahangx) — سریع و سخت‌شده
-//
-// نسخه‌ی ۲ پروتکل نهنگ با این تفاوت‌ها:
-//   - همیشه داخل TLS 1.3 (لایه‌ی بیرونی؛ ترافیک روی سیم کاملاً رمزشده است).
-//   - ضد replay: هر دست‌دادن یک مهر زمانی داخل HMAC دارد و سرور هر nonce را
-//     تا ۲ دقیقه به خاطر می‌سپارد؛ ضبط‌کردن و پخش‌مجدد دست‌دادن بی‌اثر است.
-//   - چرخش کلید: هر ۲^۱۸ فریم (حدود ۸ گیگابایت) کلید ارسال و دریافت هر دو طرف
-//     به‌صورت هم‌زمان و قطعی تغییر می‌کند؛ نشت یک کلید، ترافیک بعدی را باز نمی‌کند.
-//   - سرعت: فریم‌های بزرگ‌تر (تا ۳۲KB)، رمزنگاری درجا (بدون کپی اضافه)،
-//     یک‌بار write برای هر فریم (هدر + بدنه) و بافرهای بازچرخانی شده (sync.Pool).
-//
-// نسخه‌ی قبلی (nahang) بدون تغییر باقی می‌ماند تا سازگاری حفظ شود.
-
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -29,18 +16,16 @@ import (
 )
 
 const (
-	xRekey   = 1 << 18 // تعداد فریم بین دو چرخش کلید
-	xMaxData = 32768   // بیشینه‌ی داده‌ی یک فریم
-	xSkew    = 120     // بیشینه‌ی اختلاف ساعت مجاز (ثانیه)
-	xMaxSeen = 200000  // سقف nonceهای به‌خاطرسپرده‌شده
+	xRekey   = 1 << 18
+	xMaxData = 32768
+	xSkew    = 120
+	xMaxSeen = 200000
 )
 
 var xPool = sync.Pool{New: func() any {
 	b := make([]byte, 2+3+xMaxData+15+16+64)
 	return &b
 }}
-
-// ---------- کلید و رمز ----------
 
 func aeadOf(k []byte) (cipher.AEAD, error) {
 	b, err := aes.NewCipher(k)
@@ -50,7 +35,6 @@ func aeadOf(k []byte) (cipher.AEAD, error) {
 	return cipher.NewGCM(b)
 }
 
-// هر دو طرف دقیقاً در یک شماره‌ی فریم چرخش می‌کنند، پس کلیدها همیشه هم‌راستا می‌مانند.
 func (s *sess) rekeyW() {
 	s.wk = hsum(s.wk, []byte("rekey"))
 	s.wa, _ = aeadOf(s.wk)
@@ -61,7 +45,6 @@ func (s *sess) rekeyR() {
 	s.ra, _ = aeadOf(s.rk)
 }
 
-// newSessX همان newSess است با پرچم نسخه‌ی سریع.
 func newSessX(c net.Conn, master, shared, C, S []byte, client bool) (*sess, error) {
 	s, err := newSess(c, master, shared, C, S, client)
 	if err != nil {
@@ -71,10 +54,6 @@ func newSessX(c net.Conn, master, shared, C, S []byte, client bool) (*sess, erro
 	return s, nil
 }
 
-// ---------- فریم ----------
-// قالب فریم: [طول رمزشده ۲ بایت، XOR با ماسک][AES-GCM(نوع ۱ | طول داده ۲ | داده | پدینگ)]
-
-// sendX: یک فریم را با یک write و بدون کپی اضافه ارسال می‌کند.
 func (s *sess) sendX(typ byte, data []byte) error {
 	if len(data) > xMaxData {
 		return errors.New("frame too large")
@@ -87,16 +66,21 @@ func (s *sess) sendX(typ byte, data []byte) error {
 
 	bp := xPool.Get().(*[]byte)
 	defer xPool.Put(bp)
+	if cap(*bp) < 2+pl+16 {
+		nb := make([]byte, 2+pl+16)
+		bp = &nb
+	}
 	b := (*bp)[:2+pl+16]
 	pt := b[2 : 2+pl]
 	pt[0] = typ
 	binary.BigEndian.PutUint16(pt[1:], uint16(len(data)))
 	copy(pt[3:], data)
-	rand.Read(pt[3+len(data):])
+	if _, err := rand.Read(pt[3+len(data):]); err != nil {
+		return err
+	}
 
 	s.wmu.Lock()
 	defer s.wmu.Unlock()
-	// رمزنگاری درجا: خروجی روی همان حافظه‌ی متن‌ساده نوشته می‌شود
 	ct := s.wa.Seal(pt[:0], nonce(s.wc), pt, nil)
 	m := hsum([]byte("len"), s.wk, ctr(s.wc))
 	binary.BigEndian.PutUint16(b[0:2], uint16(len(ct)))
@@ -110,7 +94,6 @@ func (s *sess) sendX(typ byte, data []byte) error {
 	return err
 }
 
-// recvX: خواندن و باز کردن درجای یک فریم.
 func (s *sess) recvX() (byte, []byte, error) {
 	var h [2]byte
 	if _, err := io.ReadFull(s.c, h[:]); err != nil {
@@ -142,15 +125,12 @@ func (s *sess) recvX() (byte, []byte, error) {
 	return pt[0], pt[3 : 3+l], nil
 }
 
-// ---------- ضد replay ----------
-
 var xSeen = struct {
 	sync.Mutex
-	m map[[16]byte]int64
+	m    map[[16]byte]int64
+	last int64
 }{m: map[[16]byte]int64{}}
 
-// xFresh: مهر زمانی را می‌سنجد و nonce را یک‌بار می‌پذیرد.
-// nonce فقط پس از تأیید HMAC فراخوانی می‌شود، بنابراین مهاجم نمی‌تواند حافظه را پر کند.
 func xFresh(n []byte) bool {
 	now := time.Now().Unix()
 	ts := int64(binary.BigEndian.Uint64(n[8:16]))
@@ -165,9 +145,12 @@ func xFresh(n []byte) bool {
 		return false
 	}
 	if len(xSeen.m) >= xMaxSeen {
-		for kk, t := range xSeen.m {
-			if now-t > 2*xSkew {
-				delete(xSeen.m, kk)
+		if now != xSeen.last {
+			xSeen.last = now
+			for kk, t := range xSeen.m {
+				if now-t > 2*xSkew {
+					delete(xSeen.m, kk)
+				}
 			}
 		}
 		if len(xSeen.m) >= xMaxSeen {
@@ -177,9 +160,6 @@ func xFresh(n []byte) bool {
 	xSeen.m[k] = now
 	return true
 }
-
-// ---------- دست‌دادن ----------
-// ساختار مشابه nahang است؛ nonce حالا ۸ بایت تصادفی + ۸ بایت مهر زمانی دارد.
 
 func hsClientX(c net.Conn, master []byte) (*sess, error) {
 	c.SetDeadline(time.Now().Add(10 * time.Second))
@@ -221,18 +201,16 @@ func hsServerX(c net.Conn, master []byte) (*sess, error) {
 	c.SetDeadline(time.Now().Add(10 * time.Second))
 	defer c.SetDeadline(time.Time{})
 	hd := make([]byte, 64)
-	// The real client sends its 64-byte hello at once. Anything slower or shorter
-	// is treated as a probe and answered like a web server (see decoy).
-	c.SetReadDeadline(time.Now().Add(3 * time.Second))
+
+	c.SetReadDeadline(time.Now().Add(6 * time.Second))
 	if _, err := io.ReadFull(c, hd); err != nil {
 		return nil, errAuth
 	}
-	c.SetReadDeadline(time.Now().Add(7 * time.Second))
+	c.SetReadDeadline(time.Now().Add(6 * time.Second))
 	n, pm, tg := hd[:16], hd[16:48], hd[48:64]
 	if !hmac.Equal(tg, hmac16(master, n, pm)) {
 		return nil, errAuth
 	}
-	// پس از تأیید HMAC: مهر زمانی و یکتایی nonce
 	if !xFresh(n) {
 		return nil, errAuth
 	}
@@ -261,8 +239,6 @@ func hsServerX(c net.Conn, master []byte) (*sess, error) {
 	return newSessX(c, master, shared, C, S, false)
 }
 
-// decoy answers an unauthenticated probe with a plain 404 page, like a normal
-// web server would, instead of staying silent (silence is a recognizable pattern).
 func decoy(c net.Conn) {
 	c.SetDeadline(time.Now().Add(5 * time.Second))
 	body := "<!DOCTYPE html>\n<html><head><title>404 Not Found</title></head>\n" +

@@ -26,7 +26,7 @@ button,input{font:inherit;color:inherit}
 .grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(70% 70% at 50% 30%,#000 40%,transparent 100%);mask-image:radial-gradient(70% 70% at 50% 30%,#000 40%,transparent 100%)}
 .glass{background:rgba(17,24,35,.72);border:1px solid var(--ln);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .app{position:relative;z-index:1;display:flex;min-height:100vh}
-/* boot */
+
 #boot{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--ink95);text-align:center;transition:opacity .5s,visibility .5s}
 #boot.gone{opacity:0;visibility:hidden}
 .logo{display:grid;place-items:center}.logo svg{width:100%;height:100%;display:block}
@@ -36,7 +36,7 @@ button,input{font:inherit;color:inherit}
 .bbar{width:170px;height:3px;border-radius:9px;background:var(--ln);overflow:hidden;margin:20px auto 0}
 .bbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon),var(--vio));animation:ld 1s ease forwards}
 @keyframes ld{to{width:100%}}
-/* sidebar */
+
 aside{width:250px;flex:none;position:fixed;inset-block:0;inset-inline-start:0;height:100vh;z-index:40;border-block:0;border-inline-start:0;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s}
 aside.open{transform:none}
 .brand{display:flex;align-items:center;gap:11px;height:64px;padding:0 18px;border-bottom:1px solid var(--ln)}
@@ -52,7 +52,7 @@ nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;st
 .me{display:flex;align-items:center;gap:9px;background:rgba(11,15,20,.6);border-radius:12px;padding:8px 10px}
 .me i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--neon),var(--vio))}
 .me b{display:block;font-size:12px;color:var(--t1)}
-/* header */
+
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 header{position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-width:0 0 1px}
 header h1{margin:0;font-size:15px;line-height:1.3}header p{margin:0;font-size:11px;color:var(--t3)}
@@ -65,7 +65,7 @@ header h1{margin:0;font-size:15px;line-height:1.3}header p{margin:0;font-size:11
 @keyframes pl{50%{opacity:.35;transform:scale(.8)}}
 main{flex:1;padding:22px;max-width:1100px;width:100%;margin:auto}
 footer{padding:12px 24px;font-size:11px;color:rgba(255,255,255,.25);border-top:1px solid var(--ln)}
-/* cards */
+
 .card{border-radius:18px;padding:18px;transition:.24s cubic-bezier(.2,.8,.2,1)}
 .hov:hover{border-color:rgba(34,211,238,.35);transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
 .rise{animation:rise .46s cubic-bezier(.2,.8,.2,1) both}
@@ -100,10 +100,10 @@ h2{margin:0;font-size:14.5px}.sub{font-size:11.5px;color:var(--t3);margin:2px 0 
 @keyframes rp{to{transform:scale(4);opacity:0}}
 .empty{text-align:center;padding:34px 10px;color:var(--t3)}
 .empty .btn{margin-top:10px}
-/* topology */
+
 .pkt{filter:drop-shadow(0 0 5px currentColor)}
 .ring{animation:gr 3s ease-out infinite}@keyframes gr{0%{r:16;opacity:.7}100%{r:36;opacity:0}}
-/* guide */
+
 details{border:1px solid var(--ln);border-radius:14px;background:rgba(11,15,20,.45);padding:0 16px;margin-top:10px;transition:.2s}
 details[open]{border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.04)}
 summary{cursor:pointer;list-style:none;padding:13px 0;font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:10px}
@@ -115,9 +115,9 @@ details[open] summary::after{transform:rotate(45deg)}
 .gb ul{margin:4px 0;padding-inline-start:20px}.gb b{color:var(--t1)}
 .gt{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
 .gt td{padding:6px 8px;border-bottom:1px solid var(--ln)}.gt td:first-child{width:90px;color:var(--neon)}
-/* close button for expandable lists */
+
 .dx{margin-top:12px}
-/* home page */
+
 #p-home .hero{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:14px;animation:rise .5s both}
 .hero .ver{font-size:13px;color:var(--t3)}
 .hero .ver b{color:var(--neon);font-size:18px;margin-inline-start:4px}
@@ -153,13 +153,13 @@ details[open] summary::after{transform:rotate(45deg)}
 .legend{font-size:12px;color:var(--t3);margin:0 0 10px}
 @media(max-width:520px){.chart{height:90px}.rwrap{width:86px;height:86px}.rv{font-size:17px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-/* transport maps */
+
 .maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0 4px}
 .map{border:1px solid var(--ln);border-radius:12px;padding:10px 12px;background:rgba(7,10,15,.5)}
 .mh{display:flex;flex-direction:column;gap:1px;margin-bottom:6px;font-size:12px}
 .mh span{color:var(--t3);font-size:11px}
 .maps svg{width:100%;height:auto;display:block}
-/* form */
+
 .form{display:grid;gap:16px;grid-template-columns:1.4fr 1fr}
 label{display:block;font-size:12px;color:var(--t3);margin:14px 0 5px}
 label:first-child{margin-top:0}
@@ -202,11 +202,11 @@ input:focus{border-color:rgba(34,211,238,.6);box-shadow:0 0 0 3px rgba(34,211,23
 .qh{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:11px;font-style:normal;cursor:help;flex:0 0 auto}
 .hint{border:1px solid rgba(255,255,255,.08);background:rgba(11,15,20,.5);border-radius:12px;padding:12px;font-size:12px;color:var(--t2);line-height:1.9}
 .hint b{color:var(--t1)}
-/* logs */
+
 pre{margin:12px 0 0;background:rgba(7,10,15,.8);border:1px solid var(--ln);border-radius:12px;padding:12px;max-height:480px;overflow:auto;direction:ltr;text-align:left;font-size:11.5px;line-height:1.8;color:rgba(255,255,255,.7);white-space:pre-wrap;word-break:break-all}
 .sel{display:flex;flex-wrap:wrap;gap:8px}
 .sel .btn.on{border-color:var(--neon);color:var(--neon);background:rgba(34,211,238,.08)}
-/* toasts */
+
 #toasts{position:fixed;bottom:20px;inset-inline-end:20px;z-index:90;display:grid;gap:8px}
 .toast{padding:11px 16px;border-radius:12px;font-size:12.5px;display:flex;gap:9px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.45);animation:ti .35s cubic-bezier(.2,1.3,.3,1) both}
 .toast.out{animation:to .3s ease both}
@@ -297,8 +297,31 @@ select option{background:var(--ink8);color:var(--t1)}
  </header>
 
  <main>
-  <!-- نمای کلی -->
   <section id="p-home" hidden>
+  <div class="card glass" id="sinfo" hidden style="margin-top:10px;padding:12px 14px"><b>حساب شما</b><div class="row" style="gap:14px;flex-wrap:wrap;margin-top:6px"><span>انقضا: <b id="si-exp" dir="ltr">—</b></span><span>حجم مصرفی: <b id="si-used" dir="ltr">—</b></span></div><small id="si-warn" class="hint" style="color:#F59E0B"></small></div>
+  <div id="ic-list" style="margin-top:10px"></div>
+  <div id="ix-out" style="margin-top:14px"></div>
+ </div>
+
+ <div id="ic-modal" class="modal" hidden>
+  <div class="mbox glass">
+   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 id="ic-title">ساخت کلاینت</h3><button class="btn" id="ic-close" aria-label="بستن">✕</button></div>
+   <div class="tabs">
+    <button type="button" class="ctabbtn on" data-ctab="basics">پایه</button>
+    <button type="button" class="ctabbtn" data-ctab="credentials">اعتبارنامه</button>
+    <button type="button" class="ctabbtn" data-ctab="links">لینک‌ها</button>
+   </div>
+
+   <div class="cpane" data-cpane="basics">
+    <label>ایمیل / نام کلاینت (انگلیسی)</label>
+    <div class="row" style="gap:8px"><input id="ic-name" dir="ltr" class="mono" autocomplete="off" style="flex:1"><button class="btn" id="ic-gen" type="button" aria-label="نام تصادفی">⟳</button></div>
+    <div class="two">
+     <div><label>Traffic Limit (گیگ، ۰ = نامحدود)</label><input id="ic-gb" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+     <div><label>IP Limit (۰ = نامحدود)</label><input id="ic-ipl" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+    </div>
+    <div class="two">
+     <div><label>HWID Limit (۰ = نامحدود)</label><input id="ic-hwid" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
+     <div><label>انقضا</label><input type="hidden" id="ic-exp" value="0"><div class="dtp" data-dtp="ic-exp"></div></div>
    <div class="hero card glass">
     <div>
      <div class="ver">نسخه‌ی پنل <b id="hv">—</b></div>
@@ -310,10 +333,19 @@ select option{background:var(--ink8);color:var(--t1)}
      <button class="btn" id="updb" hidden>به‌روزرسانی</button>
     </div>
    </div>
+   <div class="card glass" id="xvcard" style="margin:10px 0;padding:12px 14px">
+    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+     <span>نسخه‌ی Xray: <b id="xcv" dir="ltr">—</b></span>
+     <select id="xvsel" dir="ltr" class="mono" style="min-width:140px"></select>
+     <button class="btn" id="xvload" type="button">دریافت لیست نسخه‌ها</button>
+     <button class="btn p" id="xvapply" type="button" hidden>نصب این نسخه</button>
+    </div>
+    <small id="xvmsg" class="hint"></small>
+   </div>
    <p class="legend">رنگ‌ها: <b style="color:#34D399">سبز</b> عادی · <b style="color:#FBBF24">زرد</b> بیشتر از ۶۵٪ · <b style="color:#F87171">قرمز</b> بیشتر از ۸۵٪</p>
    <div class="charts">
     <div class="card glass cc" style="--d:.05s"><div class="cch"><span>پردازنده</span><b id="vcpu">—</b></div><svg class="chart" id="cpuc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small id="vcpus">—</small></div>
-    <div class="card glass cc" style="--d:.12s"><div class="cch"><span>حافظه</span><b id="vmem">—</b></div><svg class="chart" id="memc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small id="vmems">—</small></div>
+    <div class="card glass cc" style="--d:.12s"><div class="cch"><span>رم</span><b id="vmem">—</b></div><svg class="chart" id="memc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small id="vmems">—</small></div>
     <div class="card glass cc" style="--d:.19s"><div class="cch"><span>شبکه (لحظه‌ای)</span><b id="vnet">—</b></div><svg class="chart" id="netc" viewBox="0 0 300 100" preserveAspectRatio="none"></svg><small>آبی: دریافت · بنفش: ارسال</small></div>
    </div>
    <div class="card glass disk">
@@ -333,13 +365,11 @@ select option{background:var(--ink8);color:var(--t1)}
    <div class="hgrid" id="hstats"></div>
   </section>
 
-  <!-- تانل‌ها -->
   <section id="p-tunnels" hidden>
    <div class="stats" id="stats"></div>
    <div class="tl" id="list"></div>
   </section>
 
-  <!-- اتصال تانل به اینباند -->
   <section id="p-bind" hidden>
    <div class="row" style="justify-content:space-between;margin-bottom:14px">
     <h2>اتصال تانل‌ها به اینباند</h2>
@@ -362,7 +392,6 @@ select option{background:var(--ink8);color:var(--t1)}
    </div>
   </section>
 
-  <!-- ساخت تانل -->
   <section id="p-create" hidden>
    <div class="form">
     <div class="card glass">
@@ -396,7 +425,6 @@ select option{background:var(--ink8);color:var(--t1)}
    </div>
   </section>
 
-  <!-- لاگ -->
   <section id="p-logs" hidden>
    <div class="card glass">
     <div class="row"><div class="row" style="gap:10px"><h2>لاگ تانل</h2><span class="tag ok" id="lgn" hidden></span></div><button class="btn on" id="livebtn" type="button">● زنده</button></div>
@@ -404,7 +432,6 @@ select option{background:var(--ink8);color:var(--t1)}
     <pre id="log" hidden></pre>
    </div>
   </section>
-  <!-- تنظیمات -->
   <section id="p-xray" hidden>
   <div class="card glass" role="alert" style="border:1px solid #F59E0B;margin-bottom:14px">
    <b style="color:#F59E0B">⚠️ هنوز تست زنده نشده</b>
@@ -420,8 +447,6 @@ select option{background:var(--ink8);color:var(--t1)}
   <button class="btn p" id="ix-new" aria-label="ساخت اینباند" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
  </div>
  <div class="card glass">
-  <label>IP سرور برای لینک shadowsocks (IP سرور ایران)</label>
-  <input id="ib-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
   <div id="ix-list" style="margin-top:10px"></div>
   <div id="ib-out" style="margin-top:14px"></div>
  </div>
@@ -575,31 +600,6 @@ select option{background:var(--ink8);color:var(--t1)}
   <button class="btn p" id="ic-new" aria-label="ساخت کلاینت" style="width:42px;height:42px;padding:0;font-size:24px;line-height:1">+</button>
  </div>
  <div class="card glass">
-  <label>IP سرور برای لینک (tcp: IP سرور ایران، kcp: IP سرور خارج)</label>
-  <input id="ix-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
-  <div id="ic-list" style="margin-top:10px"></div>
-  <div id="ix-out" style="margin-top:14px"></div>
- </div>
-
- <div id="ic-modal" class="modal" hidden>
-  <div class="mbox glass">
-   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3>ساخت کلاینت</h3><button class="btn" id="ic-close" aria-label="بستن">✕</button></div>
-   <div class="tabs">
-    <button type="button" class="ctabbtn on" data-ctab="basics">پایه</button>
-    <button type="button" class="ctabbtn" data-ctab="credentials">اعتبارنامه</button>
-    <button type="button" class="ctabbtn" data-ctab="links">لینک‌ها</button>
-   </div>
-
-   <div class="cpane" data-cpane="basics">
-    <label>ایمیل / نام کلاینت (انگلیسی)</label>
-    <div class="row" style="gap:8px"><input id="ic-name" dir="ltr" class="mono" autocomplete="off" style="flex:1"><button class="btn" id="ic-gen" type="button" aria-label="نام تصادفی">⟳</button></div>
-    <div class="two">
-     <div><label>Traffic Limit (گیگ، ۰ = نامحدود)</label><input id="ic-gb" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
-     <div><label>IP Limit (۰ = نامحدود)</label><input id="ic-ipl" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
-    </div>
-    <div class="two">
-     <div><label>HWID Limit (۰ = نامحدود)</label><input id="ic-hwid" dir="ltr" class="mono" inputmode="numeric" value="0"></div>
-     <div><label>انقضا</label><input type="hidden" id="ic-exp" value="0"><div class="dtp" data-dtp="ic-exp"></div></div>
     </div>
     <div class="two">
      <div><label>Traffic Reset</label><select id="ic-reset"><option value="never">Never</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div>
@@ -624,8 +624,7 @@ select option{background:var(--ink8);color:var(--t1)}
    </div>
 
    <div class="cpane" data-cpane="links" hidden>
-    <label>IP سرور برای لینک</label>
-    <input id="ic-server" dir="ltr" class="mono" placeholder="79.x.x.x" autocomplete="off">
+    <p class="hint">آدرس سرور ایران از تانل‌ها گرفته می‌شود؛ نیازی به وارد کردن IP نیست.</p>
     <div class="row" style="margin-top:8px"><button class="btn" id="ic-link-refresh" type="button">ساخت دوباره لینک‌ها</button></div>
     <div id="ic-links"></div>
    </div>
@@ -640,13 +639,17 @@ select option{background:var(--ink8);color:var(--t1)}
    <h3>افزودن مدیر</h3>
    <label>نام کاربری (انگلیسی، ۳ تا ۳۲ کاراکتر)</label><input id="am-user" dir="ltr" class="mono" autocomplete="off">
    <label>رمز (حداقل ۸ کاراکتر)</label><input id="am-pass" type="password" dir="ltr" class="mono" autocomplete="new-password">
-   <label>نقش</label><select id="am-role"><option value="viewer">viewer (فقط مشاهده)</option><option value="owner">owner (همه‌کار)</option></select>
+   <label>نقش</label><select id="am-role"><option value="viewer">viewer (فقط مشاهده)</option><option value="owner">owner (همه‌کار)</option><option value="seller">seller (نماینده؛ فقط کلاینت‌های خودش)</option></select>
+   <label>سقف تعداد کلاینت seller (۰ = نامحدود)</label><input id="am-max" type="number" min="0" value="0" dir="ltr" class="mono">
+   <label>انقضای حساب seller (خالی = بدون انقضا)</label><input id="am-exp" type="date" dir="ltr" class="mono">
+   <label>سقف حجم کل کلاینت‌های seller (GB، ۰ = نامحدود)</label><input id="am-tgb" type="number" min="0" value="0" dir="ltr" class="mono">
    <div class="row" style="margin-top:14px"><button class="btn p" id="am-add">ساخت مدیر</button><span class="err" id="am-e"></span></div>
   </div>
   <div class="card glass">
    <h3>راهنما</h3>
    <p>مدیر اصلی همان نامی است که با <span class="mono" dir="ltr">-user</span> و <span class="mono" dir="ltr">-pass</span> اجرا شده است. همیشه owner است و از این بخش قابل حذف یا تغییر نیست.</p>
    <p>viewer فقط صفحات را می‌بیند و نمی‌تواند تغییری بدهد. تغییر نقش یا حذف، بلافاصله روی نشست‌های فعال اثر می‌گذارد.</p>
+   <p>seller (نماینده) فقط صفحهٔ کلاینت‌ها را می‌بیند و فقط کلاینت‌هایی را که خودش ساخته می‌بیند و ویرایش می‌کند؛ به تانل‌ها، تنظیمات و اینباندها دسترسی ندارد. با حذف seller، همه‌ی کلاینت‌هایش هم حذف می‌شوند.</p>
   </div>
  </div>
  <div class="card glass" style="margin-top:18px"><div id="am-list"></div></div>
@@ -670,7 +673,6 @@ select option{background:var(--ink8);color:var(--t1)}
    </div>
   </section>
 
-  <!-- آموزش -->
   <section id="p-guide" hidden>
    <div class="card glass">
     <h2>راه‌اندازی تانل، قدم‌به‌قدم</h2><p class="sub">از ساخت تانل تا عیب‌یابی، در یک جا</p>
@@ -739,15 +741,13 @@ select option{background:var(--ink8);color:var(--t1)}
 <script>
 const $=i=>document.getElementById(i);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const PAGES={bind:['اتصال تانل‌ها به اینباند ها','انتخاب اینباند مقصد هر تانل'],admins:['مدیران','حساب‌های ادمین و نقش owner یا viewer'],xray:['اینباندها','ساخت و مدیریت inbound های Xray'],clients:['کلاینت‌ها','ساخت کلاینت و گرفتن لینک اتصال'],home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
+const PAGES={bind:['اتصال تانل‌ها به اینباند ها','انتخاب اینباند مقصد هر تانل'],admins:['مدیران','حساب‌های ادمین و نقش owner، viewer یا seller'],xray:['اینباندها','ساخت و مدیریت inbound های Xray'],clients:['کلاینت‌ها','ساخت کلاینت و گرفتن لینک اتصال'],home:['نمای کلی','وضعیت سرور و به‌روزرسانی'],tunnels:['تانل‌ها','وضعیت و مدیریت تانل‌های این سرور'],create:['ساخت تانل','تانل جدید بین سرور ایران و خارج'],logs:['لاگ‌ها','آخرین رویدادهای هر تانل'],settings:['تنظیمات','هشدار تلگرام و پشتیبان‌گیری'],guide:['آموزش','راه‌اندازی و عیب‌یابی تانل']};
 const TR=[['nahang','اختصاصی: رمزنگاری کامل، بدون امضای ثابت'],['nahangx','جدید: سریع و سخت‌شده؛ TLS ۱.۳ + ضد replay + کلید چرخشی'],['tcpmux','چندکاناله، پایدار'],['tcp','ساده و سریع'],['wssmux','رمزنگاری‌شده، چندکاناله'],['wss','رمزنگاری‌شده'],['wsmux','وب‌سوکت چندکاناله'],['ws','وب‌سوکت']];
 let tr='tcpmux',role='server',data=[],page='home',logName='';
 
-/* toast + ripple */
 function toast(m,k='ok'){const c={ok:'#34D399',bad:'#F87171'}[k],e=document.createElement('div');e.className='toast glass';e.style.borderColor=c+'55';e.innerHTML=`<span style="color:${c}">●</span><span>${esc(m)}</span>`;$('toasts').appendChild(e);setTimeout(()=>{e.classList.add('out');setTimeout(()=>e.remove(),300)},2800)}
 document.addEventListener('click',e=>{const b=e.target.closest('.btn');if(!b)return;const r=b.getBoundingClientRect(),s=document.createElement('span'),z=Math.max(r.width,r.height);s.className='rip';s.style.cssText=`width:${z}px;height:${z}px;left:${e.clientX-r.left-z/2}px;top:${e.clientY-r.top-z/2}px`;b.appendChild(s);setTimeout(()=>s.remove(),600)});
 
-/* navigation */
 function go(p){page=p;['home','tunnels','create','logs','settings','guide','xray','clients','admins','bind'].forEach(x=>$('p-'+x).hidden=x!==p);
  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
  $('pt').textContent=PAGES[p][0];$('ps').textContent=PAGES[p][1];$('side').classList.remove('open');
@@ -760,20 +760,16 @@ document.addEventListener('click',e=>{
  if(side.classList.contains('open')&&!side.contains(e.target)&&!$('menu').contains(e.target))side.classList.remove('open');
 });
 
-/* per-tunnel path */
 const st=t=>t.stopped?'stop':t.on!=t.total?'down':t.conns===0?'wait':'up';
 const ST={up:['ok','وصل'],wait:['w','منتظر اتصال'],down:['bad','قطع'],stop:['bad','متوقف']};
 function path(t,i){
  const sv=t.role=='server',P=t.ports||[],addr=t.addr||'',tp=addr.split(':').pop(),ip=addr.replace(/:\d+$/,'');
  const S=st(t),on=!t.stopped&&t.on===t.total;
- /* هر بخش مسیر از وضعیت واقعی سرویس و اتصال برقرارشده‌ی سیستم گرفته می‌شود:
-    B = لینک تانل بین دو سرور (اتصال واقعی ss)، A = بخش کاربر تا سرور ایران */
  const B=t.stopped||!on?'off':t.conns<0?'on':t.conns>0?'live':'wait';
  const A=sv?(t.stopped||!on?'off':'on'):B;
  const flow=B==='live';
  const sc=c=>c==='live'?`url(#g${i})`:c==='off'?'rgba(255,255,255,.22)':c==='wait'?'rgba(251,191,36,.6)':'rgba(52,211,153,.6)';
  const dash=c=>c==='off'||c==='wait'?'stroke-dasharray="6 6"':'';
- /* برچسب پورت‌ها: فقط روی سرور ایران، با نگاشت واقعی (۴۴۳→۸۴۴۳) */
  const al=sv?P.slice(0,2).map(p=>esc(p.replace('=','→'))).join('  ')+(P.length>2?' +'+(P.length-2):''):'';
  const pk=(id,c,r,d,b)=>flow?`<circle r="${r}" fill="${c}" class="pkt"><animateMotion dur="${d}s" begin="${b}s" repeatCount="indefinite"><mpath href="#${id}"/></animateMotion></circle>`:'';
  const n=(x,c,l,sub,me)=>{const k=S==='down'||S==='stop'?'#64748B':c;return `<g transform="translate(${x},28)"><circle r="21" fill="none" stroke="${k}" opacity="${me?.45:.2}"/><circle r="15" fill="${k}${me?'33':'18'}" stroke="${k}" stroke-width="${me?2.2:1.3}"/><text y="4" text-anchor="middle" font-size="10" font-weight="800" fill="${k}">${l[0]}</text><text y="${sub?47:50}" text-anchor="middle" font-size="11" fill="rgba(255,255,255,${me?.85:.55})">${l[1]}</text>${sub?`<text y="60" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.35)" class="mono">${sub}</text>`:''}</g>`};
@@ -785,7 +781,6 @@ function path(t,i){
  ${pk('p'+i+'a','#22D3EE',3.5,1.6,0)}${pk('p'+i+'a','#8B5CF6',2.6,1.6,.8)}${pk('p'+i+'b','#34D399',3.5,2,0)}${pk('p'+i+'b','#FBBF24',2.6,2,1)}
  ${n(60,'#22D3EE',['U','کاربر'],'',0)}${n(300,'#FBBF24',['IR',sv?'این سرور · ایران':'سرور ایران'],sv?':'+esc(tp):esc(ip),sv)}${n(540,'#34D399',['EX',sv?'سرور خارج':'این سرور · خارج'],exSub,!sv)}</svg>`}
 
-/* list */
 function count(el,to){let c=0;const s=Math.max(1,to/24),f=()=>{c=Math.min(to,c+s);el.textContent=Math.round(c);if(c<to)requestAnimationFrame(f)};f()}
 let sig='',first=true;
 function render(){
@@ -804,9 +799,9 @@ function render(){
 $('list').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,n=b.dataset.n;
  if(a==='new')go('create');else if(a==='logs'){logName=n;go('logs');showLog(n)}else if(a==='edit')edit(n);else if(a==='code')code(n);else if(a==='delete'){if(confirm('تانل «'+n+'» حذف شود؟'))act(n,'delete')}else act(n,a)};
 
-/* api */
 const H={'X-Requested-With':'tunnelpanel','Content-Type':'application/json'};
 const post=(u,b)=>fetch(u,{method:'POST',headers:H,body:b===undefined?undefined:JSON.stringify(b)});
+const put=(u,b)=>fetch(u,{method:'PUT',headers:H,body:JSON.stringify(b)});
 async function load(){try{const r=await fetch('/api/tunnels');if(r.status==401){location.href='/login';return}if(!r.ok)throw 0;data=(await r.json()).sort((a,b)=>a.name.localeCompare(b.name));setLive(1)}catch(e){setLive(0)}render()}
 function setLive(ok){$('live').classList.toggle('off',!ok)}
 async function act(n,a){const L={restart:'ری‌استارت شد',stop:'متوقف شد',start:'اجرا شد',delete:'حذف شد'};
@@ -836,14 +831,12 @@ async function add(){
 $('add').onclick=add;
 $('tp').oninput=()=>{$('tp').value=$('tp').value.replace(/\D/g,'')};
 
-/* share code */
 async function code(n){try{const t=await full(n),c='TP1:'+btoa(JSON.stringify({n:t.name,t:t.transport,k:t.token,r:t.role=='server'?'client':'server',p:t.addr.split(':').pop()}));
  try{await navigator.clipboard.writeText(c);toast('کد کپی شد؛ در پنل سرور مقابل «وارد کردن کد» را بزن')}catch(e){prompt('این کد را کپی کن:',c)}}catch(e){toast('ساخت کد ممکن نشد','bad')}}
 $('impb').onclick=()=>{try{const o=JSON.parse(atob($('imp').value.trim().replace(/^TP1:/,'')));if(!o.n||!o.k)throw 0;
  setRole(o.r=='client'?'client':'server');setTr(TR.some(x=>x[0]==o.t)?o.t:'tcpmux');$('name').value=o.n;$('tok').value=o.k;
  const p=String(o.p).replace(/\D/g,'')||'3080';$('tp').value=p;if(role=='client'){$('addr').value='';$('addr').placeholder='IP سرور ایران';toast('IP سرور ایران را وارد کن')}else{$('addr').value='0.0.0.0';toast('کد اعمال شد')}$('imp').value=''}catch(e){toast('کد نامعتبر است','bad')}};
 
-/* logs */
 let live=true;
 function logList(){$('lsel').innerHTML=data.length?data.map(t=>`<button class="btn ${t.name===logName?'on':''}" data-n="${esc(t.name)}">${esc(t.name)}</button>`).join(''):'<span class="sub">تانلی وجود ندارد</span>'}
 $('lsel').onclick=e=>{const b=e.target.closest('[data-n]');if(b)showLog(b.dataset.n)};
@@ -852,18 +845,20 @@ async function showLog(n,q){if(!q){logName=n;logList();$('lgn').hidden=false;$('
 $('livebtn').onclick=()=>{live=!live;$('livebtn').classList.toggle('on',live);$('livebtn').textContent=live?'● زنده':'○ متوقف'};
 setInterval(()=>{if(page==='logs'&&live&&logName)showLog(logName,true)},3000);
 
-/* admins */
 let amBound=false;
 async function loadAdmins(){
  const box=$('am-list');
  if(!amBound){
   amBound=true;
   $('am-add').onclick=async()=>{
-   const u=$('am-user').value.trim(),pw=$('am-pass').value,role=$('am-role').value,e=$('am-e');
+   const u=$('am-user').value.trim(),pw=$('am-pass').value,role=$('am-role').value,e=$('am-e'),mx=parseInt($('am-max').value,10)||0;
    e.textContent='';
    if(!u||!pw){e.textContent='نام کاربری و رمز الزامی است';return}
    try{
-    const r=await post('/api/admins',{username:u,password:pw,role});
+    const expV=$('am-exp').value;
+    const expD=(role==='seller'&&expV)?Math.floor(new Date(expV+'T23:59:59').getTime()/1000):0;
+    const tgbV=role==='seller'?(parseInt($('am-tgb').value,10)||0):0;
+    const r=await post('/api/admins',{username:u,password:pw,role,max_clients:role==='seller'?mx:0,expire:expD,total_gb:tgbV});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.error||'خطا در ساخت مدیر');
     $('am-user').value='';$('am-pass').value='';
@@ -871,8 +866,26 @@ async function loadAdmins(){
    }catch(x){e.textContent=x.message||'خطا در ارتباط'}
   };
   box.onclick=async ev=>{
+   const lb=ev.target.closest('button[data-lim]');
+   if(lb){
+    const name=lb.dataset.lim;
+    const ex=prompt('تاریخ انقضای این seller (YYYY-MM-DD)؛ خالی = بدون انقضا','');
+    if(ex===null)return;
+    const gbs=prompt('سقف حجم کل کلاینت‌های این seller به GB؛ ۰ = بی‌حد','0');
+    if(gbs===null)return;
+    const exT=ex.trim();
+    const expire=exT?Math.floor(new Date(exT+'T23:59:59').getTime()/1000):0;
+    if(exT&&isNaN(expire)){toast('تاریخ نامعتبر است','bad');return}
+    try{
+     const r=await post('/api/admins/'+encodeURIComponent(name),{expire,total_gb:parseInt(gbs,10)||0});
+     const d=await r.json().catch(()=>({}));
+     if(!r.ok)throw new Error(d.error||'خطا در ذخیره');
+     toast('محدودیت ذخیره شد');
+    }catch(x){toast(x.message||'خطا در ذخیره','bad')}
+    loadAdmins();return;
+   }
    const b=ev.target.closest('button[data-del]');if(!b)return;
-   if(!confirm('این مدیر حذف شود؟'))return;
+   if(!confirm('این مدیر و همه‌ی کلاینت‌هایش حذف شوند؟ این کار برگشت‌پذیر نیست.'))return;
    try{
     const r=await fetch('/api/admins/'+encodeURIComponent(b.dataset.del),{method:'DELETE',headers:H});
     const d=await r.json().catch(()=>({}));
@@ -886,11 +899,10 @@ async function loadAdmins(){
   const r=await fetch('/api/admins');
   const d=await r.json();
   if(!r.ok)throw new Error(d.error||'خطا در بارگذاری');
-  box.innerHTML=d.map(a=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #ffffff12"><span class="mono" dir="ltr">${esc(a.username)}</span><span>${esc(a.role)}${a.primary?' (اصلی)':''}</span>${a.primary?'':`<button class="btn" data-del="${esc(a.username)}">حذف</button>`}</div>`).join('');
+  box.innerHTML=d.map(a=>`<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #ffffff12"><span class="mono" dir="ltr">${esc(a.username)}</span><span>${esc(a.role)}${a.primary?' (اصلی)':''}${a.role==='seller'?` · ${a.clients||0} کلاینت${a.max_clients?' از '+a.max_clients:''} · ${(+a.used_gb||0).toFixed(2)} GB${a.total_gb?' از '+a.total_gb+' GB':' (بی‌حد)'}${a.expire?' · انقضا '+new Date(a.expire*1000).toISOString().slice(0,10):' · بدون انقضا'}${a.blocked?' · ⛔ قفل شده':''}`:''}</span>${a.role==='seller'?`<button class="btn" data-lim="${esc(a.username)}">محدودیت</button>`:''}${a.primary?'':`<button class="btn" data-del="${esc(a.username)}">حذف</button>`}</div>`).join('');
  }catch(x){box.textContent=x.message||'خطا در بارگذاری مدیرها'}
 }
 
-/* settings */
 async function loadSet(){try{const d=await(await fetch('/api/settings')).json();$('tgc').value=d.chat||'';$('tgt').placeholder=d.tg?'ذخیره شده؛ برای تغییر دوباره وارد کن':'123456:ABC...';$('tgs').textContent=d.tg?'فعال':'غیرفعال';$('tgs').className='tag '+(d.tg?'ok':'bad')}catch(e){}}
 async function saveTg(b,m){try{const d=await(await post('/api/settings',b)).json();if(d.error)return toast(d.error,'bad');toast(m);$('tgt').value='';loadSet()}catch(e){toast('خطا در ارتباط','bad')}}
 $('tgsave').onclick=()=>saveTg({tg_token:$('tgt').value.trim(),tg_chat:$('tgc').value.trim()},'ذخیره شد');
@@ -901,7 +913,6 @@ $('rsb').onclick=()=>$('rs').click();
 $('rs').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const d=await(await post('/api/restore',JSON.parse(await f.text()))).json(),er=(d.errors||[]).length;toast(d.error||`${d.ok} تانل بازیابی شد`+(er?` · ${er} خطا`:''),d.error||er?'bad':'ok');load()}catch(x){toast('فایل پشتیبان نامعتبر است','bad')}};
 
-/* form */
 function gen(){const a=new Uint8Array(16);crypto.getRandomValues(a);$('tok').value=[...a].map(x=>x.toString(16).padStart(2,'0')).join('')}
 $('gen').onclick=gen;
 $('trs').innerHTML=TR.map(([v,d])=>`<button type="button" class="tr ${v===tr?'on':''}" data-v="${v}"><b>${v}</b><small>${d}</small></button>`).join('');
@@ -914,7 +925,6 @@ function rl(){const s=role=='server';
 function setRole(v){role=v;document.querySelectorAll('#role button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));rl()}
 $('role').onclick=e=>{const b=e.target.closest('button');if(b&&!editing)setRole(b.dataset.v)};
 
-/* transport maps */
 const MC={gray:'#94A3B8',purple:'#8B5CF6',blue:'#22D3EE',teal:'#34D399',amber:'#FBBF24',coral:'#F87171'};
 const V2=['داده‌ی v2ray','VLESS، VMess، Trojan','gray'],NET=['اینترنت','مسیر ایران ↔ خارج','gray'],TCP=['TCP','اتصال پایه','amber'],TCPR=['TCP خام','بدون پوشش امنیتی','amber'],
  MUX=['مالتی‌پلکس (mux)','چند جریان روی یک اتصال','purple'],WS=['WebSocket','شبیه ترافیک وب','blue'],TLS=['رمزنگاری TLS','پوشش امنیتی لایه‌ی انتقال','teal'],
@@ -939,21 +949,18 @@ function renderMaps(){
  }).join('');
 }
 renderMaps();
-/* لیست‌های آموزش: دکمه‌ی بستن داخل هر بخش و بستن با کلیک بیرون */
 document.querySelectorAll('details').forEach(d=>{
  const b=document.createElement('button');
  b.type='button';b.className='btn dx';b.textContent='بستن';
  b.onclick=()=>d.removeAttribute('open');
- (d.querySelector('.gb')||d).appendChild(b); // بعضی بخش‌ها (مثل Limit Fallback) .gb ندارند؛ اگر نداشته باشند، خود details میزبان دکمه می‌شود
+ (d.querySelector('.gb')||d).appendChild(b);
 });
 document.addEventListener('click',e=>{
  document.querySelectorAll('details[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open')});
 });
-/* متن کپی‌رایت: اگر از داخل مرورگر تغییر کند، دوباره برمی‌گردد */
 const FT='© Nahang · تمامی حقوق این پنل محفوظ است · کپی و بازانتشار بدون اجازه مجاز نیست';
 const ftEl=$('ft');ftEl.textContent=FT;
 new MutationObserver(()=>{if(ftEl.textContent!==FT)ftEl.textContent=FT}).observe(ftEl,{childList:true,characterData:true,subtree:true});
-/* home: server status, charts and update */
 const fmtB=b=>{const u=['B','KB','MB','GB','TB'];let i=0;b=+b||0;while(b>=1024&&i<4){b/=1024;i++}return b.toFixed(i?1:0)+' '+u[i]};
 const fmtUp=x=>{x=Math.floor(+x||0);const d=Math.floor(x/86400),h=Math.floor(x%86400/3600),m=Math.floor(x%3600/60);return (d?d+' روز ':'')+(h?h+' ساعت ':'')+m+' دقیقه'};
 const HN=60,CW=300,CH=100;
@@ -1003,6 +1010,11 @@ function renderXrayStatus(x){
 async function loadHome(){
  if(homeBusy)return;homeBusy=true;
  try{
+  if(ISSELLER){
+   const sr=await fetch('/api/system');if(!sr.ok)throw 0;
+   renderSellerStats(await sr.json());
+   return;
+  }
   const [s,u,t]=await Promise.all(['/api/system','/api/update','/api/tunnels'].map(x=>fetch(x).then(r=>{if(r.status==401){location.href='/login';throw 0}return r.json()})));
   renderHome(s,u,t);
   loadXrayStatus();
@@ -1031,7 +1043,7 @@ function renderHome(s,u,t){
   ['مدت روشن بودن',fmtUp(s.uptime_sec)],
   ['بار سیستم (۱ / ۵ / ۱۵ دقیقه)',(s.load||[]).map(v=>(+v).toFixed(2)).join(' · ')],
   ['ترافیک کل (دریافت / ارسال)',fmtB(s.net_rx)+' / '+fmtB(s.net_tx)],
-  ['تانل‌های فعال',act+' از '+list.length],
+  ...(Array.isArray(t)?[['تانل‌های فعال',act+' از '+list.length]]:[]),
   ['حافظه‌ی swap',s.swap_total?fmtB(s.swap_used)+' از '+fmtB(s.swap_total):'ندارد']
  ];
  $('hstats').innerHTML=cards.map(([l,v])=>`<div class="card glass hstat"><small>${esc(l)}</small><b>${esc(v)}</b></div>`).join('');
@@ -1046,7 +1058,27 @@ $('updb').onclick=async()=>{
   toast('به‌روزرسانی شروع شد؛ چند ثانیه بعد صفحه را تازه کن')
  }catch(e){toast('خطا در شروع به‌روزرسانی','bad')}
 };
-/* xray: inbound و کلاینت */
+async function loadXrayVersions(){
+ const r=await fetch('/api/xray/versions');if(r.status==401){location.href='/login';return}
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok){toast(d.error||'خطا در دریافت نسخه‌ها','bad');return}
+ $('xcv').textContent=d.current_tag||d.current||'—';
+ $('xvsel').innerHTML=(d.versions||[]).map(v=>`<option value="${esc(v.tag)}"${v.tag===d.current_tag?' selected':''}>${esc(v.tag)}${v.prerelease?' (pre)':''}${v.tag===d.current_tag?' · فعلی':''}</option>`).join('');
+ $('xvapply').hidden=false;
+}
+$('xvload').onclick=loadXrayVersions;
+$('xvapply').onclick=async()=>{
+ const tag=$('xvsel').value;if(!tag)return;
+ if(!confirm(`Xray به ${tag} تغییر می‌کند و سرویس ری‌استارت می‌شود. ادامه می‌دهی؟`))return;
+ const btn=$('xvapply');btn.disabled=true;$('xvmsg').textContent='در حال دانلود و نصب…';
+ try{
+  const r=await post('/api/xray/version',{tag});const d=await r.json().catch(()=>({}));
+  if(!r.ok){$('xvmsg').textContent=d.error||'خطا';toast(d.error||'خطا در نصب','bad');return}
+  $('xvmsg').textContent='';toast('Xray به '+tag+' تغییر کرد');
+  await loadXrayVersions();loadXrayStatus();
+ }catch(e){$('xvmsg').textContent='خطا در ارتباط با پنل'}
+ finally{btn.disabled=false}
+};
 let xInb=[],xCli=[];
 function xSync(){
  const p=$('ix-proto').value,ss=p==='shadowsocks';
@@ -1081,33 +1113,32 @@ function renderXray(){
  const usable=xInb.filter(i=>i.protocol!=='shadowsocks');
  renderInboundChecks();
  $('ix-list').innerHTML=xInb.length?xInb.map(i=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(i.remark||'-')}</b><span>${esc(i.protocol)} · ${i.port} · ${esc(i.network||'tcp')} · ${esc(i.security||'none')}${i.disabled?' · غیرفعال':''}</span>${i.protocol==='shadowsocks'?`<button class="btn" data-ssl="${i.port}">لینک</button>`:''}</div>`).join(''):'<p>هنوز inbound ساخته نشده</p>';
- $('ic-list').innerHTML=xCli.length?xCli.map(c=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span>${(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]).map(p=>'پورت '+p).join('، ')}${c.group?' · گروه '+esc(c.group):''}${c.enabled?'':' · غیرفعال'}</span><span class="hint" dir="ltr">IP ${c.ip_limit||'∞'} · HWID ${(c.devices||[]).length}/${c.hwid_limit||'∞'}</span>${c.disabled_reason?`<span class="hint" style="color:#F59E0B">${esc(c.disabled_reason)}</span>`:''}${c.comment?`<span class="hint">${esc(c.comment)}</span>`:''}<button class="btn" data-cl="${esc(c.name)}">لینک</button><button class="btn" data-sub="${esc(c.name)}">اشتراک</button><button class="btn" data-rdev="${esc(c.name)}">ریست دستگاه‌ها</button>${(!c.enabled&&c.disabled_reason)?`<button class="btn p" data-ena="${esc(c.name)}">فعال کردن</button>`:''}</div>`).join(''):'<p>هنوز کلاینتی نیست</p>';
+ $('ic-list').innerHTML=xCli.length?xCli.map(c=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--ln);gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span>${(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]).map(p=>'پورت '+p).join('، ')}${c.group?' · گروه '+esc(c.group):''}${c.owner?' · فروشنده '+esc(c.owner):''}${c.enabled?'':' · غیرفعال'}</span><span class="hint" dir="ltr">IP ${c.ip_limit||'∞'} · HWID ${(c.devices||[]).length}/${c.hwid_limit||'∞'}</span>${c.disabled_reason?`<span class="hint" style="color:#F59E0B">${esc(c.disabled_reason)}</span>`:''}${c.comment?`<span class="hint">${esc(c.comment)}</span>`:''}<button class="btn" data-edit="${esc(c.name)}">ویرایش</button><button class="btn" data-cl="${esc(c.name)}">لینک</button><button class="btn" data-sub="${esc(c.name)}">اشتراک</button><button class="btn" data-rdev="${esc(c.name)}">ریست دستگاه‌ها</button>${(!c.enabled&&c.disabled_reason)?`<button class="btn p" data-ena="${esc(c.name)}">فعال کردن</button>`:''}</div>`).join(''):'<p>هنوز کلاینتی نیست</p>';
 }
 function showLink(link,note,out){
  const box=$(out);
  box.innerHTML=`<div class="card glass" style="padding:12px"><div class="mono" dir="ltr" style="word-break:break-all;font-size:12px">${esc(link)}</div>${note?`<p style="color:#F59E0B;margin-top:8px">${esc(note)}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn p" data-copy="1">کپی لینک</button></div></div>`;
  box.querySelector('[data-copy]').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>toast('کپی شد'),()=>toast('کپی نشد','bad'));else toast('مرورگر کپی را پشتیبانی نمی‌کند','bad')};
 }
-async function xLink(qs,src,out){
- const server=$(src).value.trim();
- if(!server){toast('اول IP سرور را وارد کن','bad');return}
+async function xLink(qs,out){
  try{
-  const r=await fetch('/api/xray/link?server='+encodeURIComponent(server)+'&'+qs);
+  const r=await fetch('/api/xray/link?'+qs);
   const d=await r.json().catch(()=>({}));
   if(!r.ok){toast(d.error||'خطا در ساخت لینک','bad');return}
   showLink(d.link,d.note,out);
  }catch(e){toast('خطا در ارتباط با پنل','bad')}
 }
-$('ix-list').onclick=e=>{const b=e.target.closest('[data-ssl]');if(b)xLink('inbound='+encodeURIComponent(b.dataset.ssl),'ib-server','ib-out')};
+$('ix-list').onclick=e=>{const b=e.target.closest('[data-ssl]');if(b)xLink('inbound='+encodeURIComponent(b.dataset.ssl),'ib-out')};
 $('ic-list').onclick=async e=>{
  const t=e.target;
- const b=t.closest('[data-cl]');if(b){xLink('name='+encodeURIComponent(b.dataset.cl),'ix-server','ix-out');return}
+ const ed=t.closest('[data-edit]');
+ if(ed){openClientEdit(ed.dataset.edit);return}
+ const b=t.closest('[data-cl]');if(b){xLink('name='+encodeURIComponent(b.dataset.cl),'ix-out');return}
  const s=t.closest('[data-sub]');
  if(s){
   const c=xCli.find(x=>x.name===s.dataset.sub);
   if(!c||!c.sub_token){toast('توکن اشتراک نیست','bad');return}
-  const srv=$('ix-server').value.trim();
-  const url=`${location.origin}/sub/${c.sub_token}`+(srv?`?server=${encodeURIComponent(srv)}`:'');
+   const url=`${location.origin}/sub/${c.sub_token}`;
   if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('لینک اشتراک کپی شد'),()=>toast('کپی نشد','bad'));
   else toast('مرورگر کپی را پشتیبانی نمی‌کند','bad');
   return;
@@ -1125,7 +1156,6 @@ $('ic-list').onclick=async e=>{
   if(res.ok){toast('کلاینت فعال شد');await loadXray()}else{const d=await res.json().catch(()=>({}));toast(d.error||'خطا','bad')}
  }
 };
-/* امنیت: گواهی‌های TLS، ECH، Reality، ML-DSA-65، Limit Fallback */
 function randHexStr(n){const b=new Uint8Array(n);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function randAlnum(n){const a='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';const b=new Uint8Array(n);crypto.getRandomValues(b);let s='';for(const x of b)s+=a[x%a.length];return s}
 async function genCall(url,body){
@@ -1286,8 +1316,6 @@ $('ix-add').onclick=async()=>{
   toast('inbound ساخته شد');$('ix-modal').hidden=true;await loadXray();
  }catch(e){$('ix-e').textContent='خطا در ارتباط با پنل'}
 };
-// intField عدد صحیح و نامنفی می‌خواند. خالی = ۰ (نامحدود)، ورودی غلط = null.
-// قبلاً "abc" یا "۵" (ارقام فارسی) به ۰ تبدیل می‌شد و کلاینت بی‌حد می‌شد.
 function intField(id){
  const v=$(id).value.trim().replace(/[۰-۹]/g,d=>String(d.charCodeAt(0)-0x6F0)).replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660));
  if(v==='')return 0;
@@ -1307,12 +1335,35 @@ function renderInboundChecks(){
 }
 function selectCTab(name){document.querySelectorAll('.ctabbtn').forEach(b=>b.classList.toggle('on',b.dataset.ctab===name));document.querySelectorAll('.cpane').forEach(x=>x.hidden=x.dataset.cpane!==name)}
 document.querySelectorAll('.ctabbtn').forEach(b=>b.onclick=()=>selectCTab(b.dataset.ctab));
-let createdName='';
+let createdName='',editingName='',editBase='';
+function openClientEdit(name){
+ const c=xCli.find(x=>x.name===name);
+ if(!c){toast('کلاینت پیدا نشد','bad');return}
+ renderInboundChecks();
+ editingName=c.name;createdName=c.name;
+ $('ic-e').textContent='';
+ $('ic-title').textContent='ویرایش کلاینت';
+ $('ic-name').value=c.name;$('ic-uuid').value=c.id||'';
+ $('ic-gb').value=c.limit_gb||0;$('ic-ipl').value=c.ip_limit||0;$('ic-hwid').value=c.hwid_limit||0;
+ const pending=c.start_after_first_use&&!c.first_use_at&&c.period>0;
+ dtpSet('ic-exp',pending?Math.floor(Date.now()/1000)+c.period:(c.expire||0));
+ editBase=$('ic-exp').value;
+ $('ic-after').checked=!!c.start_after_first_use;
+ $('ic-reset').value=c.traffic_reset||'never';
+ $('ic-renew').checked=!!c.auto_renew;
+ $('ic-comment').value=c.comment||'';$('ic-group').value=c.group||'';
+ $('ic-enabled').checked=!!c.enabled;
+ const set=new Set(c.inbounds&&c.inbounds.length?c.inbounds:[c.inbound]);
+ document.querySelectorAll('.icb').forEach(x=>x.checked=set.has(parseInt(x.value,10)));
+ $('ic-links').innerHTML='';
+ $('ic-add').hidden=false;$('ic-add').textContent='ذخیره تغییرات';$('ic-cancel').textContent='انصراف';
+ selectCTab('basics');$('ic-modal').hidden=false;
+ loadClientLinks(c.name);
+}
 async function loadClientLinks(name){
- const box=$('ic-links'),server=$('ic-server').value.trim();
- if(!server){box.innerHTML='<p class="hint">IP سرور را وارد کن و دوباره بساز.</p>';return}
+ const box=$('ic-links');
  try{
-  const r=await fetch('/api/xray/links?server='+encodeURIComponent(server)+'&name='+encodeURIComponent(name));
+  const r=await fetch('/api/xray/links?name='+encodeURIComponent(name));
   const d=await r.json().catch(()=>[]);
   if(!r.ok){box.innerHTML=`<p class="hint">${esc(d.error||'خطا')}</p>`;return}
   box.innerHTML=d.length?d.map((it,i)=>`<div class="card glass" style="padding:10px;margin-top:10px"><b>${esc(it.protocol)} · ${it.port}</b><div class="mono" dir="ltr" style="word-break:break-all;font-size:12px;margin-top:6px">${esc(it.link||'—')}</div>${it.note?`<p class="hint">${esc(it.note)}</p>`:''}${it.link?`<div class="row" style="margin-top:8px"><button class="btn p" data-cpy="${i}">کپی</button></div>`:''}</div>`).join(''):'<p class="hint">این کلاینت به هیچ inbound قابل لینکی وصل نیست.</p>';
@@ -1327,8 +1378,9 @@ $('ic-new').onclick=()=>{
  $('ic-after').checked=false;$('ic-reset').value='never';$('ic-renew').checked=false;
  $('ic-comment').value='';$('ic-group').value='';$('ic-enabled').checked=true;
  document.querySelectorAll('.icb').forEach(x=>x.checked=false);
- $('ic-server').value=$('ix-server').value;
  $('ic-links').innerHTML='';
+ editingName='';createdName='';
+ $('ic-title').textContent='ساخت کلاینت';$('ic-add').textContent='ساخت کلاینت';
  $('ic-add').hidden=false;$('ic-cancel').textContent='انصراف';
  selectCTab('basics');$('ic-modal').hidden=false;
 };
@@ -1339,7 +1391,7 @@ $('ic-none').onclick=()=>document.querySelectorAll('.icb').forEach(x=>x.checked=
 $('ic-close').onclick=()=>{$('ic-modal').hidden=true};
 $('ic-cancel').onclick=()=>{$('ic-modal').hidden=true};
 $('ic-modal').onclick=e=>{if(e.target.id==='ic-modal')$('ic-modal').hidden=true};
-$('ic-link-refresh').onclick=()=>{$('ic-server').value=$('ic-server').value.trim();loadClientLinks(createdName||$('ic-name').value.trim())};
+$('ic-link-refresh').onclick=()=>{loadClientLinks(createdName||$('ic-name').value.trim())};
 $('ic-add').onclick=async()=>{
  $('ic-e').textContent='';
  const inbounds=[...document.querySelectorAll('.icb:checked')].map(x=>parseInt(x.value,10));
@@ -1354,12 +1406,15 @@ $('ic-add').onclick=async()=>{
   comment:$('ic-comment').value.trim(),group:$('ic-group').value.trim()
  };
  try{
-  const r=await post('/api/xray/clients',body);
+  const isEdit=!!editingName;
+  if(isEdit)body.keep_period=($('ic-exp').value===editBase);
+  const r=isEdit?await put(`/api/xray/clients/${encodeURIComponent(editingName)}`,body):await post('/api/xray/clients',body);
   const d=await r.json().catch(()=>({}));
   if(!r.ok){$('ic-e').textContent=d.error||'خطا';return}
   createdName=d.name||body.name;
+  if(isEdit)editingName=createdName;
   $('ic-uuid').value=d.id||body.id;
-  toast('کلاینت ساخته شد');
+  toast(isEdit?'تغییرات ذخیره شد':'کلاینت ساخته شد');
   $('ic-add').hidden=true;$('ic-cancel').textContent='بستن';
   selectCTab('links');
   await loadClientLinks(createdName);
@@ -1409,10 +1464,45 @@ $('bd-save').onclick=async()=>{
   toast('اتصال ذخیره شد');$('bd-modal').hidden=true;await bdLoad();load();
  }catch(e){$('bd-e').textContent='خطا در ارتباط با پنل'}
 };
-gen();rl();go('home');load();setInterval(load,10000);
+function renderSellerStats(s){
+ const cpu=s.cpu_percent||0, mp=s.mem_total?100*s.mem_used/s.mem_total:0, dp=s.disk_total?100*(s.disk_total-s.disk_free)/s.disk_total:0;
+ pushH('cpu',cpu); pushH('mem',mp);
+ $('vcpu').textContent=Math.round(cpu)+'%'; $('vcpu').style.color=lvl(cpu); $('vcpus').textContent=(s.cpus||0)+' هسته';
+ plot('cpuc',[{c:lvl,area:true,v:HIST.cpu}],100);
+ $('vmem').textContent=Math.round(mp)+'%'; $('vmem').style.color=lvl(mp); $('vmems').textContent=fmtB(s.mem_used)+' از '+fmtB(s.mem_total);
+ plot('memc',[{c:lvl,area:true,v:HIST.mem}],100);
+ const dl=2*Math.PI*44, df=$('drf'); df.style.strokeDasharray=dl; df.style.strokeDashoffset=dl*(1-Math.min(100,dp)/100); df.style.stroke=lvl(dp); $('vdisk').style.color=lvl(dp); $('vdisk').textContent=Math.round(dp)+'%';
+ $('vdisks').textContent=fmtB(s.disk_total-s.disk_free)+' از '+fmtB(s.disk_total)+' استفاده شده';
+}
+function renderSellerInfo(me){
+ if(!me||me.role!=='seller')return;
+ $('sinfo').hidden=false;
+ $('si-exp').textContent=me.expire?new Date(me.expire*1000).toISOString().slice(0,10):'بدون انقضا';
+ $('si-used').textContent=(+me.used_gb||0).toFixed(2)+' GB'+(me.total_gb?' از '+me.total_gb+' GB':' (بی‌حد)');
+ $('si-warn').textContent=me.over_quota?'سقف حجم شما پر شده و کلاینت‌هایتان غیرفعال‌اند.':'';
+}
+async function loadSellerInfo(){
+ try{const r=await fetch('/api/me');if(!r.ok)return;renderSellerInfo(await r.json())}catch(e){}
+}
+let ISSELLER=false;
+function applySellerUI(me){
+ ISSELLER=true;
+ document.querySelectorAll('#nav a').forEach(a=>{if(a.dataset.p!=='clients'&&a.dataset.p!=='home')a.style.display='none'});
+ $('upd').style.display='none';$('xcard').style.display='none';$('xvcard').style.display='none';
+ $('hstats').style.display='none';document.querySelector('#p-home .hero').style.display='none';$('netc').closest('.card').style.display='none';
+ loadHome();
+ const nm=document.querySelector('.side-foot .me b');if(nm)nm.textContent=me.user;
+ PAGES.clients[1]='کلاینت‌های شما';
+ renderSellerInfo(me);setInterval(loadSellerInfo,30000);
+ go('home');
+}
+gen();rl();
+fetch('/api/me').then(r=>r.ok?r.json():null).catch(()=>null).then(me=>{
+ if(me&&me.role==='seller')applySellerUI(me);else{go('home');load()}
+});
+setInterval(()=>{if(ISSELLER)loadHome();else load()},10000);
 window.addEventListener('load',()=>setTimeout(()=>$('boot').classList.add('gone'),900));setTimeout(()=>$('boot').classList.add('gone'),2000);
 
-/* انتخاب‌گر هم‌تراز تم: به‌جای منوی بومی مرورگر/سیستم، یک برگهٔ پایینی با استایل پنل باز می‌شود */
 function openSelSheet(sel){
  if(sel.disabled)return;
  const prev=sel.previousElementSibling;
@@ -1444,7 +1534,6 @@ document.querySelectorAll('select').forEach(sel=>{
 });
 </script>
 <script>
-/* ===== انتخاب تاریخ و ساعت خود پنل (تقویم شمسی؛ جایگزین تقویم بومی مرورگر) ===== */
 const DTP_MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const DTP_WD=['ش','ی','د','س','چ','پ','ج'];
 const DTP_PRESETS=[
@@ -1460,13 +1549,11 @@ const DTP_DAY_MS=864e5;
 const DTP_F=new Intl.DateTimeFormat('en-u-ca-persian-nu-latn',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'});
 const faNum=s=>String(s).replace(/\d/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
 const pad2=n=>String(n).padStart(2,'0');
-// تاریخ میلادی (y، m، d) -> [سال، ماه، روز] شمسی
 function dtpToJalali(y,m,d){
  const p=DTP_F.formatToParts(new Date(Date.UTC(y,m-1,d)));
  const g=t=>Number(p.find(x=>x.type===t).value);
  return [g('year'),g('month'),g('day')];
 }
-// تاریخ شمسی -> [سال، ماه، روز] میلادی (با جستجوی روز به روز)
 function dtpToGregorian(jy,jm,jd){
  let t=Date.UTC(jy+621,2,19);
  for(let i=0;i<800;i++){
@@ -1483,7 +1570,7 @@ function dtpDaysInMonth(jy,jm){
  if(jm<=11)return 30;
  return dtpToGregorian(jy,12,30)?30:29;
 }
-const DTP={}; // id -> ریشهٔ کامپوننت
+const DTP={};
 
 function dtpStateFromValue(root){
  const ts=parseInt($(root.dataset.dtp).value,10)||0;
@@ -1527,7 +1614,7 @@ function dtpRender(root){
  root.querySelector('.dtp-title').textContent=`${DTP_MONTHS[vm-1]} ${faNum(vy)}`;
  const g=dtpToGregorian(vy,vm,1);
  const wd=g?new Date(Date.UTC(g[0],g[1]-1,g[2])).getUTCDay():0;
- const offset=(wd+1)%7; // هفته از شنبه شروع می‌شود
+ const offset=(wd+1)%7;
  const days=root.querySelector('.dtp-days');
  let html='';
  for(let i=0;i<offset;i++)html+='<span></span>';

@@ -1,8 +1,5 @@
 package main
 
-// xrayshare.go: لینک اشتراک (/sub/{token})، شمارش HWID، و فعال‌سازی دوباره‌ی کلاینت.
-// توکن اشتراک جداست تا UUID کلاینت هرگز داخل URL نرود.
-
 import (
 	"crypto/rand"
 	"crypto/subtle"
@@ -16,7 +13,6 @@ import (
 	"time"
 )
 
-// Device یک دستگاه ثبت‌شده برای کلاینت است (با شناسهٔ HWID که اپ کلاینت می‌فرستد).
 type Device struct {
 	HWID      string `json:"hwid"`
 	FirstSeen int64  `json:"first_seen"`
@@ -30,7 +26,6 @@ var (
 	reHWID          = regexp.MustCompile(`^[A-Za-z0-9_\-:.]{4,128}$`)
 )
 
-// newSubToken یک توکن تصادفی و URL-safe می‌سازد.
 func newSubToken() (string, error) {
 	b := make([]byte, 24)
 	if _, err := rand.Read(b); err != nil {
@@ -39,9 +34,6 @@ func newSubToken() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-// admitDevice بررسی می‌کند دستگاه مجاز است و در صورت نیاز ثبتش می‌کند.
-// changed برمی‌گرداند که آیا لیست دستگاه‌ها تغییر کرده (برای ذخیره‌سازی).
-// HWIDLimit = ۰ یعنی بدون محدودیت دستگاه و هیچ چیزی ثبت نمی‌شود.
 func admitDevice(c *Client, hwid string, now time.Time) (changed bool, err error) {
 	if c.HWIDLimit <= 0 {
 		return false, nil
@@ -54,7 +46,7 @@ func admitDevice(c *Client, hwid string, now time.Time) (changed bool, err error
 	}
 	for i := range c.Devices {
 		if c.Devices[i].HWID == hwid {
-			if now.Unix()-c.Devices[i].LastSeen >= 60 { // فقط هر دقیقه ذخیره کن
+			if now.Unix()-c.Devices[i].LastSeen >= 60 {
 				c.Devices[i].LastSeen = now.Unix()
 				return true, nil
 			}
@@ -68,7 +60,6 @@ func admitDevice(c *Client, hwid string, now time.Time) (changed bool, err error
 	return true, nil
 }
 
-// findClientByToken کلاینت را با توکن اشتراک پیدا می‌کند (مقایسهٔ ثابت‌زمان).
 func findClientByToken(st *Store, token string) *Client {
 	if token == "" {
 		return nil
@@ -81,7 +72,6 @@ func findClientByToken(st *Store, token string) *Client {
 	return nil
 }
 
-// ensureSubTokens به کلاینت‌های قدیمی که توکن ندارند یک توکن می‌دهد.
 func ensureSubTokens() error {
 	xrayMu.Lock()
 	defer xrayMu.Unlock()
@@ -106,12 +96,12 @@ func ensureSubTokens() error {
 	return saveStore(st)
 }
 
-// registerXrayShareRoutes مسیرهای اشتراک و مدیریت دستگاه/فعال‌سازی را ثبت می‌کند.
-// /sub بدون احراز هویت پنل است؛ امنیتش با توکن تصادفی تأمین می‌شود.
 func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	m.HandleFunc("GET /sub/{token}", func(w http.ResponseWriter, r *http.Request) {
-		// server: IP سرور ایران (کاربر به آن وصل می‌شود). اگر نبود، میزبان همین درخواست.
 		server := r.URL.Query().Get("server")
+		if server == "" {
+			server = irServerAddr()
+		}
 		if server == "" {
 			host, _, err := net.SplitHostPort(r.Host)
 			if err != nil {
@@ -167,7 +157,6 @@ func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.
 		w.Write([]byte(base64.StdEncoding.EncodeToString([]byte(strings.Join(links, "\n")))))
 	})
 
-	// POST /api/xray/clients/{name}/devices/reset  -> پاک کردن لیست دستگاه‌ها
 	m.HandleFunc("POST /api/xray/clients/{name}/devices/reset", auth(func(w http.ResponseWriter, r *http.Request) {
 		xrayMu.Lock()
 		defer xrayMu.Unlock()
@@ -177,7 +166,7 @@ func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.
 			return
 		}
 		c := findClientByName(st, r.PathValue("name"))
-		if c == nil {
+		if c == nil || !ownsClient(r, c) {
 			reply(w, 404, map[string]string{"error": "کلاینت پیدا نشد"})
 			return
 		}
@@ -189,7 +178,6 @@ func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.
 		reply(w, 200, map[string]string{"ok": "1"})
 	}))
 
-	// POST /api/xray/clients/{name}/enable  -> فعال‌سازی دوباره (بعد از قطع خودکار به‌خاطر IP)
 	m.HandleFunc("POST /api/xray/clients/{name}/enable", auth(func(w http.ResponseWriter, r *http.Request) {
 		xrayMu.Lock()
 		defer xrayMu.Unlock()
@@ -199,8 +187,12 @@ func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.
 			return
 		}
 		c := findClientByName(st, r.PathValue("name"))
-		if c == nil {
+		if c == nil || !ownsClient(r, c) {
 			reply(w, 404, map[string]string{"error": "کلاینت پیدا نشد"})
+			return
+		}
+		if c.DisabledReason == sellerLimitReason {
+			reply(w, 403, map[string]string{"error": errSellerLimited.Error()})
 			return
 		}
 		c.Enabled = true
@@ -218,7 +210,6 @@ func registerXrayShareRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.
 	}))
 }
 
-// findClientByName کلاینت را با نام پیدا می‌کند.
 func findClientByName(st *Store, name string) *Client {
 	for i := range st.Clients {
 		if st.Clients[i].Name == name {
@@ -228,8 +219,6 @@ func findClientByName(st *Store, name string) *Client {
 	return nil
 }
 
-// backupFile فرمت پشتیبان نسخهٔ ۲: تانل‌ها و وضعیت کامل Xray.
-// فایل‌های قدیمی (فقط نقشهٔ تانل‌ها) هم در restore پذیرفته می‌شوند.
 type backupFile struct {
 	Format  string            `json:"format"`
 	Version int               `json:"version"`
@@ -237,8 +226,6 @@ type backupFile struct {
 	Xray    *Store            `json:"xray,omitempty"`
 }
 
-// restoreXrayStore وضعیت Xray را از پشتیبان می‌گذارد. خودش xrayMu را می‌گیرد.
-// اگر کانفیگ نامعتبر باشد، هیچ‌چیز تغییر نمی‌کند؛ اگر ذخیره ناموفق باشد، کانفیگ قبلی برمی‌گردد.
 func restoreXrayStore(in *Store) (int, error) {
 	xrayMu.Lock()
 	defer xrayMu.Unlock()
@@ -272,7 +259,7 @@ func restoreXrayStore(in *Store) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if err := writeXrayConfig(in); err != nil { // xray -test قبل از ذخیره
+	if err := writeXrayConfig(in); err != nil {
 		return 0, err
 	}
 	if err := saveStore(in); err != nil {

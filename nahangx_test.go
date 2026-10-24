@@ -8,9 +8,6 @@ import (
 	"time"
 )
 
-// Run with:  go test -run Nahangx -v
-// Uses an in-memory connection, so no real network or servers are needed.
-
 func TestNahangxHandshakeAndFrames(t *testing.T) {
 	master := hsum([]byte("nahanx2|"), []byte("test-token"))
 	a, b := net.Pipe()

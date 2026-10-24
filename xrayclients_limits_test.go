@@ -2,7 +2,6 @@ package main
 
 import "testing"
 
-// IP Limit و HWID Limit باید قبل از هر دسترسی به فایل رد شوند.
 func TestAddClientRejectsOutOfRangeDeviceLimits(t *testing.T) {
 	base := ClientReq{Name: "limit-test", Inbounds: []int{443}}
 	cases := []ClientReq{

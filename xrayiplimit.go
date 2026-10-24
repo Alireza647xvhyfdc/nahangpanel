@@ -1,12 +1,5 @@
 package main
 
-// xrayiplimit.go: شمارش IP مبدأ هر کلاینت از access log خود Xray.
-// اگر تعداد IPهای متمایز در پنجرهٔ زمانی از IP Limit بیشتر شود، کلاینت خودکار غیرفعال می‌شود
-// (با دکمهٔ «فعال کردن» در پنل دوباره روشن می‌شود).
-//
-// محدودیت مهم: اگر ترافیک از تانل پنل عبور کند، Xray فقط 127.0.0.1 را به‌عنوان مبدأ می‌بیند
-// و این شمارش برای آن کاربران کار نمی‌کند. این بخش فقط اتصال مستقیم به سرور خارج را می‌شمارد.
-
 import (
 	"bufio"
 	"fmt"
@@ -27,14 +20,12 @@ const (
 	accessLogPath     = "/var/log/xray/access.log"
 	ipWindow          = 10 * time.Minute
 	ipCheckEvery      = 30 * time.Second
-	accessLogMaxBytes = 100 << 20 // بعد از این حجم فایل خالی می‌شود
-	accessReadMax     = 16 << 20  // سقف خواندن در هر بار
+	accessLogMaxBytes = 100 << 20
+	accessReadMax     = 16 << 20
 )
 
-// خط نمونه: 2026/10/23 18:00:00 [from] 1.2.3.4:5678 accepted tcp:example.com:443 [in-443 >> direct] email: name
 var reAccess = regexp.MustCompile(`^\S+ \S+ (?:from )?(\[[^\]]+\]|[^\s\[\]]+):\d+ accepted .*email: (\S+)\s*$`)
 
-// parseAccessLine IP مبدأ و نام کلاینت را از یک خط access log می‌گیرد.
 func parseAccessLine(line string) (ip, email string, ok bool) {
 	m := reAccess.FindStringSubmatch(line)
 	if m == nil {
@@ -47,18 +38,17 @@ func parseAccessLine(line string) (ip, email string, ok bool) {
 	return ip, m[2], true
 }
 
-// ipTracker آخرین زمان دیده‌شدن هر IP برای هر کلاینت را نگه می‌دارد.
 type ipTracker struct {
 	mu     sync.Mutex
 	offset int64
-	seen   map[string]map[string]time.Time // client -> ip -> last seen
+	seen   map[string]map[string]time.Time
 }
 
 var ipMon = &ipTracker{seen: map[string]map[string]time.Time{}}
 
 func (t *ipTracker) observe(client, ip string, now time.Time) {
 	if ip == "127.0.0.1" || ip == "::1" {
-		return // اتصال داخلی تانل، IP کاربر نیست
+		return
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -68,7 +58,6 @@ func (t *ipTracker) observe(client, ip string, now time.Time) {
 	t.seen[client][ip] = now
 }
 
-// distinct تعداد IPهای متمایز داخل پنجره را برمی‌گرداند و قدیمی‌ها را پاک می‌کند.
 func (t *ipTracker) distinct(client string, now time.Time) int {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -89,7 +78,6 @@ func (t *ipTracker) reset(client string) {
 	delete(t.seen, client)
 }
 
-// ingestAccessLog خطوط جدید access log را می‌خواند و IPها را ثبت می‌کند.
 func ingestAccessLog(now time.Time) error {
 	f, err := os.Open(accessLogPath)
 	if os.IsNotExist(err) {
@@ -106,25 +94,24 @@ func ingestAccessLog(now time.Time) error {
 
 	ipMon.mu.Lock()
 	off := ipMon.offset
-	if info.Size() < off { // فایل چرخیده یا خالی شده
+	if info.Size() < off {
 		off = 0
 	}
 	ipMon.mu.Unlock()
 
 	if info.Size()-off > accessReadMax {
-		off = info.Size() - accessReadMax // خطوط خیلی قدیمی را رد کن
+		off = info.Size() - accessReadMax
 	}
 	if _, err := f.Seek(off, io.SeekStart); err != nil {
 		return err
 	}
 
-	// فقط خطوط کامل (تا آخرین \n) پردازش می‌شوند.
 	br := bufio.NewReader(f)
 	consumed := off
 	for {
 		line, err := br.ReadString('\n')
 		if err != nil {
-			break // خط ناقص آخر فایل را بعداً می‌خوانیم
+			break
 		}
 		consumed += int64(len(line))
 		if ip, email, ok := parseAccessLine(strings.TrimRight(line, "\r\n")); ok {
@@ -145,7 +132,6 @@ func ingestAccessLog(now time.Time) error {
 	return nil
 }
 
-// checkIPLimits کلاینت‌هایی که از IP Limit گذشته‌اند را غیرفعال می‌کند.
 func checkIPLimits(now time.Time) error {
 	xrayMu.Lock()
 	defer xrayMu.Unlock()
@@ -183,7 +169,6 @@ func checkIPLimits(now time.Time) error {
 	return nil
 }
 
-// startXrayMonitor مهاجرت توکن‌ها را انجام می‌دهد و حلقهٔ بررسی IP را روشن می‌کند.
 func startXrayMonitor() {
 	if err := ensureSubTokens(); err != nil {
 		fmt.Println("ساخت توکن اشتراک ناموفق:", err)
@@ -204,12 +189,13 @@ func startXrayMonitor() {
 			if err := tickTraffic(now); err != nil {
 				fmt.Println("بررسی ترافیک:", err)
 			}
+			if err := enforceSellers(now); err != nil {
+				fmt.Println("بررسی محدودیت فروشنده:", err)
+			}
 		}
 	}()
 }
 
-// ensureAccessLogDir پوشه و فایل access log را می‌سازد و مالکیتشان را به کاربری می‌دهد
-// که سرویس xray با آن اجرا می‌شود. بدون این کار Xray با خطای no such file or directory استارت نمی‌شود.
 func ensureAccessLogDir() error {
 	dir := filepath.Dir(accessLogPath)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -226,11 +212,10 @@ func ensureAccessLogDir() error {
 	return nil
 }
 
-// chownForXray پوشه و فایل را به کاربر سرویس xray می‌دهد (اگر غیر از root باشد).
 func chownForXray(dir, file string) error {
 	out, err := exec.Command("systemctl", "show", "xray", "-p", "User", "--value").Output()
 	if err != nil {
-		return nil // systemd یا سرویس xray نیست؛ مالکیت دست نمی‌خورد
+		return nil
 	}
 	name := strings.TrimSpace(string(out))
 	if name == "" || name == "root" {

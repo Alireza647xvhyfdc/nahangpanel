@@ -1,7 +1,5 @@
 package main
 
-// xraysec.go: امنیت inbound (none، tls، reality) و ساخت لینک کلاینت.
-
 import (
 	"crypto/rand"
 	"encoding/base64"
@@ -16,7 +14,6 @@ import (
 	"strings"
 )
 
-// TLSSettings برای حالت tls: گواهی و کلید روی سرور خارج باید از قبل وجود داشته باشند.
 type TLSSettings struct {
 	ServerName        string   `json:"server_name"`
 	CertFile          string   `json:"cert_file"`
@@ -35,27 +32,22 @@ type TLSSettings struct {
 	PinnedSHA256      []string `json:"pinned_sha256,omitempty"`
 	VerifyPeerName    []string `json:"verify_peer_name,omitempty"`
 	MasterKeyLog      string   `json:"master_key_log,omitempty"`
-	// Certificates لیست گواهی‌ها (حداکثر ۴). اگر خالی باشد، CertFile/KeyFile استفاده می‌شود.
 	Certificates []TLSCert `json:"certificates,omitempty"`
-	// ECH (Encrypted Client Hello)
+
 	ECHSockopt bool   `json:"ech_sockopt,omitempty"`
-	ECHKey     string `json:"ech_key,omitempty"` // کلید خصوصی سرور؛ هرگز به API برنمی‌گردد
+	ECHKey     string `json:"ech_key,omitempty"`
 	ECHConfig  string `json:"ech_config,omitempty"`
-	// LimitFallback محدودیت سرعت fallback
 	LimitFallback *LimitFallback `json:"limit_fallback,omitempty"`
 }
 
-// TLSCert یک گواهی TLS به‌صورت مسیر فایل یا محتوای PEM.
-// محتوای PEM فقط هنگام ساخت استفاده می‌شود و داخل فایل‌های سرور ذخیره می‌شود؛ در store نمی‌ماند.
 type TLSCert struct {
-	Mode        string `json:"mode,omitempty"` // file | content
+	Mode        string `json:"mode,omitempty"`
 	CertFile    string `json:"cert_file,omitempty"`
 	KeyFile     string `json:"key_file,omitempty"`
 	CertContent string `json:"cert_content,omitempty"`
 	KeyContent  string `json:"key_content,omitempty"`
 }
 
-// LimitFallback محدودیت سرعت fallback برای آپلود و دانلود.
 type LimitFallback struct {
 	UploadAfter   int64 `json:"upload_after,omitempty"`
 	UploadBps     int64 `json:"upload_bps,omitempty"`
@@ -65,8 +57,6 @@ type LimitFallback struct {
 	DownloadBurst int64 `json:"download_burst,omitempty"`
 }
 
-// RealitySettings برای حالت reality.
-// PrivateKey فقط داخل فایل‌های سرور می‌ماند و هرگز به API برنمی‌گردد.
 type RealitySettings struct {
 	Dest         string   `json:"dest"`
 	ServerNames  []string `json:"server_names"`
@@ -79,7 +69,6 @@ type RealitySettings struct {
 	MinClientVer string   `json:"min_client_ver,omitempty"`
 	MaxClientVer string   `json:"max_client_ver,omitempty"`
 	SpiderX      string   `json:"spider_x,omitempty"`
-	// ML-DSA-65 (پس‌کوانتومی). Seed خصوصی است و هرگز به API برنمی‌گردد.
 	MLDSA65Seed   string         `json:"mldsa65_seed,omitempty"`
 	MLDSA65Verify string         `json:"mldsa65_verify,omitempty"`
 	MasterKeyLog  string         `json:"master_key_log,omitempty"`
@@ -91,7 +80,6 @@ var (
 	reShortID = regexp.MustCompile(`^[0-9a-f]{2,16}$`)
 )
 
-// validateSecurity امنیت inbound را بررسی می‌کند و تنظیمات غیرمرتبط را پاک می‌کند.
 func validateSecurity(in *Inbound) string {
 	switch in.Security {
 	case "", "none":
@@ -162,7 +150,6 @@ func validateSecurity(in *Inbound) string {
 	return "security باید none، tls یا reality باشد"
 }
 
-// ensureRealityKeys اگر کلید نبود، با xray x25519 می‌سازد و یک shortId تصادفی می‌گذارد.
 func ensureRealityKeys(in *Inbound) error {
 	if in.Security != "reality" || in.Reality == nil {
 		return nil
@@ -189,7 +176,6 @@ func ensureRealityKeys(in *Inbound) error {
 	return nil
 }
 
-// parseX25519 خروجی xray x25519 را می‌خواند. نسخه‌های مختلف برچسب‌های متفاوت می‌دهند.
 func parseX25519(out string) (priv, pub string) {
 	for _, line := range strings.Split(out, "\n") {
 		i := strings.Index(line, ":")
@@ -216,7 +202,6 @@ func randHex(n int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-// streamFor تنظیمات streamSettings کانفیگ Xray را برای یک inbound می‌سازد.
 func streamFor(in Inbound) map[string]any {
 	network := in.Network
 	if network == "" {
@@ -366,10 +351,9 @@ func streamFor(in Inbound) map[string]any {
 	return st
 }
 
-// redactInbound نسخهٔ امن یک inbound برای پاسخ API می‌سازد (بدون کلید خصوصی).
 func redactInbound(in Inbound) Inbound {
 	out := in
-	out.Password = "" // رمز shadowsocks هم محرمانه است
+	out.Password = ""
 	if in.Reality != nil {
 		r := *in.Reality
 		r.PrivateKey = ""
@@ -391,7 +375,6 @@ var (
 	xhttpModes   = map[string]bool{"auto": true, "packet-up": true, "stream-up": true, "stream-one": true}
 )
 
-// validateAdvanced تنظیمات تکمیلی inbound را بررسی و مقدارهای پیش‌فرض را تعیین می‌کند.
 func validateAdvanced(in *Inbound) string {
 	if in.Listen != "" && net.ParseIP(in.Listen) == nil {
 		return "Listen باید یک IP معتبر باشد یا خالی بماند"
@@ -472,7 +455,6 @@ var (
 	tlsUsage  = map[string]bool{"encipherment": true, "verify": true, "issue": true}
 )
 
-// validateTLSExtra تنظیمات تکمیلی TLS را بررسی می‌کند.
 func validateTLSExtra(t *TLSSettings) string {
 	if len(t.ALPN) > 8 {
 		return "تعداد ALPN زیاد است"
@@ -551,7 +533,6 @@ func validateTLSExtra(t *TLSSettings) string {
 	return ""
 }
 
-// validateRealityExtra تنظیمات تکمیلی Reality را بررسی و SpiderX را پیش‌فرض می‌کند.
 func validateRealityExtra(r *RealitySettings) string {
 	if r.Xver < 0 || r.Xver > 2 {
 		return "xver باید بین ۰ تا ۲ باشد"
@@ -595,7 +576,6 @@ func validateRealityExtra(r *RealitySettings) string {
 	return ""
 }
 
-// spiderOf مسیر SpiderX را برای لینک کلاینت برمی‌گرداند.
 func spiderOf(r *RealitySettings) string {
 	if r == nil || r.SpiderX == "" {
 		return "/"
@@ -603,7 +583,6 @@ func spiderOf(r *RealitySettings) string {
 	return r.SpiderX
 }
 
-// hexToB64 هش هگز را به base64 تبدیل می‌کند (فرمت مورد انتظار Xray).
 func hexToB64(h string) string {
 	b, err := hex.DecodeString(h)
 	if err != nil {
@@ -612,7 +591,6 @@ func hexToB64(h string) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-// verCmp دو نسخه‌ی x.y.z را مقایسه می‌کند (-1، 0 یا 1).
 func verCmp(a, b string) int {
 	pa, pb := strings.Split(a, "."), strings.Split(b, ".")
 	for i := 0; i < 3; i++ {
@@ -637,17 +615,14 @@ func verPart(p []string, i int) int {
 
 var reB64Blob = regexp.MustCompile(`^[A-Za-z0-9+/=_\-]+$`)
 
-// validB64 مقدار base64 را با سقف طول ۸۱۹۲ بررسی می‌کند.
 func validB64(s string) bool {
 	return len(s) > 0 && len(s) <= 8192 && reB64Blob.MatchString(s)
 }
 
-// cleanB64 فاصله و خط جدید را از یک مقدار base64 حذف می‌کند.
 func cleanB64(s string) string {
 	return strings.Join(strings.Fields(s), "")
 }
 
-// certsOf فهرست گواهی‌های TLS را برمی‌گرداند. اگر لیست خالی باشد، گواهی تکی قدیمی را برمی‌گرداند.
 func certsOf(t *TLSSettings) []TLSCert {
 	if t == nil {
 		return nil
@@ -658,7 +633,6 @@ func certsOf(t *TLSSettings) []TLSCert {
 	return []TLSCert{{CertFile: t.CertFile, KeyFile: t.KeyFile}}
 }
 
-// validateLimitFallback مقدارهای منفی را رد می‌کند.
 func validateLimitFallback(lf *LimitFallback) string {
 	if lf == nil {
 		return ""
@@ -671,7 +645,6 @@ func validateLimitFallback(lf *LimitFallback) string {
 	return ""
 }
 
-// applyLimitFallback مقدارهای Limit Fallback را داخل تنظیمات امنیت می‌گذارد.
 func applyLimitFallback(m map[string]any, lf *LimitFallback) {
 	if lf == nil {
 		return

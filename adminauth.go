@@ -1,10 +1,5 @@
 package main
 
-// adminauth.go: حساب‌های ادمین با دو نقش owner و viewer.
-//   - مدیر اصلی همان -user و -pass است و همیشه owner است (قفل‌شدن بیرون نمی‌ماند).
-//   - بقیهٔ ادمین‌ها در admins.json با رمز PBKDF2-SHA256 ذخیره می‌شوند.
-//   - نقش هر درخواست از فایل خوانده می‌شود، پس تغییر یا حذف نقش فوراً اعمال می‌شود.
-
 import (
 	"context"
 	"crypto/hmac"
@@ -31,31 +26,32 @@ const (
 )
 
 var (
-	ownerUser   string // مدیر اصلی از flag
+	ownerUser   string
 	ownerPass   string
 	adminMu     sync.Mutex
 	reAdminName = regexp.MustCompile(`^[A-Za-z0-9_\-]{3,32}$`)
-	dummySalt   = make([]byte, 16) // برای اینکه وجود نداشتن کاربر زمان‌بندی را لو ندهد
+	dummySalt   = make([]byte, 16)
 )
 
 type adminRec struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	Iter     int    `json:"iter"`
-	Salt     string `json:"salt"`
-	Hash     string `json:"hash"`
+	Username   string `json:"username"`
+	Role       string `json:"role"`
+	Iter       int    `json:"iter"`
+	Salt       string `json:"salt"`
+	Hash       string `json:"hash"`
+	MaxClients int    `json:"max_clients,omitempty"`
+	Expire     int64  `json:"expire,omitempty"`
+	TotalGB    int    `json:"total_gb,omitempty"`
 }
 
 type identKey struct{}
 
 type ident struct{ user, role string }
 
-// setOwner را یک بار بعد از خواندن flag ها صدا بزن.
 func setOwner(u, p string) {
 	ownerUser, ownerPass = u, p
 }
 
-// pbkdf2 کلید را با PBKDF2-HMAC-SHA256 می‌سازد (فقط کتابخانهٔ استاندارد).
 func pbkdf2(pw, salt []byte, iter, keyLen int) []byte {
 	hLen := sha256.Size
 	blocks := (keyLen + hLen - 1) / hLen
@@ -142,18 +138,19 @@ func findAdmin(u string) (adminRec, bool) {
 	return adminRec{}, false
 }
 
-// currentRole نقش فعلی یک کاربر را برمی‌گرداند؛ "" یعنی حذف شده یا غیرفعال.
 func currentRole(u string) string {
 	if ownerUser != "" && u == ownerUser {
 		return "owner"
 	}
 	if a, ok := findAdmin(u); ok {
+		if sellerExpired(a, time.Now()) {
+			return ""
+		}
 		return a.Role
 	}
 	return ""
 }
 
-// loginRole نام کاربری و رمز را بررسی و (کاربر، نقش) برمی‌گرداند. نقش خالی یعنی نامعتبر.
 func loginRole(u, p string) (string, string) {
 	if ownerUser != "" &&
 		subtle.ConstantTimeCompare([]byte(u), []byte(ownerUser)) == 1 &&
@@ -162,23 +159,24 @@ func loginRole(u, p string) (string, string) {
 	}
 	a, ok := findAdmin(u)
 	if !ok {
-		pbkdf2([]byte(p), dummySalt, pbkdfIter, pbkdfKeyLen) // هزینهٔ یکسان
+		pbkdf2([]byte(p), dummySalt, pbkdfIter, pbkdfKeyLen)
 		return "", ""
 	}
 	if !verifyPassword(a, p) {
 		return "", ""
 	}
+	if sellerExpired(a, time.Now()) {
+		return "", ""
+	}
 	return a.Username, a.Role
 }
 
-// newSession کوکی نشست را با کاربر و نقش امضا شده می‌سازد: exp|user|role.sig
 func newSession(user, role string) string {
 	exp := strconv.FormatInt(time.Now().Add(sessTTL).Unix(), 10)
 	payload := exp + "|" + user + "|" + role
 	return payload + "." + sign(payload)
 }
 
-// sessionIdent کوکی را بررسی می‌کند و نقش را دوباره از فایل می‌خواند.
 func sessionIdent(r *http.Request) (string, string) {
 	c, err := r.Cookie(sessName)
 	if err != nil {
@@ -202,12 +200,11 @@ func sessionIdent(r *http.Request) (string, string) {
 	}
 	role := currentRole(parts[1])
 	if role == "" {
-		return "", "" // حذف یا غیرفعال شده
+		return "", ""
 	}
 	return parts[1], role
 }
 
-// identify هویت درخواست را از کوکی یا Basic Auth تعیین می‌کند.
 func identify(r *http.Request, ip string) (string, string) {
 	if u, role := sessionIdent(r); role != "" {
 		return u, role
@@ -247,17 +244,27 @@ func validAdminInput(u, p, role string) string {
 	if len(p) < 8 || len(p) > 256 {
 		return "رمز باید بین ۸ تا ۲۵۶ کاراکتر باشد"
 	}
-	if role != "owner" && role != "viewer" {
-		return "نقش باید owner یا viewer باشد"
+	if role != "owner" && role != "viewer" && role != "seller" {
+		return "نقش باید owner، viewer یا seller باشد"
 	}
 	return ""
 }
 
-// registerAdminRoutes مسیرهای /api/me و مدیریت ادمین‌ها را ثبت می‌کند.
 func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	m.HandleFunc("GET /api/me", auth(func(w http.ResponseWriter, r *http.Request) {
 		id := identOf(r)
-		reply(w, 200, map[string]string{"user": id.user, "role": id.role})
+		out := map[string]any{"user": id.user, "role": id.role}
+		if id.role == "seller" {
+			if a, ok := findAdmin(id.user); ok {
+				out["expire"] = a.Expire
+				out["total_gb"] = a.TotalGB
+				if st, err := loadStore(); err == nil {
+					out["used_gb"] = float64(sellerUsedBytes(st, a.Username)) / float64(bytesPerGB)
+					out["over_quota"] = sellerOverQuota(a, st)
+				}
+			}
+		}
+		reply(w, 200, out)
 	}))
 
 	m.HandleFunc("GET /api/admins", auth(func(w http.ResponseWriter, r *http.Request) {
@@ -269,9 +276,24 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
+		owned := map[string]int{}
+		var stored *Store
+		if st, err := loadStore(); err == nil {
+			stored = st
+			for _, c := range st.Clients {
+				if c.Owner != "" {
+					owned[c.Owner]++
+				}
+			}
+		}
 		out := []map[string]any{{"username": ownerUser, "role": "owner", "primary": true}}
 		for _, a := range list {
-			out = append(out, map[string]any{"username": a.Username, "role": a.Role})
+			item := map[string]any{"username": a.Username, "role": a.Role, "max_clients": a.MaxClients, "clients": owned[a.Username], "expire": a.Expire, "total_gb": a.TotalGB, "used_gb": 0.0, "blocked": false}
+			if stored != nil && a.Role == "seller" {
+				item["used_gb"] = float64(sellerUsedBytes(stored, a.Username)) / float64(bytesPerGB)
+				item["blocked"] = sellerExpired(a, time.Now()) || sellerOverQuota(a, stored)
+			}
+			out = append(out, item)
 		}
 		reply(w, 200, out)
 	}))
@@ -281,9 +303,12 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			return
 		}
 		var in struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-			Role     string `json:"role"`
+			Username   string `json:"username"`
+			Password   string `json:"password"`
+			Role       string `json:"role"`
+			MaxClients int    `json:"max_clients"`
+			Expire     int64  `json:"expire"`
+			TotalGB    int    `json:"total_gb"`
 		}
 		if json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<12)).Decode(&in) != nil {
 			reply(w, 400, map[string]string{"error": "ورودی نامعتبر"})
@@ -292,6 +317,21 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 		if e := validAdminInput(in.Username, in.Password, in.Role); e != "" {
 			reply(w, 400, map[string]string{"error": e})
 			return
+		}
+		if in.MaxClients < 0 || in.MaxClients > 1000000 {
+			reply(w, 400, map[string]string{"error": "سقف تعداد کلاینت نامعتبر است"})
+			return
+		}
+		maxClients := 0
+		var sellerExp int64
+		sellerTGB := 0
+		if in.Role == "seller" {
+			maxClients = in.MaxClients
+			if e := validSellerLimits(in.Expire, in.TotalGB); e != "" {
+				reply(w, 400, map[string]string{"error": e})
+				return
+			}
+			sellerExp, sellerTGB = in.Expire, in.TotalGB
 		}
 		adminMu.Lock()
 		defer adminMu.Unlock()
@@ -315,7 +355,7 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		list = append(list, adminRec{Username: in.Username, Role: in.Role, Iter: pbkdfIter, Salt: salt, Hash: hash})
+		list = append(list, adminRec{Username: in.Username, Role: in.Role, Iter: pbkdfIter, Salt: salt, Hash: hash, MaxClients: maxClients, Expire: sellerExp, TotalGB: sellerTGB})
 		if err := saveAdmins(list); err != nil {
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
@@ -323,7 +363,6 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 		reply(w, 200, map[string]string{"ok": "1"})
 	}))
 
-	// POST /api/admins/{name}  با role و/یا password
 	m.HandleFunc("POST /api/admins/{name}", auth(func(w http.ResponseWriter, r *http.Request) {
 		if !requireOwner(w, r) {
 			return
@@ -334,8 +373,11 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			return
 		}
 		var in struct {
-			Role     string `json:"role"`
-			Password string `json:"password"`
+			Role       string `json:"role"`
+			Password   string `json:"password"`
+			MaxClients *int   `json:"max_clients"`
+			Expire     *int64 `json:"expire"`
+			TotalGB    *int   `json:"total_gb"`
 		}
 		if json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<12)).Decode(&in) != nil {
 			reply(w, 400, map[string]string{"error": "ورودی نامعتبر"})
@@ -359,11 +401,32 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			return
 		}
 		if in.Role != "" {
-			if in.Role != "owner" && in.Role != "viewer" {
-				reply(w, 400, map[string]string{"error": "نقش باید owner یا viewer باشد"})
+			if in.Role != "owner" && in.Role != "viewer" && in.Role != "seller" {
+				reply(w, 400, map[string]string{"error": "نقش باید owner، viewer یا seller باشد"})
 				return
 			}
 			list[idx].Role = in.Role
+		}
+		if in.MaxClients != nil {
+			if *in.MaxClients < 0 || *in.MaxClients > 1000000 {
+				reply(w, 400, map[string]string{"error": "سقف تعداد کلاینت نامعتبر است"})
+				return
+			}
+			list[idx].MaxClients = *in.MaxClients
+		}
+		if in.Expire != nil || in.TotalGB != nil {
+			exp, tgb := list[idx].Expire, list[idx].TotalGB
+			if in.Expire != nil {
+				exp = *in.Expire
+			}
+			if in.TotalGB != nil {
+				tgb = *in.TotalGB
+			}
+			if e := validSellerLimits(exp, tgb); e != "" {
+				reply(w, 400, map[string]string{"error": e})
+				return
+			}
+			list[idx].Expire, list[idx].TotalGB = exp, tgb
 		}
 		if in.Password != "" {
 			if len(in.Password) < 8 || len(in.Password) > 256 {
@@ -413,10 +476,66 @@ func registerAdminRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Hand
 			reply(w, 404, map[string]string{"error": "ادمین پیدا نشد"})
 			return
 		}
+		if err := releaseSellerClients(name); err != nil {
+			reply(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
 		if err := saveAdmins(out); err != nil {
 			reply(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
 		reply(w, 200, map[string]string{"ok": "1"})
 	}))
+}
+
+func releaseSellerClients(name string) error {
+	xrayMu.Lock()
+	defer xrayMu.Unlock()
+	st, err := loadStore()
+	if err != nil {
+		return err
+	}
+	kept := st.Clients[:0]
+	removed := false
+	for _, c := range st.Clients {
+		if c.Owner == name {
+			removed = true
+			continue
+		}
+		kept = append(kept, c)
+	}
+	if !removed {
+		return nil
+	}
+	st.Clients = kept
+	if err := writeXrayConfig(st); err != nil {
+		return err
+	}
+	return saveStore(st)
+}
+
+func sellerAllowed(r *http.Request) bool {
+	p := r.URL.Path
+	const pre = "/api/xray/clients/"
+	switch r.Method {
+	case "GET":
+		switch p {
+		case "/", "/api/me", "/api/system", "/api/xray/inbounds", "/api/xray/clients", "/api/xray/links":
+			return true
+		}
+	case "POST":
+		if p == "/api/xray/clients" {
+			return true
+		}
+		if strings.HasPrefix(p, pre) {
+			rest := p[len(pre):]
+			return strings.HasSuffix(rest, "/enable") || strings.HasSuffix(rest, "/devices/reset")
+		}
+	case "PUT":
+		if strings.HasPrefix(p, pre) {
+			rest := p[len(pre):]
+			return rest != "" && !strings.Contains(rest, "/")
+		}
+	}
+	return false
 }

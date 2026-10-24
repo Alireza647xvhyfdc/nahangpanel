@@ -1,8 +1,4 @@
 #!/bin/bash
-# Install / update / uninstall the Nahang tunnel panel. Run on BOTH servers (Iran and foreign).
-#   Install:    sudo bash install.sh                 (asks for the port and your IP)
-#   Update:     sudo bash install.sh --update        (or: sudo nahang, option 7)
-#   Uninstall:  sudo bash install.sh --uninstall     (or: sudo nahang, option 8)
 set -e
 [ "$EUID" -ne 0 ] && { echo "Run as root"; exit 1; }
 
@@ -12,7 +8,6 @@ MENU_SHARE=/usr/local/share/tunnelpanel
 
 TTY=${TP_TTY:-/dev/tty}   # TP_TTY is only for testing
 
-# Prompts go straight to the terminal so they appear on the same line as the input
 has_tty() { [ -r "$TTY" ] && (: >"$TTY") 2>/dev/null; }
 ask() {
   local answer=""
@@ -29,7 +24,6 @@ confirm() {
 
 step() { echo ">>> $*"; }
 trap 'rc=$?; [ "$rc" -ne 0 ] && echo "!!! Install failed (exit code $rc) at line $LINENO. Fix the problem above and run the installer again." >&2' EXIT
-# download with timeouts and retries; prints a clear error instead of dying silently
 dl() {  # dl URL OUTPUT
   curl -fL --connect-timeout 15 --max-time 300 --retry 3 --retry-delay 2 "$1" -o "$2" \
     || { echo "!!! Download failed: $1" >&2; echo "    (check that this server can reach github.com, and that the release exists)" >&2; exit 1; }
@@ -52,14 +46,12 @@ uninstall_panel() {
   echo "The panel has been removed."
 }
 
-# Mode: install (default), update, or uninstall
 MODE=install
 case "${1:-}" in
   --update)    MODE=update ;;
   --uninstall) MODE=uninstall ;;
 esac
 
-# Panel already installed and we have a terminal: ask what to do
 if [ "$MODE" = install ] && [ -f "$SVC" ] && has_tty; then
   echo "The panel is already installed."
   echo " 1) Reinstall (choose the port again)"
@@ -90,7 +82,6 @@ if [ "$MODE" = update ]; then
   PORT=$(grep -oE -- '-port [0-9]+' "$SVC" | awk '{print $2}')
   PUBLIC=0; grep -q -- '-listen 0.0.0.0' "$SVC" && PUBLIC=1
 else
-  # Panel port. Enter = random free port between 20000 and 49999
   DEFAULT_PORT=$((20000 + RANDOM % 30000))
   while :; do
     PORT=$(ask "Panel port [$DEFAULT_PORT]: " "$DEFAULT_PORT")
@@ -104,7 +95,6 @@ else
     fi
     break
   done
-  # Direct access on the server IP over HTTPS, protected by the panel password (default)
   PUBLIC=1
 fi
 LISTEN=127.0.0.1
@@ -115,7 +105,6 @@ command -v curl >/dev/null || { apt-get update -y && apt-get install -y curl; }
 command -v openssl >/dev/null || { apt-get update -y; apt-get install -y openssl; }
 
 mkdir -p /etc/tunnelpanel
-# Password: kept on update
 if [ -s /etc/tunnelpanel/pass ]; then
   PASS=$(cat /etc/tunnelpanel/pass)
   PASS_NOTE="(previous password kept)"
@@ -126,7 +115,6 @@ fi
 
 A=$(uname -m); if [ "$A" = "x86_64" ]; then A=amd64; else A=arm64; fi
 
-# Backhaul core (only for the tcp/ws and mux transports)
 if [ ! -x /usr/local/bin/backhaul ]; then
   step "Downloading Backhaul core..."
   dl "https://github.com/Musixal/Backhaul/releases/latest/download/backhaul_linux_${A}.tar.gz" /tmp/bh.tgz
@@ -137,8 +125,6 @@ if [ ! -x /usr/local/bin/backhaul ]; then
   tar -xzf /tmp/bh.tgz -C /usr/local/bin backhaul && chmod +x /usr/local/bin/backhaul
 fi
 
-# Xray core (inbounds and clients on the foreign server). Skipped when it is already installed.
-# The panel writes /usr/local/etc/xray/config.json and manages the "xray" service (see below).
 if [ ! -x /usr/local/bin/xray ]; then
   case "$(uname -m)" in
     x86_64|amd64)  XA=Xray-linux-64.zip ;;
@@ -164,13 +150,6 @@ if [ ! -x /usr/local/bin/xray ]; then
   fi
 fi
 
-# ---------------------------------------------------------------------------
-# Certificate for the panel (HTTPS). Asked only on a fresh install / reinstall.
-#   1) Domain  -> trusted Let's Encrypt certificate for your domain
-#   2) IP      -> trusted Let's Encrypt certificate for the server IP (short-lived, auto-renewed)
-#   3) Self-signed (browser warning)
-# On update the existing certificate is kept untouched.
-# ---------------------------------------------------------------------------
 CERT_MODE=keep
 CERT_DOMAIN=""
 if [ "$UPDATE" != 1 ]; then
@@ -189,7 +168,22 @@ if [ "$UPDATE" != 1 ]; then
   fi
 fi
 
-SERVER_IP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
+is_ipv4() { [[ "$1" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]] && [ "${BASH_REMATCH[1]}" -le 255 ] && [ "${BASH_REMATCH[2]}" -le 255 ] && [ "${BASH_REMATCH[3]}" -le 255 ] && [ "${BASH_REMATCH[4]}" -le 255 ]; }
+SERVER_IP=""
+for src in https://api.ipify.org https://ifconfig.me/ip https://icanhazip.com; do
+  c=$(curl -4fsS --max-time 5 "$src" 2>/dev/null | tr -d '[:space:]')
+  if is_ipv4 "$c"; then SERVER_IP=$c; break; fi
+done
+if ! is_ipv4 "$SERVER_IP"; then
+  if has_tty; then
+    SERVER_IP=$(ask "Could not detect the public IP. Enter this server's public IPv4: " "")
+  fi
+  if ! is_ipv4 "$SERVER_IP"; then
+    echo "Warning: the public IPv4 could not be detected. Let's Encrypt for the IP is skipped; the panel keeps working." >&2
+    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    [ "$CERT_MODE" = ip ] && CERT_MODE=self
+  fi
+fi
 
 if [ "$CERT_MODE" = domain ]; then
   while :; do
@@ -209,7 +203,6 @@ fi
 
 issue_acme_cert() {  # issue_acme_cert MODE(domain|ip) VALUE ; returns non-zero on failure
   local mode=$1 value=$2 AH=/root/.acme.sh
-  # port 80 must be free for the HTTP-01 challenge
   if (exec 3<>"/dev/tcp/127.0.0.1/80") 2>/dev/null; then
     echo "Port 80 is in use by another program; it is required to validate the certificate."
     return 1
@@ -221,7 +214,7 @@ issue_acme_cert() {  # issue_acme_cert MODE(domain|ip) VALUE ; returns non-zero 
     curl -fL --connect-timeout 15 --max-time 120 --retry 3 \
       "https://github.com/acmesh-official/acme.sh/archive/refs/heads/master.tar.gz" -o /tmp/acme-src.tgz || return 1
     tar -xzf /tmp/acme-src.tgz -C /tmp/acme-src --strip-components=1 || return 1
-    (cd /tmp/acme-src && ./acme.sh --install --home "$AH" --accountemail "admin@${value//[^a-zA-Z0-9.-]/}.invalid" >/dev/null 2>&1) || true
+    (cd /tmp/acme-src && ./acme.sh --install --home "$AH" >/dev/null 2>&1) || true
     rm -rf /tmp/acme-src /tmp/acme-src.tgz
     [ -x "$AH/acme.sh" ] || return 1
   fi
@@ -229,8 +222,15 @@ issue_acme_cert() {  # issue_acme_cert MODE(domain|ip) VALUE ; returns non-zero 
   step "Requesting certificate for $value (port 80 must be reachable from the internet)..."
   local extra=()
   [ "$mode" = ip ] && extra=(--certificate-profile shortlived --days 3)
-  "$AH/acme.sh" --issue -d "$value" --standalone --httpport 80 --server letsencrypt "${extra[@]}" --force \
-    || [ -s "$AH/${value}_ecc/fullchain.cer" ] || [ -s "$AH/$value/fullchain.cer" ] || return 1
+  if ! "$AH/acme.sh" --issue -d "$value" --standalone --httpport 80 --server letsencrypt "${extra[@]}" >/tmp/acme-issue.log 2>&1; then
+    if [ "$mode" = ip ] && grep -qi "certificate-profile\|unknown option\|unrecognized" /tmp/acme-issue.log; then
+      "$AH/acme.sh" --issue -d "$value" --standalone --httpport 80 --server letsencrypt >/tmp/acme-issue.log 2>&1 || true
+    fi
+    if [ ! -s "$AH/${value}_ecc/fullchain.cer" ] && [ ! -s "$AH/$value/fullchain.cer" ]; then
+      echo "acme.sh error: $(tail -n 5 /tmp/acme-issue.log 2>/dev/null)" >&2
+      return 1
+    fi
+  fi
   "$AH/acme.sh" --install-cert -d "$value" --ecc \
     --key-file /etc/tunnelpanel/key.pem --fullchain-file /etc/tunnelpanel/cert.pem \
     --reloadcmd "systemctl restart tunnelpanel 2>/dev/null || true" >/dev/null 2>&1 \
@@ -255,6 +255,7 @@ case "$CERT_MODE" in
       echo "    Check: DNS/IP is correct, port 80 is open in the firewall and not used by another program." >&2
       if [ -s /etc/tunnelpanel/cert.pem ]; then
         echo "    The previous certificate was kept." >&2
+        CERT_MODE=keep
       else
         echo "    Falling back to a self-signed certificate. Run the installer again later to retry." >&2
         CERT_MODE=self
@@ -263,7 +264,6 @@ case "$CERT_MODE" in
     ;;
 esac
 
-# Self-signed certificate (also the fallback); used by the wss and nahangx transports too
 if [ "$CERT_MODE" = self ] || [ ! -s /etc/tunnelpanel/cert.pem ]; then
   step "Creating self-signed certificate..."
   openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
@@ -271,18 +271,20 @@ if [ "$CERT_MODE" = self ] || [ ! -s /etc/tunnelpanel/cert.pem ]; then
   rm -f /etc/tunnelpanel/host
   [ "$CERT_MODE" = keep ] || CERT_MODE=self
 fi
-# Remember which host name the panel certificate is valid for (used by "sudo nahang")
 case "$CERT_MODE" in
   domain|ip) printf '%s' "$PANEL_HOST" > /etc/tunnelpanel/host ;;
 esac
 
-# Download and verify the panel binary BEFORE stopping the service
-# (if the download fails, the running panel is left untouched)
 BASE="https://github.com/${REPO}/releases/latest/download"
 step "Downloading panel binary..."
 dl "$BASE/tunnelpanel-linux-$A" /tmp/tunnelpanel-linux-$A
 dl "$BASE/SHA256SUMS" /tmp/SHA256SUMS
-(cd /tmp && grep " tunnelpanel-linux-$A\$" SHA256SUMS | sha256sum -c -) || { echo "Panel binary checksum mismatch; install aborted"; exit 1; }
+if ! grep -q " tunnelpanel-linux-$A\$" /tmp/SHA256SUMS; then
+  echo "The latest release has no checksum for tunnelpanel-linux-$A; the release looks incomplete." >&2
+  echo "Ask the maintainer to re-run the release workflow for the latest tag, then try again." >&2
+  exit 1
+fi
+(cd /tmp && grep " tunnelpanel-linux-$A\$" SHA256SUMS | sha256sum -c -) || { echo "Panel binary checksum mismatch (the release file and its checksum do not match). Install aborted."; exit 1; }
 
 step "Installing and starting the panel service..."
 systemctl stop tunnelpanel 2>/dev/null || true
@@ -302,8 +304,6 @@ WantedBy=multi-user.target
 EOF
 systemctl daemon-reload && systemctl enable --now tunnelpanel
 
-# Xray service unit (only if none exists, so an existing setup is never overwritten).
-# It is enabled but not started here: the panel starts it when it writes the first config.
 if [ -x /usr/local/bin/xray ] && [ ! -f /etc/systemd/system/xray.service ]; then
   mkdir -p /usr/local/etc/xray
   cat > /etc/systemd/system/xray.service <<'XRAYUNIT'
@@ -323,19 +323,16 @@ XRAYUNIT
   systemctl daemon-reload && systemctl enable xray >/dev/null 2>&1 || true
 fi
 
-# Local installer copy (used for updates) and the nahang command
 mkdir -p "$MENU_SHARE"
 echo "$REPO" > "$MENU_SHARE/repo"
 if [ -f "$0" ] && [ "$(readlink -f "$0")" != "$MENU_SHARE/install.sh" ]; then
   cp "$0" "$MENU_SHARE/install.sh"
 elif [ ! -f "$MENU_SHARE/install.sh" ]; then
-  # Run through a pipe (curl | bash): fetch a copy for future updates
   curl -fsSL --connect-timeout 15 --max-time 60 "https://raw.githubusercontent.com/$REPO/main/install.sh" -o "$MENU_SHARE/install.sh" || echo "Warning: could not save an installer copy for updates (not critical)."
 fi
 
 cat > /usr/local/bin/nahang <<'MENU'
 #!/bin/bash
-# Nahang tunnel panel manager. Run: sudo nahang
 SVC=/etc/systemd/system/tunnelpanel.service
 DIR=/etc/tunnelpanel
 SHARE=/usr/local/share/tunnelpanel
@@ -390,7 +387,6 @@ latest_version() {
     | grep -m1 '"tag_name"' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/'
 }
 
-# returns 0 = up to date, 2 = update available, 1 = error
 check_update() {
   if [ -z "$REPO" ]; then echo "Repository is not set. Reinstall the panel."; return 1; fi
   local cur lat

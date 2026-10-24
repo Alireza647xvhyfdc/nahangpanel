@@ -1,16 +1,5 @@
 package main
 
-// xraytraffic.go: مصرف ترافیک کلاینت و inbound از API آمار Xray و اجرای قوانین:
-//   - Traffic Limit (کلاینت و inbound Total Flow): رسیدن به سقف → غیرفعال
-//   - Traffic Reset (daily/weekly/monthly): در زمان ریست، مصرف صفر و در صورت غیرفعال‌بودن به‌خاطر حجم، فعال
-//   - انقضا: کلاینت منقضی از کانفیگ خارج می‌شود (قبلاً فقط موقع ساخت کانفیگ بررسی می‌شد)
-//   - Auto renewal: با رسیدن به انقضا، به اندازهٔ دورهٔ اولیه تمدید و حجم صفر می‌شود
-//   - Start after first use: انقضا از اولین ترافیک کلاینت شروع می‌شود
-//   - Inbound Expires: پس از زمان انقضا inbound غیرفعال می‌شود
-//
-// نکته: هر بار که آمار خوانده می‌شود با -reset صفر می‌شود و مقدار در Store جمع می‌شود.
-// اگر Xray بین دو بررسی ری‌استارت شود، مصرف همان بازه (حداکثر ۳۰ ثانیه) از دست می‌رود.
-
 import (
 	"bytes"
 	"context"
@@ -30,7 +19,6 @@ const (
 	bytesPerGB    = int64(1) << 30
 )
 
-// addPeriod یک دوره را به زمان from اضافه می‌کند. ریست ماهانه روی همان روز ماه می‌ماند.
 func addPeriod(from time.Time, policy string) time.Time {
 	switch policy {
 	case "daily":
@@ -43,7 +31,6 @@ func addPeriod(from time.Time, policy string) time.Time {
 	return time.Time{}
 }
 
-// nextResetAfter اولین زمان ریست را از لحظهٔ now می‌دهد (برای کلاینت تازه). never یا خالی یعنی ۰.
 func nextResetAfter(now time.Time, policy string) int64 {
 	t := addPeriod(now, policy)
 	if t.IsZero() {
@@ -52,8 +39,6 @@ func nextResetAfter(now time.Time, policy string) int64 {
 	return t.Unix()
 }
 
-// advanceReset زمان ریست را جلو می‌برد تا از now بزرگ‌تر شود، بدون اینکه از برنامه عقب بیفتد.
-// اگر پنل چند دوره خاموش بوده باشد، همه را طی می‌کند تا ریست بعدی درست باشد.
 func advanceReset(prev int64, policy string, now time.Time) int64 {
 	if addPeriod(now, policy).IsZero() {
 		return 0
@@ -68,8 +53,6 @@ func advanceReset(prev int64, policy string, now time.Time) int64 {
 	return t.Unix()
 }
 
-// parseStats خروجی `xray api statsquery` را به map نام→مقدار تبدیل می‌کند.
-// Xray مقدار int64 را در JSON گاهی به‌صورت رشته می‌دهد؛ هر دو پشتیبانی می‌شوند.
 func parseStats(out []byte) (map[string]int64, error) {
 	res := map[string]int64{}
 	out = bytes.TrimSpace(out)
@@ -99,8 +82,6 @@ func parseStats(out []byte) (map[string]int64, error) {
 	return res, nil
 }
 
-// usageFromStats نام‌های آمار را به مصرف کلاینت و inbound تبدیل می‌کند.
-// user>>>EMAIL>>>traffic>>>uplink|downlink و inbound>>>TAG>>>traffic>>>uplink|downlink
 func usageFromStats(stats map[string]int64) (clients, inbounds map[string]int64) {
 	clients = map[string]int64{}
 	inbounds = map[string]int64{}
@@ -119,8 +100,6 @@ func usageFromStats(stats map[string]int64) (clients, inbounds map[string]int64)
 	return clients, inbounds
 }
 
-// readXrayStats آمار تجمعی Xray را می‌خواند. عمداً -reset استفاده نمی‌شود:
-// اگر Xray بین دو بررسی ری‌استارت شود، مقدار صفرشده از دست می‌رفت.
 func readXrayStats() (map[string]int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
@@ -131,8 +110,6 @@ func readXrayStats() (map[string]int64, error) {
 	return parseStats(out)
 }
 
-// applyLimits همهٔ قوانین مصرف، انقضا و ریست را روی Store اعمال می‌کند.
-// اگر کانفیگ Xray با وضعیت جدید فرق داشته باشد، بازنویسی و ریستارت می‌شود.
 func applyLimits(now time.Time, clientBytes, inboundBytes map[string]int64) error {
 	xrayMu.Lock()
 	defer xrayMu.Unlock()
@@ -154,7 +131,6 @@ func applyLimits(now time.Time, clientBytes, inboundBytes map[string]int64) erro
 				}
 			}
 		}
-		// Auto renewal: پس از انقضا به اندازهٔ دوره تمدید و حجم صفر می‌شود
 		if c.AutoRenew && c.Period > 0 && c.Expire > 0 && nowU > c.Expire {
 			c.Expire = nowU + c.Period
 			c.UsedBytes = 0
@@ -162,7 +138,6 @@ func applyLimits(now time.Time, clientBytes, inboundBytes map[string]int64) erro
 				c.Enabled, c.DisabledReason = true, ""
 			}
 		}
-		// Traffic reset دوره‌ای
 		if c.NextReset > 0 && nowU >= c.NextReset {
 			c.UsedBytes = 0
 			c.NextReset = advanceReset(c.NextReset, c.TrafficReset, now)
@@ -170,7 +145,6 @@ func applyLimits(now time.Time, clientBytes, inboundBytes map[string]int64) erro
 				c.Enabled, c.DisabledReason = true, ""
 			}
 		}
-		// سقف حجم
 		if c.LimitGB > 0 && c.Enabled && c.UsedBytes >= int64(c.LimitGB)*bytesPerGB {
 			c.Enabled = false
 			c.DisabledReason = "traffic_limit"
@@ -217,8 +191,6 @@ func applyLimits(now time.Time, clientBytes, inboundBytes map[string]int64) erro
 	return nil
 }
 
-// syncXrayConfig فقط وقتی کانفیگ را بازنویسی می‌کند که با فایل فعلی فرق داشته باشد.
-// این باعث می‌شود کلاینت‌های منقضی‌شده هم خودکار از Xray حذف شوند.
 func syncXrayConfig(st *Store) error {
 	desired, err := buildXrayJSON(st)
 	if err != nil {
@@ -231,7 +203,6 @@ func syncXrayConfig(st *Store) error {
 	return writeXrayConfig(st)
 }
 
-// trafficTracker آخرین مقدار تجمعی دیده‌شده را نگه می‌دارد تا مصرف جدید حساب شود.
 type trafficTracker struct {
 	mu       sync.Mutex
 	baseline bool
@@ -240,9 +211,6 @@ type trafficTracker struct {
 
 var traffic = &trafficTracker{last: map[string]int64{}}
 
-// deltas اختلاف مقادیر تجمعی با بررسی قبلی را برمی‌گرداند.
-// بار اول فقط پایه را می‌گذارد (مصرف قبل از شروع پنل حساب نمی‌شود، تا دوباره‌شماری نشود).
-// اگر مقدار کم شده باشد، یعنی Xray ری‌استارت شده و مقدار فعلی از صفر شروع شده است.
 func (t *trafficTracker) deltas(cur map[string]int64) map[string]int64 {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -252,13 +220,12 @@ func (t *trafficTracker) deltas(cur map[string]int64) map[string]int64 {
 		prev, seen := t.last[name]
 		switch {
 		case first:
-			// پایه: چیزی اضافه نمی‌شود
 		case !seen:
-			out[name] = v // کلاینت یا inbound تازه: مصرفش از صفر شروع شده
+			out[name] = v
 		case v >= prev:
 			out[name] = v - prev
 		default:
-			out[name] = v // ری‌استارت Xray
+			out[name] = v
 		}
 		t.last[name] = v
 	}
@@ -266,8 +233,6 @@ func (t *trafficTracker) deltas(cur map[string]int64) map[string]int64 {
 	return out
 }
 
-// tickTraffic یک بار آمار را می‌خواند و قوانین را اجرا می‌کند.
-// اگر آمار در دسترس نباشد (مثلاً Xray خاموش است) همان بار رد می‌شود تا کانفیگ بی‌دلیل ریستارت نشود.
 func tickTraffic(now time.Time) error {
 	stats, err := readXrayStats()
 	if err != nil {
@@ -277,11 +242,10 @@ func tickTraffic(now time.Time) error {
 	return applyLimits(now, cb, ib)
 }
 
-// ensureStatsConfig اگر کانفیگ قدیمی بدون API آمار است، یک بار بازنویسی می‌کند.
 func ensureStatsConfig() error {
 	cur, err := os.ReadFile(xrayConfigPath)
 	if err != nil || bytes.Contains(cur, []byte("StatsService")) {
-		return nil // فایلی نیست یا قبلاً درست است
+		return nil
 	}
 	xrayMu.Lock()
 	defer xrayMu.Unlock()

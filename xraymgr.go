@@ -1,8 +1,5 @@
 package main
 
-// xraymgr.go: مدیریت مستقیم کانفیگ Xray (inbound و کلاینت) بدون x-ui.
-// فقط منطق فایل و ساخت لینک؛ مسیرهای HTTP در مرحلهٔ بعد اضافه می‌شوند.
-
 import (
 	"crypto/rand"
 	"encoding/json"
@@ -27,15 +24,13 @@ const (
 
 var xrayMu sync.Mutex
 
-// Client یک کاربر v2ray است که پنل نگه می‌دارد.
 type Client struct {
 	Name    string `json:"name"`
 	ID      string `json:"id"`
 	Enabled bool   `json:"enabled"`
-	Expire  int64  `json:"expire,omitempty"` // unix، ۰ یعنی بدون انقضا
+	Expire  int64  `json:"expire,omitempty"`
 	LimitGB int    `json:"limit_gb,omitempty"`
-	Inbound int    `json:"inbound"` // پورت inbound (نسخهٔ قدیمی؛ برای سازگاری)
-	// اتصال به چند inbound و تنظیمات تکمیلی
+	Inbound int    `json:"inbound"`
 	Inbounds           []int  `json:"inbounds,omitempty"`
 	IPLimit            int    `json:"ip_limit,omitempty"`
 	HWIDLimit          int    `json:"hwid_limit,omitempty"`
@@ -44,31 +39,26 @@ type Client struct {
 	StartAfterFirstUse bool   `json:"start_after_first_use,omitempty"`
 	Comment            string `json:"comment,omitempty"`
 	Group              string `json:"group,omitempty"`
-	// توکن لینک اشتراک (جدا از UUID) و دستگاه‌های ثبت‌شده برای HWID Limit
+	Owner              string `json:"owner,omitempty"`
 	SubToken       string   `json:"sub_token,omitempty"`
 	Devices        []Device `json:"devices,omitempty"`
-	DisabledReason string   `json:"disabled_reason,omitempty"` // مثلاً ip_limit یا traffic_limit؛ خالی یعنی دستی یا فعال
-	// مصرف ترافیک (بایت) که از آمار Xray جمع شده، زمان ریست بعدی (unix) و دورهٔ انقضا (ثانیه)
+	DisabledReason string   `json:"disabled_reason,omitempty"`
 	UsedBytes  int64 `json:"used_bytes,omitempty"`
 	NextReset  int64 `json:"next_reset,omitempty"`
-	FirstUseAt int64 `json:"first_use_at,omitempty"` // برای Start after first use
-	Period     int64 `json:"period,omitempty"`       // طول دوره برای تمدید خودکار و Start after first use
+	FirstUseAt int64 `json:"first_use_at,omitempty"`
+	Period     int64 `json:"period,omitempty"`
 }
 
-// Inbound یک inbound ساده (فعلاً tcp و Security=none).
 type Inbound struct {
 	Port     int    `json:"port"`
-	Protocol string `json:"protocol"` // vless، vmess، trojan یا shadowsocks
+	Protocol string `json:"protocol"`
 	Remark   string `json:"remark"`
-	// امنیت: none | tls | reality
 	Security string           `json:"security"`
 	TLS      *TLSSettings     `json:"tls,omitempty"`
 	Reality  *RealitySettings `json:"reality,omitempty"`
-	Password string           `json:"password,omitempty"` // فقط shadowsocks
-	// شبکه: tcp (پیش‌فرض) یا kcp (mKCP، UDP)
+	Password string           `json:"password,omitempty"`
 	Network string `json:"network,omitempty"`
-	Seed    string `json:"seed,omitempty"` // فقط mKCP
-	// تنظیمات تکمیلی (مثل x-ui)
+	Seed    string `json:"seed,omitempty"`
 	Disabled    bool     `json:"disabled,omitempty"`
 	Listen      string   `json:"listen,omitempty"`
 	Sniffing    bool     `json:"sniffing,omitempty"`
@@ -77,22 +67,20 @@ type Inbound struct {
 	Fingerprint string   `json:"fingerprint,omitempty"`
 	Path        string   `json:"path,omitempty"`
 	ServiceName string   `json:"service_name,omitempty"`
-	Host        string   `json:"host,omitempty"` // ws، httpupgrade، xhttp
-	Mode        string   `json:"mode,omitempty"` // فقط xhttp
-	// تنظیمات بخش «پایه» (مثل پنل 3x-ui)
-	SortOrder      int    `json:"sort_order,omitempty"`      // ترتیب نمایش و اشتراک (کمتر = بالاتر)
-	ExcludeSub     bool   `json:"exclude_sub,omitempty"`     // اگر true باشد، در لینک‌های کلاینت نمی‌آید
-	DisableFlow    bool   `json:"disable_flow,omitempty"`    // اگر true باشد، flow (XTLS) خاموش می‌شود
-	ShareStrategy  string `json:"share_strategy,omitempty"`  // inbound_listen | server_ip (ذخیره می‌شود)
-	TotalFlow      int64  `json:"total_flow,omitempty"`      // سقف ترافیک به بایت؛ ۰ = نامحدود (ذخیره می‌شود)
-	TrafficReset   string `json:"traffic_reset,omitempty"`   // never | daily | weekly | monthly (ذخیره می‌شود)
-	Expires        int64  `json:"expires,omitempty"`         // انقضا به unix ثانیه؛ ۰ = بدون انقضا
-	UsedBytes      int64  `json:"used_bytes,omitempty"`      // مصرف جمع‌شده از آمار Xray
-	NextReset      int64  `json:"next_reset,omitempty"`      // زمان ریست بعدی ترافیک (unix)
-	DisabledReason string `json:"disabled_reason,omitempty"` // traffic_limit یا expired؛ خالی یعنی دستی
+	Host        string   `json:"host,omitempty"`
+	Mode        string   `json:"mode,omitempty"`
+	SortOrder      int    `json:"sort_order,omitempty"`
+	ExcludeSub     bool   `json:"exclude_sub,omitempty"`
+	DisableFlow    bool   `json:"disable_flow,omitempty"`
+	ShareStrategy  string `json:"share_strategy,omitempty"`
+	TotalFlow      int64  `json:"total_flow,omitempty"`
+	TrafficReset   string `json:"traffic_reset,omitempty"`
+	Expires        int64  `json:"expires,omitempty"`
+	UsedBytes      int64  `json:"used_bytes,omitempty"`
+	NextReset      int64  `json:"next_reset,omitempty"`
+	DisabledReason string `json:"disabled_reason,omitempty"`
 }
 
-// Store کل وضعیت پنل از نظر Xray است.
 type Store struct {
 	Inbounds []Inbound `json:"inbounds"`
 	Clients  []Client  `json:"clients"`
@@ -100,16 +88,13 @@ type Store struct {
 
 var reRemark = regexp.MustCompile(`^[A-Za-z0-9_\-]{1,32}$`)
 
-// پورت‌هایی که نباید برای inbound استفاده شوند (SSH، پنل تانل پیش‌فرض، تانل پیش‌فرض)
 var reservedPorts = map[int]bool{22: true, 3080: true, 28254: true, xrayAPIPort: true}
 
-// سقف‌های معقول برای ورودی‌های عددی
 const (
 	maxLimitGB  = 100000
-	maxExpireAt = 4102444800 // 2100-01-01
+	maxExpireAt = 4102444800
 )
 
-// validateClientInput ورودی‌های عددی کلاینت را بررسی می‌کند.
 func validateClientInput(expire int64, limitGB int) string {
 	if expire < 0 || expire > maxExpireAt {
 		return "تاریخ انقضا نامعتبر است"
@@ -120,8 +105,6 @@ func validateClientInput(expire int64, limitGB int) string {
 	return ""
 }
 
-// validServerAddr فقط IP معتبر یا نام میزبان ساده را می‌پذیرد.
-// این مقدار مستقیم داخل لینک می‌رود، پس هر کاراکتر خاص رد می‌شود.
 var reHost = regexp.MustCompile(`^[A-Za-z0-9.\-]{1,253}$`)
 
 func validServerAddr(a string) bool {
@@ -158,7 +141,6 @@ func saveStore(st *Store) error {
 	return os.Rename(tmp, xrayStore)
 }
 
-// newUUID یک UUID نسخهٔ ۴ می‌سازد (بدون وابستگی خارجی).
 func newUUID() (string, error) {
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {
@@ -169,7 +151,6 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16]), nil
 }
 
-// validateInbound ورودی inbound را بررسی می‌کند.
 func validateInbound(in Inbound) string {
 	if in.Port < 1024 || in.Port > 65535 {
 		return "پورت باید بین ۱۰۲۴ و ۶۵۵۳۵ باشد (پورت‌های زیر ۱۰۲۴ رزرو هستند)"
@@ -186,8 +167,6 @@ func validateInbound(in Inbound) string {
 	return ""
 }
 
-// buildXrayJSON کانفیگ کامل Xray را از روی Store می‌سازد.
-// هر کلاینت فعال به inbound خودش وصل می‌شود.
 func buildXrayJSON(st *Store) ([]byte, error) {
 	type inboundJSON struct {
 		Tag      string         `json:"tag"`
@@ -216,7 +195,6 @@ func buildXrayJSON(st *Store) ([]byte, error) {
 		})
 	}
 
-	// API آمار فقط روی localhost؛ برای خواندن مصرف هر کلاینت و هر inbound
 	inbounds = append(inbounds, map[string]any{
 		"tag": "api", "listen": "127.0.0.1", "port": xrayAPIPort, "protocol": "dokodemo-door",
 		"settings": map[string]any{"address": "127.0.0.1"},
@@ -238,8 +216,6 @@ func buildXrayJSON(st *Store) ([]byte, error) {
 	return json.MarshalIndent(cfg, "", "  ")
 }
 
-// clientUsable کلاینتی را که فعال، منقضی نشده و در حجم نیست برمی‌گرداند.
-// (شمارش ترافیک هنوز پیاده‌سازی نشده؛ LimitGB فعلاً فقط ذخیره می‌شود.)
 func clientUsable(c Client, now time.Time) bool {
 	if !c.Enabled {
 		return false
@@ -250,7 +226,6 @@ func clientUsable(c Client, now time.Time) bool {
 	return true
 }
 
-// writeXrayConfig: اول فایل موقت را با xray -test چک می‌کند، بعد جایگزین می‌کند و ریستارت می‌کند.
 func writeXrayConfig(st *Store) error {
 	b, err := buildXrayJSON(st)
 	if err != nil {
@@ -271,7 +246,7 @@ func writeXrayConfig(st *Store) error {
 	if err := ensureAccessLogDir(); err != nil {
 		return err
 	}
-	if err := os.WriteFile(xrayConfigPath, b, 0o600); err != nil { // UUIDها محرمانه‌اند
+	if err := os.WriteFile(xrayConfigPath, b, 0o600); err != nil {
 		return err
 	}
 	if out, err := exec.Command("systemctl", "restart", "xray").CombinedOutput(); err != nil {
@@ -280,7 +255,6 @@ func writeXrayConfig(st *Store) error {
 	return nil
 }
 
-// addInbound یک inbound جدید اضافه می‌کند (پورت تکراری مجاز نیست).
 func addInbound(in Inbound) error {
 	if e := validateInbound(in); e != "" {
 		return errors.New(e)
@@ -291,6 +265,7 @@ func addInbound(in Inbound) error {
 	if e := validateSecurity(&in); e != "" {
 		return errors.New(e)
 	}
+	in.NextReset = nextResetAfter(time.Now(), in.TrafficReset)
 	if e := validateProtocolSecurity(in); e != "" {
 		return errors.New(e)
 	}

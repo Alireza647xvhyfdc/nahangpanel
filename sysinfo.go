@@ -1,7 +1,5 @@
 package main
 
-// sysinfo.go: server status for the home page, plus update check and update.
-
 import (
 	"encoding/json"
 	"fmt"
@@ -16,7 +14,6 @@ import (
 	"time"
 )
 
-// repo is the GitHub repository used for update checks and updates.
 var repo = "Alireza647xvhyfdc/nahangpanel"
 
 func readFileTrim(p string) string {
@@ -42,14 +39,13 @@ func readCPU() (cpuSample, bool) {
 	for i, v := range f[1:] {
 		n, _ := strconv.ParseUint(v, 10, 64)
 		s.total += n
-		if i == 3 || i == 4 { // idle + iowait
+		if i == 3 || i == 4 {
 			s.idle += n
 		}
 	}
 	return s, true
 }
 
-// cpuPercent samples /proc/stat twice, 300 ms apart.
 func cpuPercent() float64 {
 	a, ok1 := readCPU()
 	time.Sleep(300 * time.Millisecond)
@@ -92,7 +88,6 @@ func diskInfo(path string) (total, free uint64) {
 	return st.Blocks * bs, st.Bavail * bs
 }
 
-// netTotals sums received and sent bytes over all interfaces except loopback.
 func netTotals() (rx, tx uint64) {
 	b, _ := os.ReadFile("/proc/net/dev")
 	for _, l := range strings.Split(string(b), "\n") {
@@ -155,7 +150,6 @@ func systemInfo() map[string]any {
 	}
 }
 
-// latestTag returns the newest release tag, cached for 10 minutes.
 var updCache struct {
 	sync.Mutex
 	at  time.Time
@@ -190,12 +184,30 @@ func latestTag() (string, error) {
 	return r.TagName, nil
 }
 
-// registerSys adds the home-page routes. Called from main with the same auth wrapper.
 func registerSys(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc) {
 	m.HandleFunc("GET /api/system", auth(func(w http.ResponseWriter, r *http.Request) {
+		if identOf(r).role == "seller" {
+			b, _ := json.Marshal(systemInfo())
+			var full map[string]any
+			if err := json.Unmarshal(b, &full); err != nil {
+				reply(w, 500, map[string]string{"error": "خطا در خواندن وضعیت سرور"})
+				return
+			}
+			out := map[string]any{}
+			for _, k := range []string{"cpu_percent", "cpus", "mem_total", "mem_used", "disk_total", "disk_free"} {
+				if v, ok := full[k]; ok {
+					out[k] = v
+				}
+			}
+			reply(w, 200, out)
+			return
+		}
 		reply(w, 200, systemInfo())
 	}))
 	m.HandleFunc("GET /api/update", auth(func(w http.ResponseWriter, r *http.Request) {
+		if !requireOwner(w, r) {
+			return
+		}
 		res := map[string]any{"current": version, "latest": "", "available": false}
 		lat, err := latestTag()
 		if err != nil {
@@ -206,8 +218,11 @@ func registerSys(m *http.ServeMux, auth func(http.HandlerFunc) http.HandlerFunc)
 		}
 		reply(w, 200, res)
 	}))
-	// The update runs as a separate systemd unit, so it survives the panel restart.
+
 	m.HandleFunc("POST /api/update", auth(func(w http.ResponseWriter, r *http.Request) {
+		if !requireOwner(w, r) {
+			return
+		}
 		cmd := "curl -fsSL https://raw.githubusercontent.com/" + repo + "/main/install.sh -o /tmp/nahang-install.sh && bash /tmp/nahang-install.sh --update"
 		if _, err := sh("systemd-run", "--unit=nahang-selfupdate", "--collect", "/bin/bash", "-c", cmd); err != nil {
 			bad(w, "نتوانستم به‌روزرسانی را شروع کنم: "+err.Error())

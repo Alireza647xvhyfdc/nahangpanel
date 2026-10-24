@@ -1,10 +1,5 @@
 package main
 
-// تست ماتریس: همهٔ ترکیب‌های protocol × network × security × flow را از همان زنجیرهٔ
-// اعتبارسنجی addInbound رد می‌کند، کانفیگ می‌سازد و با `xray run -test` چک می‌کند.
-// فقط وقتی اجرا می‌شود که XRAY_BIN به یک باینری Xray اشاره کند:
-//   XRAY_BIN=/path/to/xray go test -run TestInboundMatrix -v ./...
-
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -88,7 +83,7 @@ func TestInboundMatrix(t *testing.T) {
 			for _, s := range securities {
 				for _, fl := range flows {
 					if fl != "" && (p != "vless" || s == "none") {
-						continue // flow فقط برای vless با TLS یا Reality
+						continue
 					}
 					port++
 					name := fmt.Sprintf("%s/%s/%s/%s", p, n, s, fl)
@@ -110,7 +105,6 @@ func TestInboundMatrix(t *testing.T) {
 							PrivateKey: priv, PublicKey: pub, ShortIDs: []string{"abcd"}}
 					}
 
-					// همان زنجیرهٔ addInbound (بدون قفل و نوشتن فایل)
 					var e string
 					step := ""
 					checks := []struct {
