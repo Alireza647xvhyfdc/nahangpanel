@@ -84,7 +84,7 @@ func registerXrayRoutes(m *http.ServeMux, auth func(http.HandlerFunc) http.Handl
 		q := r.URL.Query()
 		server := q.Get("server")
 		if server == "" {
-			server = irServerAddr()
+			server = requestServer(r)
 		}
 		if !validServerAddr(server) {
 			reply(w, 400, map[string]string{"error": "server باید IP یا نام میزبان معتبر باشد"})

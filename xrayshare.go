@@ -26,6 +26,17 @@ var (
 	reHWID          = regexp.MustCompile(`^[A-Za-z0-9_\-:.]{4,128}$`)
 )
 
+func requestServer(r *http.Request) string {
+	if s := irServerAddr(); s != "" {
+		return s
+	}
+	host, _, err := net.SplitHostPort(r.Host)
+	if err != nil {
+		return r.Host
+	}
+	return host
+}
+
 func newSubToken() (string, error) {
 	b := make([]byte, 24)
 	if _, err := rand.Read(b); err != nil {
